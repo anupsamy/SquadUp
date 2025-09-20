@@ -29,32 +29,42 @@ This project is an Android application designed to simplify group meetups by hel
 
 ### **3.2. Use Case Diagram**
 
-
 ### **3.3. Actors Description**
-1. **[WRITE_NAME_HERE]**: ...
-2. **[WRITE_NAME_HERE]**: ...
+#TODO: IDK if User should be one of the actors since i mentioned as a primary actor for use case 1
+1. **[Group Admin]**: User who creates a group, manages its settings, and oversees member participation.
+2. **[Group Member]**: User who joins existing groups, provides location/transportation info.
+3. **[Authentication Service (Google)]**: External system providing login, signup, and identity verification.
+4. **[Maps API (Google Maps/Places)]**: External system providing activity/venue suggestions.
 
 ### **3.4. Use Case Description**
-- Use cases for feature 1: [WRITE_FEATURE_1_NAME_HERE]
-1. **[WRITE_NAME_HERE]**: ...
-2. **[WRITE_NAME_HERE]**: ...
-- Use cases for feature 2: [WRITE_FEATURE_2_NAME_HERE]
+- Use cases for feature 1: [Authentication]
+1. **[Sign Up]**: User registers with Google.
+2. **[Sign In/Out]**: User signs in with existing account or logs out.
+- Use cases for feature 2: [Manage_Group]
+3. **[Create Group]**: Admin configures a group with name, activities, time, and radius.
+4. **[Edit Group Settings]**: Admin modifies radius, time, or activity categories.
+- Use cases for feature 3: [Manage_Membership]
+5. **[Join Group]**: Member enters invitation code and location/transportation.
+4. **[View Suggested Venues]**: Member sees venue/activity list dynamically updated.
+- Use cases for feature 4: [Manage_Options]
 3. **[WRITE_NAME_HERE]**: ...
 4. **[WRITE_NAME_HERE]**: ...
-...
+
 
 ### **3.5. Formal Use Case Specifications (5 Most Major Use Cases)**
 <a name="uc1"></a>
 
-#### Use Case 1: [WRITE_USE_CASE_1_NAME_HERE]
+#### Use Case 1: [User Authentication]
 
-**Description**: ...
+**Description**: User signs up or logs in with Google to access the app.
 
-**Primary actor(s)**: ... 
+**Primary actor(s)**: User, Authentication Service.
     
 **Main success scenario**:
-1. ...
-2. ...
+1. User opens app.
+2. User selects "Sign In with Google".
+3. Google Authentication verifies identity.
+4. User is logged into app.
 
 **Failure scenario(s)**:
 - 1a. ...
@@ -73,7 +83,112 @@ This project is an Android application designed to simplify group meetups by hel
 
 <a name="uc2"></a>
 
-#### Use Case 2: [WRITE_USE_CASE_2_NAME_HERE]
+#### Use Case 2: [Create Group]
+**Description**: Admin creates a group for meetup planning.
+
+**Primary actor(s)**: Group Admin.
+    
+**Main success scenario**:
+1. Admin selects "Create Group".
+2. Admin enters group name, activities, radius, time.
+3. System generates invitation code.
+4. Group is created successfully.
+
+**Failure scenario(s)**:
+- 1a. ...
+    - 1a1. ...
+    - 1a2. ...
+
+- 1b. ...
+    - 1b1. ...
+    - 1b2. ...
+                
+- 2a. ...
+    - 2a1. ...
+    - 2a2. ...
+
+...
+
+<a name="uc3"></a>
+
+#### Use Case 2: [Join Group]
+**Description**: Member joins a group with invitation code.
+
+**Primary actor(s)**: Group Member.
+    
+**Main success scenario**:
+1. Member enters invitation code.
+2. Member inputs location and mode of transport.
+3. System validates code.
+4. Member is added to group.
+
+**Failure scenario(s)**:
+- 1a. ...
+    - 1a1. ...
+    - 1a2. ...
+
+- 1b. ...
+    - 1b1. ...
+    - 1b2. ...
+                
+- 2a. ...
+    - 2a1. ...
+    - 2a2. ...
+
+...
+
+<a name="uc4"></a>
+
+#### Use Case 2: [View Suggested Venues]
+**Description**: Group members view recommended venues near midpoint.
+
+**Primary actor(s)**: Group Member, Maps API.
+    
+**Main success scenario**:
+1. System calculates midpoint.
+2. System fetches nearby venues based on activities.
+3. List is displayed to all members.
+
+**Failure scenario(s)**:
+- 1a. ...
+    - 1a1. ...
+    - 1a2. ...
+
+- 1b. ...
+    - 1b1. ...
+    - 1b2. ...
+                
+- 2a. ...
+    - 2a1. ...
+    - 2a2. ...
+
+...
+
+<a name="uc5"></a>
+
+#### Use Case 2: [Manage Group Settings]
+**Description**: Admin modifies radius, time, or activity categories.
+
+**Primary actor(s)**: Group Admin.
+    
+**Main success scenario**:
+1. Admin selects group.
+2. Admin edits details.
+3. System updates group info and recalculates venues.
+
+**Failure scenario(s)**:
+- 1a. ...
+    - 1a1. ...
+    - 1a2. ...
+
+- 1b. ...
+    - 1b1. ...
+    - 1b2. ...
+                
+- 2a. ...
+    - 2a1. ...
+    - 2a2. ...
+
 ...
 
 ### **3.6. Screen Mock-ups**
@@ -91,32 +206,50 @@ This project is an Android application designed to simplify group meetups by hel
 
 ## 4. Designs Specification
 ### **4.1. Main Components**
-1. **[WRITE_NAME_HERE]**
-    - **Purpose**: ...
+1. **[Authentication Module]**
+    - **Purpose**: Handle Google Sign In/Out.
     - **Interfaces**: 
-        1. ...
-            - **Purpose**: ...
-        2. ...
-2. ...
+        1. Google Auth API
+            - **Purpose**: Verifies users.
+        2. App Session Manager
+            - **Purpose**: Stores login state.
+2. **[Group Management Module]**
+    - **Purpose**: Create/edit groups.
+    - **Interfaces**: 
+        1. Database
+            - **Purpose**: Store group info.
+        2. UI
+            - **Purpose**: Display group details.
+2. **[Maps & Midpoint Module]**
+    - **Purpose**: Calculate midpoint, fetch venues.
+    - **Interfaces**: 
+        1. Google Maps/Places API
+            - **Purpose**: Provide venues.
 
 
 ### **4.2. Databases**
-1. **[WRITE_NAME_HERE]**
-    - **Purpose**: ...
-2. ...
+1. **[User DB]**
+    - **Purpose**: Store user profiles, Google IDs.
+2. **[Group DB]**
+    - **Purpose**: Store group details, members, activities.
 
 
 ### **4.3. External Modules**
-1. **[WRITE_NAME_HERE]** 
+1. **[Google Maps API]** 
+    - **Purpose**: Midpoint and venue suggestions.
+2. **[Google Authentication]** 
+    - **Purpose**: Secure user login.
+3. **[WRITE_NAME_HERE]** 
     - **Purpose**: ...
-2. ...
 
 
 ### **4.4. Frameworks**
-1. **[WRITE_NAME_HERE]**
+1. **[Android SDK (Kotlin/Java)]**
+    - **Purpose**: Mobile app development.
+    - **Reason**: Native Android support.
+2. **[WRITE_NAME_HERE]**
     - **Purpose**: ...
     - **Reason**: ...
-2. ...
 
 
 ### **4.5. Dependencies Diagram**

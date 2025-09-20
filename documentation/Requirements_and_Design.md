@@ -19,7 +19,13 @@ This project is an Android application designed to simplify group meetups by hel
 ## 3. Requirements Specification
 
 ### **3.1. List of Features**
+1. Authentication: To access app features, the user must user Google Authentication service to Sign Up. If a user does not have a pre-existing account for the app, they must use Sign Up before Signing In. An authenticated user can also Sign Out of the app.
 
+2. Manage Group: A user can create a group to organize a meetup. The group can be configured with a name, preferred activities/venues, a radius for the midpoint to extend from and a pre-determined meet-up time. After creating the group, the group owner can view the group details, such as member list, their title ("Admin"), and the invitation code. The creator of the group has the ability to change and modify group meeting times, and the radius of the meetup area from the midpoint.
+
+3. Manage Group Membership: When a user joins the group using the invitation code, they are prompted for the location they will be commuting from to the meetup, and their mode of transportation. As users join, the midpoint for the group meetup is calculated and updated, and a list of venues/activities are displayed in list form using an API call to Google Maps. 
+
+4. Manage Options: The list of venue options can be filtered based on attributes.
 
 ### **3.2. Use Case Diagram**
 

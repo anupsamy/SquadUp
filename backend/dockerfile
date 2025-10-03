@@ -1,0 +1,19 @@
+ARG PORT
+
+FROM node:20.6-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+RUN ls -la dist/ || echo "dist folder not found"
+
+EXPOSE $PORT
+
+CMD ["npm", "start"]

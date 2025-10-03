@@ -1,0 +1,52 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+       - prod
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Copy filesto EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{secrets.EC2_HOST}}
+          username: ${{secrets.EC2_USER}}
+          key: ${{secrets.EC2_KEY}}
+          source: "backend"
+          target: "/home/ubuntu/RJ_CPEN321_M1" 
+
+      - name: Rebuild and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{secrets.EC2_HOST}}
+          username: ${{secrets.EC2_USER}}
+          key: ${{secrets.EC2_KEY}}
+          script: |
+            cd /home/ubuntu/RJ_CPEN321_M1/backend
+
+            # Write secrets into .env
+            cat > .env <<EOF
+            PORT=${{secrets.PROD_PORT}}
+            MONGODB_URI=${{secrets.PROD_DB_URI}}
+            GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID}}
+            JWT_SECRET=${{secrets.JWT_SECRET}}
+            NEWS_API_KEY=${{secrets.NEWS_API_KEY}}
+            EOF
+            
+            #give .env perms
+            chmod 600 .env
+
+            # build and run container
+            docker-compose down
+
+            docker-compose --env-file .env build
+            docker-compose --env-file .env up -d

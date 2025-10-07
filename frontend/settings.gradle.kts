@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "User Management"
+rootProject.name = "SquadUp"
 include(":app")

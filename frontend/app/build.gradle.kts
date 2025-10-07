@@ -26,11 +26,31 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+            // Local dev endpoints
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
+            buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
+            buildConfigField(
+                "String",
+                "GOOGLE_CLIENT_ID",
+                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
+            )
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+            )
+
+            // Production endpoints
+            buildConfigField("String", "API_BASE_URL", "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/api/\"")
+            buildConfigField("String", "IMAGE_BASE_URL", "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/\"")
+            buildConfigField(
+                "String",
+                "GOOGLE_CLIENT_ID",
+                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\"" // same web client ID
             )
         }
     }

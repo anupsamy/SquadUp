@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-    namespace = "com.cpen321.usermanagement"
+    namespace = "com.cpen321.squadup"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.cpen321.usermanagement"
+        applicationId = "com.cpen321.squadup"
         minSdk = 31
         //noinspection OldTargetApi
         targetSdk = 33

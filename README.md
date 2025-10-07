@@ -11,7 +11,7 @@ make dev
 
 in Android Studio, File>Sync Project with Gradle Files
 go to Build>Select Build Variant
-make sure devDebug is selected in Active Build Variant (dev uses local, prod will target hosted server endpoints)
+make sure localDebug is selected in Active Build Variant (dev uses local, staging will target hosted server endpoints)
 start emulator and run app on android studio and all should be working!
 
 

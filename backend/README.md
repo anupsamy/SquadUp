@@ -66,7 +66,7 @@ Prettier is configured to automatically format your code. The configuration is i
 **VS Code Integration**: Install the Prettier extension for automatic formatting on save.
 
 
-test for pipeline
+test for pipeline 2
 
 # Notes
 ```

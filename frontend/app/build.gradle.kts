@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-    namespace = "com.cpen321.usermanagement"
+    namespace = "com.cpen321.squadup"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.cpen321.usermanagement"
+        applicationId = "com.cpen321.squadup"
         minSdk = 31
         //noinspection OldTargetApi
         targetSdk = 33
@@ -26,11 +26,50 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
+        }
+        release {
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+            )
+        }
+    }
+
+    flavorDimensions += "env" // Name of your flavor dimension
+    productFlavors {
+
+        create("local") {
+            dimension = "env"
+            // Local dev endpoints
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
+            buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
+            buildConfigField(
+                "String",
+                "GOOGLE_CLIENT_ID",
+                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
+            )
+        }
+
+        create("staging") {
+            dimension = "env"
+            // Deployed test server endpoints
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/api/\""
+            )
+            buildConfigField(
+                "String",
+                "IMAGE_BASE_URL",
+                "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/\""
+            )
+            buildConfigField(
+                "String",
+                "GOOGLE_CLIENT_ID",
+                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
             )
         }
     }

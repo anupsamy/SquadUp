@@ -1,0 +1,32 @@
+package com.cpen321.squadup.di
+
+import com.cpen321.squadup.data.repository.AuthRepository
+import com.cpen321.squadup.data.repository.AuthRepositoryImpl
+import com.cpen321.squadup.data.repository.ProfileRepository
+import com.cpen321.squadup.data.repository.ProfileRepositoryImpl
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoryModule {
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(
+        authRepositoryImpl: AuthRepositoryImpl
+    ): AuthRepository {
+        return authRepositoryImpl
+    }
+
+    @Provides
+    @Singleton
+    fun provideProfileRepository(
+        profileRepositoryImpl: ProfileRepositoryImpl
+    ): ProfileRepository {
+        return profileRepositoryImpl
+    }
+}

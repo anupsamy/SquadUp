@@ -7,8 +7,6 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.middlew
 import router from './routes';
 import path from 'path';
 
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 

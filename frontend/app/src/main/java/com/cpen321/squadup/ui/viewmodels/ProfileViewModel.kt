@@ -59,7 +59,7 @@ class ProfileViewModel @Inject constructor(
             if (profileResult.isSuccess && hobbiesResult.isSuccess) {
                 val user = profileResult.getOrNull()!!
                 val availableHobbies = hobbiesResult.getOrNull()!!
-                val selectedHobbies = user.hobbies.toSet()
+                val selectedHobbies = user.hobbies?.toSet() ?: emptySet()
 
                 _uiState.value = _uiState.value.copy(
                     isLoadingProfile = false,

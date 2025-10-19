@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { IUser } from '../types/user.types';
+import { IGroup } from './group.types';
 
 // Zod schemas
 // ------------------------------------------------------------
@@ -28,6 +29,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: IUser;
+      group?:IGroup;
     }
   }
 }

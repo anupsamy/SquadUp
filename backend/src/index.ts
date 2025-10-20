@@ -1,12 +1,11 @@
 import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 
 import { connectDB } from './database';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
 import router from './routes';
 import path from 'path';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;

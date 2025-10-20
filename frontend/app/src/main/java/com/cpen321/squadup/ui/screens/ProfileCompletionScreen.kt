@@ -14,6 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -271,6 +275,7 @@ private fun AddressInputField(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TransitTypeInputField(
     transitTypeText: String,
@@ -278,18 +283,44 @@ private fun TransitTypeInputField(
     onTransitTypeChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalSpacing.current
+    val transitOptions = listOf("Transit", "Driving", "Biking", "Walking")
+    var expanded by remember { mutableStateOf(false) }
 
-    OutlinedTextField(
-        value = transitTypeText,
-        onValueChange = onTransitTypeChange,
-        label = { Text(stringResource(R.string.transit_type)) },
-        placeholder = { Text(stringResource(R.string.transit_type_placeholder)) },
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(spacing.medium),
-        enabled = isEnabled,
-        singleLine = true
-    )
+    ExposedDropdownMenuBox(
+        expanded = expanded && isEnabled,
+        onExpandedChange = { if (isEnabled) expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = transitTypeText,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.transit_type)) },
+            placeholder = { Text(stringResource(R.string.transit_type_placeholder)) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            enabled = isEnabled
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded && isEnabled,
+            onDismissRequest = { expanded = false }
+        ) {
+            transitOptions.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onTransitTypeChange(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable

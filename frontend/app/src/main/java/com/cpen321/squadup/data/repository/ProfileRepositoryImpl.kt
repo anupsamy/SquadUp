@@ -58,6 +58,7 @@ class ProfileRepositoryImpl @Inject constructor(
         return try {
             val updateRequest = UpdateProfileRequest(name = name, address = address, transitType = transitType)
             val response = userInterface.updateProfile("", updateRequest) // Auth header is handled by interceptor
+            Log.d("update profile test", "update profile test" + response.body()?.message.toString())
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!.user)
             } else {
@@ -110,7 +111,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
 //    override suspend fun updateUserHobbies(hobbies: List<String>): Result<User> {
 //        return try {
-//            val updateRequest = UpdateProfileRequest(hobbies = hobbies)
+//            val updateRequest = UpdateProfileRequest
 //            val response = userInterface.updateProfile("", updateRequest) // Auth header is handled by interceptor
 //            if (response.isSuccessful && response.body()?.data != null) {
 //                Result.success(response.body()!!.data!!.user)

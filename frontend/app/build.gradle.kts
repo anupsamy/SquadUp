@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     // secrets gradle plugin
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -106,6 +107,7 @@ dependencies {
     
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
+    implementation(libs.firebase.messaging)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
     

@@ -30,6 +30,16 @@ const userSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
+    address: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    transitType: {
+      type: String,
+      required: false,
+      trim: true,
+    },
     profilePicture: {
       type: String,
       required: false,
@@ -40,6 +50,7 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
   }
 );
+
 
 export class UserModel {
   private user: mongoose.Model<IUser>;

@@ -10,8 +10,8 @@ export interface IUser extends Document {
   email: string;
   name: string;
   profilePicture?: string;
-  bio?: string;
-  hobbies: string[];
+  address?: string;
+  transitType?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,19 +23,14 @@ export const createUserSchema = z.object({
   name: z.string().min(1),
   googleId: z.string().min(1),
   profilePicture: z.string().optional(),
-  bio: z.string().max(500).optional(),
-  hobbies: z.array(z.string()).default([]),
+  address: z.string().max(500).optional(),
+  transitType: z.string().max(500).optional(),
 });
 
 export const updateProfileSchema = z.object({
   name: z.string().min(1).optional(),
-  bio: z.string().max(500).optional(),
-  hobbies: z
-    .array(z.string())
-    .refine(val => val.length === 0 || val.every(v => HOBBIES.includes(v)), {
-      message: 'Hobby must be in the available hobbies list',
-    })
-    .optional(),
+  address: z.string().max(500).optional(),
+  transitType: z.string().max(500).optional(),
   profilePicture: z.string().min(1).optional(),
 });
 

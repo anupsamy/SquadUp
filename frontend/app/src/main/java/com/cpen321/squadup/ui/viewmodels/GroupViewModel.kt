@@ -28,12 +28,12 @@ class GroupViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
     
-            val result = groupRepository.createGroup(groupName = groupName, meetingTime = meetingTime, groupLeaderId = groupLeaderId, expectedPeople = expectedPeople)
+            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople)
             if (result.isSuccess) {
                 val group = result.getOrNull()
                 _uiState.value = _uiState.value.copy(
                     isCreatingGroup = false,
-                    successMessage = "Group '${group?.groupName}' created successfully!"
+                    successMessage = "Group '${groupName}' created successfully! Join Code: ${group?.groupName}"
                 )
             } else {
                 val error = result.exceptionOrNull()

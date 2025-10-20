@@ -164,6 +164,15 @@ fun CreateGroupScreen(
                     Text(text = if (uiState.isCreatingGroup) "Creating..." else "Create Group")
                 }
 
+                // Observe the success message and navigate to the success screen
+                LaunchedEffect(uiState.successMessage) {
+                    uiState.successMessage?.let { message ->
+                        val joinCode = message.substringAfter("Join Code: ").trim() // Extract joinCode from the message
+                        navController.navigate("group_success/$groupName/$joinCode")
+                        groupViewModel.clearMessages() // Clear the success message after navigation
+                    }
+                }
+
                 // Display success or error messages
                 uiState.successMessage?.let { message ->
                     Text(text = message, color = MaterialTheme.colorScheme.primary)

@@ -27,7 +27,7 @@ export class GroupController {
       });
 
       res.status(201).json({
-        message: 'Group created successfully',
+        message: 'Group ${groupName} created successfully',
         data: {
           group: newGroup,
         }
@@ -37,6 +37,34 @@ export class GroupController {
       next(error);
     }
   }
+  
+  async getGroupByJoinCode(
+    req: Request<{ joinCode: string }>, // Define the route parameter type
+    res: Response<GetGroupResponse>,
+    next: NextFunction
+  ) {
+    try {
+      const { joinCode } = req.params; // Extract the joinCode from the route parameters
+  
+      // Query the database for the group with the given joinCode
+      const group = await groupModel.findByJoinCode(joinCode);
+  
+      if (!group) {
+        return res.status(404).json({
+          message: `Group with joinCode '${joinCode}' not found`,
+        });
+      }
+  
+      res.status(200).json({
+        message: 'Group fetched successfully',
+        data: { group },
+      });
+    } catch (error) {
+      logger.error('Failed to fetch group by joinCode:', error);
+      next(error);
+    }
+  }
+
 
   getGroup(req: Request, res: Response<GetGroupResponse>) {
     const group = req.group!;

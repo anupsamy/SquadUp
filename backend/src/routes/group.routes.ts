@@ -6,7 +6,12 @@ import { CreateGroupRequest, createGroupSchema, UpdateGroupRequest, updateGroupS
 const router = Router();
 const groupController = new GroupController();
 
-router.get('/', groupController.getGroup);
+router.get('/info', groupController.getGroup);
+
+router.get(
+    '/:joinCode', // Define the route parameter
+    groupController.getGroupByJoinCode.bind(groupController) // Bind the controller method
+);
 // Route to create a group
 router.post( //have seperate endpoint for updating?
     '/create',

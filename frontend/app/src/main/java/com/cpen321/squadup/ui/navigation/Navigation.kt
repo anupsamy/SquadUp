@@ -15,6 +15,7 @@ import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.screens.AuthScreen
 import com.cpen321.squadup.ui.screens.LoadingScreen
 import com.cpen321.squadup.ui.screens.CreateGroupScreen
+import com.cpen321.squadup.ui.screens.GroupSuccessScreen
 import com.cpen321.squadup.ui.screens.MainScreen
 import com.cpen321.squadup.ui.screens.ManageHobbiesScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
@@ -254,5 +255,17 @@ private fun AppNavHost(
         composable(NavRoutes.CREATE_GROUP) {
             CreateGroupScreen(navController = navController)
         }
+
+        composable("group_success/{groupName}/{joinCode}") { backStackEntry ->
+            val groupName = backStackEntry.arguments?.getString("groupName") ?: ""
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+        
+            GroupSuccessScreen(
+                navController = navController,
+                groupName = groupName,
+                joinCode = joinCode
+            )
+        }
+
     }
 }

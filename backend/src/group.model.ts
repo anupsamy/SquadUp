@@ -24,7 +24,6 @@ const groupSchema = new Schema<IGroup>(
         meetingTime: {
         type: String,
         required: true,
-        unique: true,
         index: true,
       },
         joinCode: {
@@ -106,6 +105,16 @@ export class GroupModel {
       } catch (error) {
         logger.error('Error deleting group:', error);
         throw new Error('Failed to delete group');
+      }
+    }
+
+    async findByJoinCode(joinCode: string): Promise<IGroup | null> {
+      try {
+        const group = await this.group.findOne({ joinCode }); // Query the database
+        return group;
+      } catch (error) {
+        logger.error('Error finding group by joinCode:', error);
+        throw new Error('Failed to find group by joinCode');
       }
     }
   

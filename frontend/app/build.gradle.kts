@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -22,6 +24,10 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
+
+        val localProperties = Properties()
+        localProperties.load(FileInputStream(rootProject.file("local.properties")))
+        buildConfigField("String", "GOOGLE_PLACES_API_KEY", "\"${localProperties.getProperty("GOOGLE_PLACES_API_KEY")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -140,6 +146,10 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    implementation(libs.places) // maps places api
+    implementation(libs.maps.compose)// map view with compose
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

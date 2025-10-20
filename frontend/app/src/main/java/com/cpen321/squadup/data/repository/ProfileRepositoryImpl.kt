@@ -6,6 +6,8 @@ import com.cpen321.squadup.data.local.preferences.TokenManager
 import com.cpen321.squadup.data.remote.api.HobbyInterface
 import com.cpen321.squadup.data.remote.api.RetrofitClient
 import com.cpen321.squadup.data.remote.api.UserInterface
+import com.cpen321.squadup.data.remote.dto.Address
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.data.remote.dto.UpdateProfileRequest
 import com.cpen321.squadup.data.remote.dto.User
 import com.cpen321.squadup.utils.JsonUtils.parseErrorMessage
@@ -53,7 +55,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateProfile(name: String, address: String, transitType: String): Result<User> {
+    override suspend fun updateProfile(name: String, address: Address?, transitType: TransitType?): Result<User> {
         return try {
             val updateRequest = UpdateProfileRequest(name = name, address = address, transitType = transitType)
             val response = userInterface.updateProfile("", updateRequest) // Auth header is handled by interceptor

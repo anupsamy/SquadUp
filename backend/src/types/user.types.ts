@@ -1,6 +1,7 @@
 import mongoose, { Document } from 'mongoose';
 import z from 'zod';
-import { HOBBIES } from '../hobbies';
+import {Address, addressSchema} from './address.types';
+import { TransitType, transitTypeSchema } from './transit.types';
 
 // User model
 // ------------------------------------------------------------
@@ -10,8 +11,8 @@ export interface IUser extends Document {
   email: string;
   name: string;
   profilePicture?: string;
-  address?: string;
-  transitType?: string;
+  address?: Address;
+  transitType?: TransitType;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,14 +24,14 @@ export const createUserSchema = z.object({
   name: z.string().min(1),
   googleId: z.string().min(1),
   profilePicture: z.string().optional(),
-  address: z.string().max(500).optional(),
-  transitType: z.string().max(500).optional(),
+  address: addressSchema.optional(),
+  transitType: transitTypeSchema.optional(),
 });
 
 export const updateProfileSchema = z.object({
   name: z.string().min(1).optional(),
-  address: z.string().max(500).optional(),
-  transitType: z.string().max(500).optional(),
+  address: addressSchema.optional(),
+  transitType: transitTypeSchema.optional(),
   profilePicture: z.string().min(1).optional(),
 });
 

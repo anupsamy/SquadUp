@@ -4,6 +4,7 @@ import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { userModel } from '../user.model';
+import { addressSchema } from '../types/address.types';
 
 export class UserController {
   getProfile(req: Request, res: Response<GetProfileResponse>) {

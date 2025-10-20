@@ -21,7 +21,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -57,21 +60,25 @@ import com.cpen321.squadup.ui.theme.LocalSpacing
 
 private data class ProfileFormState(
     val name: String = "",
-    val email: String = "",
-    val bio: String = "",
     val originalName: String = "",
-    val originalBio: String = ""
+    val email: String = "",
+    val transitType: String = "", //TODO: Swap with enum (?) for transit types
+    val originalTransitType: String = "",
+    val address: String = "", //TODO: swap with proper address type with google maps integration
+    val originalAddress: String = ""
 ) {
     fun hasChanges(): Boolean {
         return (name.isNotBlank() && name != originalName) ||
-                (bio != originalBio && bio.isNotBlank())
+                (transitType != originalTransitType && transitType.isNotBlank()) ||
+                (address != originalAddress && address.isNotBlank())
     }
 }
 
 private data class ManageProfileScreenActions(
     val onBackClick: () -> Unit,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onTransitChange: (String) -> Unit,
+    val onAddressChange: (String) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onImagePickerDismiss: () -> Unit,
@@ -87,7 +94,8 @@ private data class ProfileFormData(
     val isLoadingPhoto: Boolean,
     val isSavingProfile: Boolean,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onTransitChange: (String) -> Unit,
+    val onAddressChange: (String) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
@@ -97,7 +105,8 @@ private data class ProfileBodyData(
     val uiState: ProfileUiState,
     val formState: ProfileFormState,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onTransitChange: (String) -> Unit,
+    val onAddressChange: (String) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
@@ -106,9 +115,11 @@ private data class ProfileBodyData(
 private data class ProfileFieldsData(
     val name: String,
     val email: String,
-    val bio: String,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit
+    val transitType: String,
+    val address: String,
+    val onTransitChange: (String) -> Unit,
+    val onAddressChange: (String) -> Unit
 )
 
 @Composable
@@ -139,10 +150,12 @@ fun ManageProfileScreen(
         uiState.user?.let { user ->
             formState = ProfileFormState(
                 name = user.name,
-                email = user.email,
-                bio = user.bio ?: "",
                 originalName = user.name,
-                originalBio = user.bio ?: ""
+                email = user.email,
+                address = user.address ?: "",
+                originalAddress = user.address ?: "",
+                transitType = user.transitType ?: "",
+                originalTransitType = user.transitType ?: ""
             )
         }
     }
@@ -150,10 +163,11 @@ fun ManageProfileScreen(
     val actions = ManageProfileScreenActions(
         onBackClick = onBackClick,
         onNameChange = { formState = formState.copy(name = it) },
-        onBioChange = { formState = formState.copy(bio = it) },
+        onAddressChange = { formState = formState.copy(address = it) },
+        onTransitChange = { formState = formState.copy(transitType = it) },
         onEditPictureClick = { showImagePickerDialog = true },
         onSaveClick = {
-            profileViewModel.updateProfile(formState.name, formState.bio)
+            profileViewModel.updateProfile(formState.name, formState.address, formState.transitType)
         },
         onImagePickerDismiss = { showImagePickerDialog = false },
         onImageSelected = { uri ->
@@ -207,7 +221,8 @@ private fun ManageProfileContent(
                 uiState = uiState,
                 formState = formState,
                 onNameChange = actions.onNameChange,
-                onBioChange = actions.onBioChange,
+                onAddressChange = actions.onAddressChange,
+                onTransitChange = actions.onTransitChange,
                 onEditPictureClick = actions.onEditPictureClick,
                 onSaveClick = actions.onSaveClick,
                 onLoadingPhotoChange = actions.onLoadingPhotoChange
@@ -276,7 +291,8 @@ private fun ProfileBody(
                         isLoadingPhoto = data.uiState.isLoadingPhoto,
                         isSavingProfile = data.uiState.isSavingProfile,
                         onNameChange = data.onNameChange,
-                        onBioChange = data.onBioChange,
+                        onAddressChange = data.onAddressChange,
+                        onTransitChange = data.onTransitChange,
                         onEditPictureClick = data.onEditPictureClick,
                         onSaveClick = data.onSaveClick,
                         onLoadingPhotoChange = data.onLoadingPhotoChange
@@ -314,9 +330,11 @@ private fun ProfileForm(
             data = ProfileFieldsData(
                 name = data.formState.name,
                 email = data.user.email,
-                bio = data.formState.bio,
+                address = data.formState.address,
+                transitType = data.formState.transitType,
                 onNameChange = data.onNameChange,
-                onBioChange = data.onBioChange
+                onAddressChange = data.onAddressChange,
+                onTransitChange = data.onTransitChange
             )
         )
 
@@ -443,21 +461,71 @@ private fun ProfileFields(
             singleLine = true,
             enabled = false
         )
-
+        //address field
         Row(Modifier.focusProperties { canFocus = true }) {
             OutlinedTextField(
-                value = data.bio,
-                onValueChange = data.onBioChange,
-                label = { Text(stringResource(R.string.bio)) },
-                placeholder = { Text(stringResource(R.string.bio_placeholder)) },
+                value = data.address,
+                onValueChange = data.onAddressChange,
+                label = { Text(stringResource(R.string.address)) },
                 modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                maxLines = 5,
-                readOnly = false
+                singleLine = true
+            )
+        }
+
+        //transitType field
+
+        Row(Modifier.focusProperties { canFocus = true }) {
+            TransitTypeDropdown(
+                selectedType = data.transitType,
+                onTypeSelected = data.onTransitChange
             )
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TransitTypeDropdown(
+    selectedType: String,
+    onTypeSelected: (String) -> Unit
+) {
+    val transitOptions = listOf("Transit", "Driving", "Biking", "Walking") //TODO: replace with enum from backend
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = selectedType,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.transit_type)) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor() // required for correct positioning
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            transitOptions.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onTypeSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun SaveButton(

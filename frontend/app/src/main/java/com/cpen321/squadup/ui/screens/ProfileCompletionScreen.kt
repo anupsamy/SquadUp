@@ -41,16 +41,18 @@ import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 
 private data class ProfileCompletionFormState(
-    val bioText: String = "",
-    val hasSavedBio: Boolean = false
+    val address: String = "",
+    val transitType: String = "",
+    val hasSavedProfile: Boolean = false
 ) {
-    fun canSave(): Boolean = bioText.isNotBlank()
+    fun canSave(): Boolean = address.isNotBlank() && transitType.isNotBlank()
 }
 
 private data class ProfileCompletionScreenData(
     val formState: ProfileCompletionFormState,
     val isSavingProfile: Boolean,
-    val onBioChange: (String) -> Unit,
+    val onAddressChange: (String) -> Unit,
+    val onTransitTypeChange: (String) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit
 )
@@ -59,7 +61,8 @@ private data class ProfileCompletionScreenContentData(
     val uiState: ProfileUiState,
     val formState: ProfileCompletionFormState,
     val snackBarHostState: SnackbarHostState,
-    val onBioChange: (String) -> Unit,
+    val onAddressChange: (String) -> Unit,
+    val onTransitTypeChange: (String) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onErrorMessageShown: () -> Unit
@@ -73,7 +76,7 @@ fun ProfileCompletionScreen(
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-    val successfulBioUpdateMessage = stringResource(R.string.successful_bio_update)
+    val successfulUpdateMessage = stringResource(R.string.successful_profile_update)
 
     // Form state
     var formState by remember {
@@ -89,7 +92,10 @@ fun ProfileCompletionScreen(
 
     LaunchedEffect(uiState.user) {
         uiState.user?.let { user ->
-            if (user.bio != null && user.bio.isNotBlank() && !formState.hasSavedBio) {
+            // Auto-complete if user already has address and transitType filled
+            if (user.address != null && user.address.isNotBlank() &&
+                user.transitType != null && user.transitType.isNotBlank() &&
+                !formState.hasSavedProfile) {
                 onProfileCompleted()
             }
         }
@@ -100,16 +106,18 @@ fun ProfileCompletionScreen(
             uiState = uiState,
             formState = formState,
             snackBarHostState = snackBarHostState,
-            onBioChange = { formState = formState.copy(bioText = it) },
+            onAddressChange = { formState = formState.copy(address = it) },
+            onTransitTypeChange = { formState = formState.copy(transitType = it) },
             onSkipClick = onProfileCompleted,
             onSaveClick = {
-                if (formState.bioText.isNotBlank()) {
-                    formState = formState.copy(hasSavedBio = true)
+                if (formState.canSave()) {
+                    formState = formState.copy(hasSavedProfile = true)
                     profileViewModel.updateProfile(
                         name = uiState.user?.name ?: "",
-                        bio = formState.bioText,
+                        address = formState.address,
+                        transitType = formState.transitType,
                         onSuccess = {
-                            onProfileCompletedWithMessage(successfulBioUpdateMessage)
+                            onProfileCompletedWithMessage(successfulUpdateMessage)
                         }
                     )
                 }
@@ -143,7 +151,8 @@ private fun ProfileCompletionContent(
             data = ProfileCompletionScreenData(
                 formState = data.formState,
                 isSavingProfile = data.uiState.isSavingProfile,
-                onBioChange = data.onBioChange,
+                onAddressChange = data.onAddressChange,
+                onTransitTypeChange = data.onTransitTypeChange,
                 onSkipClick = data.onSkipClick,
                 onSaveClick = data.onSaveClick
             )
@@ -171,10 +180,18 @@ private fun ProfileCompletionBody(
 
         Spacer(modifier = Modifier.height(spacing.extraLarge2))
 
-        BioInputField(
-            bioText = data.formState.bioText,
+        AddressInputField(
+            addressText = data.formState.address,
             isEnabled = !data.isSavingProfile,
-            onBioChange = data.onBioChange
+            onAddressChange = data.onAddressChange
+        )
+
+        Spacer(modifier = Modifier.height(spacing.medium))
+
+        TransitTypeInputField(
+            transitTypeText = data.formState.transitType,
+            isEnabled = !data.isSavingProfile,
+            onTransitTypeChange = data.onTransitTypeChange
         )
 
         Spacer(modifier = Modifier.height(spacing.extraLarge))
@@ -202,7 +219,7 @@ private fun ProfileCompletionHeader(
 
         Spacer(modifier = Modifier.height(spacing.medium))
 
-        BioDescription()
+        ProfileDescription()
     }
 }
 
@@ -221,11 +238,11 @@ private fun WelcomeTitle(
 }
 
 @Composable
-private fun BioDescription(
+private fun ProfileDescription(
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = stringResource(R.string.bio_description),
+        text = stringResource(R.string.profile_description),
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -234,24 +251,44 @@ private fun BioDescription(
 }
 
 @Composable
-private fun BioInputField(
-    bioText: String,
+private fun AddressInputField(
+    addressText: String,
     isEnabled: Boolean,
-    onBioChange: (String) -> Unit,
+    onAddressChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
 
     OutlinedTextField(
-        value = bioText,
-        onValueChange = onBioChange,
-        label = { Text(stringResource(R.string.bio)) },
-        placeholder = { Text(stringResource(R.string.bio_placeholder)) },
+        value = addressText,
+        onValueChange = onAddressChange,
+        label = { Text(stringResource(R.string.address)) },
+        placeholder = { Text(stringResource(R.string.address_placeholder)) },
         modifier = modifier.fillMaxWidth(),
-        minLines = 3,
-        maxLines = 5,
         shape = RoundedCornerShape(spacing.medium),
-        enabled = isEnabled
+        enabled = isEnabled,
+        singleLine = true
+    )
+}
+
+@Composable
+private fun TransitTypeInputField(
+    transitTypeText: String,
+    isEnabled: Boolean,
+    onTransitTypeChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    OutlinedTextField(
+        value = transitTypeText,
+        onValueChange = onTransitTypeChange,
+        label = { Text(stringResource(R.string.transit_type)) },
+        placeholder = { Text(stringResource(R.string.transit_type_placeholder)) },
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(spacing.medium),
+        enabled = isEnabled,
+        singleLine = true
     )
 }
 

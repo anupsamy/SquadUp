@@ -152,16 +152,8 @@ private fun MainScreenWithHobbies(
     profileViewModel: ProfileViewModel,
     onProfileClick: () -> Unit
 ) {
-    val uiState by profileViewModel.uiState.collectAsState()
-    val selectedHobbies = uiState.selectedHobbies.toList()
+    val selectedHobbies = emptyList<String>()
 
-    LaunchedEffect(Unit) {
-        profileViewModel.uiState.collect { profileState ->
-            if (profileState.selectedHobbies.isEmpty()) {
-                newsViewModel.clearData()
-            }
-        }
-    }
     MainScreen(
         mainViewModel = mainViewModel,
         newsViewModel = newsViewModel,

@@ -67,37 +67,37 @@ private data class ManageHobbiesScreenActions(
     val onSaveClick: () -> Unit
 )
 
-@Composable
-fun ManageHobbiesScreen(
-    profileViewModel: ProfileViewModel,
-    onBackClick: () -> Unit,
-) {
-    val uiState by profileViewModel.uiState.collectAsState()
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    // Side effects
-    LaunchedEffect(Unit) {
-        profileViewModel.clearSuccessMessage()
-        profileViewModel.clearError()
-        if (uiState.user == null) {
-            profileViewModel.loadProfile()
-        }
-    }
-
-    ManageHobbiesContent(
-        data = ManageHobbiesScreenData(
-            uiState = uiState,
-            snackBarHostState = snackBarHostState,
-            onSuccessMessageShown = profileViewModel::clearSuccessMessage,
-            onErrorMessageShown = profileViewModel::clearError
-        ),
-        actions = ManageHobbiesScreenActions(
-            onBackClick = onBackClick,
-            onHobbyToggle = profileViewModel::toggleHobby,
-            onSaveClick = profileViewModel::saveHobbies
-        )
-    )
-}
+//@Composable
+//fun ManageHobbiesScreen(
+//    profileViewModel: ProfileViewModel,
+//    onBackClick: () -> Unit,
+//) {
+//    val uiState by profileViewModel.uiState.collectAsState()
+//    val snackBarHostState = remember { SnackbarHostState() }
+//
+//    // Side effects
+//    LaunchedEffect(Unit) {
+//        profileViewModel.clearSuccessMessage()
+//        profileViewModel.clearError()
+//        if (uiState.user == null) {
+//            profileViewModel.loadProfile()
+//        }
+//    }
+//
+//    ManageHobbiesContent(
+//        data = ManageHobbiesScreenData(
+//            uiState = uiState,
+//            snackBarHostState = snackBarHostState,
+//            onSuccessMessageShown = profileViewModel::clearSuccessMessage,
+//            onErrorMessageShown = profileViewModel::clearError
+//        ),
+//        actions = ManageHobbiesScreenActions(
+//            onBackClick = onBackClick,
+//            onHobbyToggle = profileViewModel::toggleHobby,
+//            onSaveClick = profileViewModel::saveHobbies
+//        )
+//    )
+//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,8 +184,8 @@ private fun ManageHobbiesBody(
             else -> {
                 HobbiesForm(
                     formData = HobbiesFormData(
-                        allHobbies = uiState.allHobbies,
-                        selectedHobbies = uiState.selectedHobbies,
+                        allHobbies = emptyList<String>(),
+                        selectedHobbies = emptySet<String>(),
                         onHobbyToggle = onHobbyToggle,
                         onSaveClick = onSaveClick
                     ),

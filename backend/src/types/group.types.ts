@@ -7,7 +7,8 @@ import { userModel } from '../user.model';
 // ------------------------------------------------------------
 export interface IGroup extends Document {
     _id: mongoose.Types.ObjectId;
-    meetingTime: Date
+    groupName:string;
+    meetingTime: Date;
     joinCode: string;
     groupLeader: string;
     expectedPeople: number;
@@ -19,10 +20,11 @@ export interface IGroup extends Document {
 // Zod schemas
 // ------------------------------------------------------------
 export const createGroupSchema = z.object({
-  joinCode: z.string().min(5),
+  groupName: z.string().min(1),
+  meetingTime: z.date(),
   groupLeaderId: z.string().min(1),
   expectedPeople: z.number().max(100),
-  groupMemberIds: z.array(z.string()).default([]), //Change to object of users later maybe
+  //groupMemberIds: z.array(z.string()).default([]), //Change to object of users later maybe
 });
 
 export const updateGroupSchema = z.object({
@@ -38,15 +40,26 @@ export type GetGroupResponse = {
     group: IGroup;
   };
 };
-
+export type CreateGroupRequest = z.infer<typeof createGroupSchema>;
 export type UpdateGroupRequest = z.infer<typeof updateGroupSchema>;
 
 // Generic types
 // ------------------------------------------------------------
 export type BasicGroupInfo = {
+    joinCode: string;
     meetingTime: Date
     groupLeader: string;
     expectedPeople: number;
+    groupMemberIds: String[];
+    createdAt: Date;
+};
+
+export type CreateGroupInfo = {
+  groupName: string;
+  meetingTime: Date
+  groupLeader: string;
+  expectedPeople: number;
+  createdAt: Date;
 };
 
 export type UpdateInfo = {

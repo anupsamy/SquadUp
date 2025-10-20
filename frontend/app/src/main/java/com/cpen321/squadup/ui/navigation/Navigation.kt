@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.screens.AuthScreen
 import com.cpen321.squadup.ui.screens.LoadingScreen
+import com.cpen321.squadup.ui.screens.CreateGroupScreen
 import com.cpen321.squadup.ui.screens.MainScreen
 import com.cpen321.squadup.ui.screens.ManageHobbiesScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
@@ -25,15 +26,19 @@ import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.NavigationViewModel
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.ui.navigation.NavRoutes
 
 object NavRoutes {
     const val LOADING = "loading"
     const val AUTH = "auth"
     const val MAIN = "main"
     const val PROFILE = "profile"
+    const val CREATE_GROUP = "group"
     const val MANAGE_PROFILE = "manage_profile"
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
+
 }
 
 @Composable
@@ -94,6 +99,11 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        is NavigationEvent.NavigateToCreateGroup -> {
+            navController.navigate(NavRoutes.CREATE_GROUP)
+            navigationStateManager.clearNavigationEvent()
+        }
+
         is NavigationEvent.NavigateToMain -> {
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
@@ -148,6 +158,7 @@ private fun handleNavigationEvent(
 }
 @Composable
 private fun MainScreenWithHobbies(
+    navController: NavHostController, 
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
     profileViewModel: ProfileViewModel,
@@ -167,7 +178,8 @@ private fun MainScreenWithHobbies(
         mainViewModel = mainViewModel,
         newsViewModel = newsViewModel,
         selectedHobbies = selectedHobbies,
-        onProfileClick = onProfileClick
+        onProfileClick = onProfileClick,
+        navController = navController
     )
 }
 @Composable
@@ -204,6 +216,7 @@ private fun AppNavHost(
 
         composable(NavRoutes.MAIN) {
             MainScreenWithHobbies(
+                navController = navController,
                 mainViewModel = mainViewModel,
                 newsViewModel = newsViewModel,
                 profileViewModel = profileViewModel,
@@ -236,6 +249,10 @@ private fun AppNavHost(
                 profileViewModel = profileViewModel,
                 onBackClick = { navigationStateManager.navigateBack() }
             )
+        }
+
+        composable(NavRoutes.CREATE_GROUP) {
+            CreateGroupScreen(navController = navController)
         }
     }
 }

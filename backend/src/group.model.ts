@@ -13,6 +13,12 @@ import logger from './utils/logger.util';
 
 const groupSchema = new Schema<IGroup>(
     {
+      groupName: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true,
+      },
         meetingTime: {
         type: Date,
         required: true,
@@ -59,7 +65,7 @@ export class GroupModel {
       this.group = mongoose.model<IGroup>('Group', groupSchema);
     }
   
-    async create(groupInfo: BasicGroupInfo): Promise<IUser> {
+    async create(groupInfo: BasicGroupInfo): Promise<IGroup> {
       try {
         const validatedData = createGroupSchema.parse(groupInfo);
 
@@ -119,21 +125,6 @@ export class GroupModel {
         throw new Error('Failed to find group');
       }
     }
-  
-    /*async findByGoogleId(googleId: string): Promise<IUser | null> {
-      try {
-        const user = await this.user.findOne({ googleId });
-  
-        if (!user) {
-          return null;
-        }
-  
-        return user;
-      } catch (error) {
-        console.error('Error finding user by Google ID:', error);
-        throw new Error('Failed to find user');
-      }
-    }*/
   }
   
   export const groupModel = new GroupModel();

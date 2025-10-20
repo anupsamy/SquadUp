@@ -24,6 +24,7 @@ navigationCompose = "2.9.3"
 playServicesAuth = "21.4.0"
 retrofit = "3.0.0"
 secretsGradlePlugin = "2.0.1"
+foundation = "1.9.3"
 
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityCompose" }
@@ -59,6 +60,7 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

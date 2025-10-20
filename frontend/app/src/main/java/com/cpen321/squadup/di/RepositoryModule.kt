@@ -1,7 +1,10 @@
 package com.cpen321.squadup.di
 
+import com.cpen321.squadup.data.remote.api.GroupInterface
 import com.cpen321.squadup.data.repository.AuthRepository
 import com.cpen321.squadup.data.repository.AuthRepositoryImpl
+import com.cpen321.squadup.data.repository.GroupRepository
+import com.cpen321.squadup.data.repository.GroupRepositoryImpl
 import com.cpen321.squadup.data.repository.ProfileRepository
 import com.cpen321.squadup.data.repository.ProfileRepositoryImpl
 import dagger.Module
@@ -28,5 +31,14 @@ object RepositoryModule {
         profileRepositoryImpl: ProfileRepositoryImpl
     ): ProfileRepository {
         return profileRepositoryImpl
+    }
+
+    // Add this for GroupRepository
+    @Provides
+    @Singleton
+    fun provideGroupRepository(
+        groupInterface: GroupInterface
+    ): GroupRepository {
+        return GroupRepositoryImpl(groupInterface)
     }
 }

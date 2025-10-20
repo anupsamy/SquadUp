@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavController
+import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
@@ -29,12 +31,20 @@ import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 
+import androidx.compose.material3.Button
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.unit.dp
+
+
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
     selectedHobbies: List<String>,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    navController: NavController 
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -45,6 +55,9 @@ fun MainScreen(
         selectedHobbies = selectedHobbies,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
+        onCreateGroupClick = {
+            navController.navigate(NavRoutes.CREATE_GROUP) // Update the route to use NavRoutes.CREATE_GROUP
+        },
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
@@ -55,6 +68,7 @@ private fun MainContent(
     selectedHobbies: List<String>,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
+    onCreateGroupClick: () -> Unit, 
     onSuccessMessageShown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -74,7 +88,8 @@ private fun MainContent(
         MainBody(
             paddingValues = paddingValues,
             newsViewModel = newsViewModel,
-            selectedHobbies = selectedHobbies
+            selectedHobbies = selectedHobbies,
+            onCreateGroupClick = onCreateGroupClick
         )
     }
 }
@@ -159,16 +174,31 @@ private fun MainBody(
     paddingValues: PaddingValues,
     newsViewModel: NewsViewModel,
     selectedHobbies: List<String>,
+    onCreateGroupClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Show NewsScreen instead of welcome message
-    NewsScreen(
-        newsViewModel = newsViewModel,
-        selectedHobbies = selectedHobbies,
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(paddingValues)
-    )
+            .padding(paddingValues),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween // Adjust layout to fit the button
+    ) {
+        // Existing content (e.g., NewsScreen)
+        NewsScreen(
+            newsViewModel = newsViewModel,
+            selectedHobbies = selectedHobbies,
+            modifier = Modifier.weight(1f) // Allow space for the button
+        )
+
+        // Add the "Create Group" button
+        Button(
+            onClick = onCreateGroupClick,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(text = "Create Group")
+        }
+    }
 }
 @Composable
 private fun WelcomeMessage(

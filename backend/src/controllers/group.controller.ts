@@ -4,9 +4,38 @@ import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
-import { GetGroupResponse, UpdateGroupRequest } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest } from '../types/group.types';
 
 export class GroupController {
+  async createGroup(
+    req: Request<unknown, unknown, CreateGroupRequest>,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { groupName, meetingTime, groupLeaderId, expectedPeople} = req.body;
+      const joinCode = Math.random().toString(36).slice(2, 8);
+
+      // Use the GroupModel to create the group
+      const newGroup = await groupModel.create({
+        joinCode,
+        groupLeader: groupLeaderId,
+        expectedPeople,
+        groupMemberIds: [],
+        meetingTime: meetingTime, // Default to current time for now
+        createdAt: new Date(),
+      });
+
+      res.status(201).json({
+        message: 'Group created successfully',
+        data: newGroup,
+      });
+    } catch (error) {
+      logger.error('Failed to create group:', error);
+      next(error);
+    }
+  }
+
   getGroup(req: Request, res: Response<GetGroupResponse>) {
     const group = req.group!;
     res.status(200).json({

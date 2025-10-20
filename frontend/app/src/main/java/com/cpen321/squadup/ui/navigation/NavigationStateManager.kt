@@ -13,6 +13,7 @@ sealed class NavigationEvent {
     object NavigateToProfile : NavigationEvent()
     object NavigateToManageProfile : NavigationEvent()
     object NavigateToManageHobbies : NavigationEvent()
+    object NavigateToCreateGroup : NavigationEvent()
     data class NavigateToAuthWithMessage(val message: String) : NavigationEvent()
     data class NavigateToMainWithMessage(val message: String) : NavigationEvent()
     object NavigateBack : NavigationEvent()
@@ -105,6 +106,14 @@ class NavigationStateManager @Inject constructor() {
     fun navigateToAuthWithMessage(message: String) {
         _navigationEvent.value = NavigationEvent.NavigateToAuthWithMessage(message)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.AUTH)
+    }
+
+    /**
+     * Navigate to create group screen
+     */
+    fun navigateToCreateGroup() {
+        _navigationEvent.value = NavigationEvent.NavigateToCreateGroup
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.CREATE_GROUP)
     }
 
     /**

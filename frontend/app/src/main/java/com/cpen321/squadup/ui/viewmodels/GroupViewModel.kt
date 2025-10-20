@@ -24,11 +24,11 @@ class GroupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(GroupUiState())
     val uiState: StateFlow<GroupUiState> = _uiState
 
-    fun createGroup(groupName: String, meetingTime: String, groupLeader: String, expectedPeople: Number) {
+    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: String, expectedPeople: Number) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
     
-            val result = groupRepository.createGroup(groupName = groupName, meetingTime = meetingTime, groupLeader = groupLeader, expectedPeople = expectedPeople)
+            val result = groupRepository.createGroup(groupName = groupName, meetingTime = meetingTime, groupLeaderId = groupLeaderId, expectedPeople = expectedPeople)
             if (result.isSuccess) {
                 val group = result.getOrNull()
                 _uiState.value = _uiState.value.copy(

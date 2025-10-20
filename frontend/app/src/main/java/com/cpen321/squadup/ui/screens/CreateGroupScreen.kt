@@ -14,16 +14,22 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 import androidx.compose.ui.text.input.KeyboardType
+import android.util.Log
 
 @Composable
 fun CreateGroupScreen(
     navController: NavController,
-    groupViewModel: GroupViewModel = hiltViewModel() // Use Hilt to inject the ViewModel
+    groupViewModel: GroupViewModel = hiltViewModel(), // Use Hilt to inject the ViewModel
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by groupViewModel.uiState.collectAsState()
+    val profileUiState by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
     // State variables for input fields
@@ -35,6 +41,11 @@ fun CreateGroupScreen(
 
     // State for the combined date-time string
     var meetingDateTime by remember { mutableStateOf("") }
+
+    // Get the current user's user ID
+    val currentUserId = profileUiState.user?._id
+
+    var dateObject:Date
 
     Scaffold(
         topBar = { /* Add top bar if needed */ },
@@ -140,7 +151,7 @@ fun CreateGroupScreen(
                             groupViewModel.createGroup(
                                 groupName = groupName,
                                 meetingTime = meetingDateTime,
-                                groupLeader = groupLeaderId,
+                                groupLeaderId = groupLeaderId,
                                 expectedPeople = expectedPeople.toIntOrNull() ?: 0
                             )
                         } else {

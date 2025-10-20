@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { HOBBIES } from './hobbies';
 import {
     BasicGroupInfo,
+  basicGroupSchema,
+  CreateGroupInfo,
   createGroupSchema,
   IGroup,
   updateGroupSchema,
@@ -20,7 +22,7 @@ const groupSchema = new Schema<IGroup>(
         index: true,
       },
         meetingTime: {
-        type: Date,
+        type: String,
         required: true,
         unique: true,
         index: true,
@@ -32,7 +34,7 @@ const groupSchema = new Schema<IGroup>(
         lowercase: true,
         trim: true,
       },
-        groupLeader: {
+        groupLeaderId: {
         type: String,
         required: true,
         trim: true,
@@ -44,11 +46,6 @@ const groupSchema = new Schema<IGroup>(
       },
       groupMemberIds: {
         type: new Array<String>,
-        required: false,
-        trim: true,
-      },
-      createdAt: {
-        type: Date,
         required: false,
         trim: true,
       },
@@ -67,7 +64,8 @@ export class GroupModel {
   
     async create(groupInfo: BasicGroupInfo): Promise<IGroup> {
       try {
-        const validatedData = createGroupSchema.parse(groupInfo);
+        console.error('GroupModel BasicGroupInfo:', groupInfo);
+        const validatedData = basicGroupSchema.parse(groupInfo);
 
   
         return await this.group.create(validatedData);

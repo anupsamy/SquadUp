@@ -6,16 +6,16 @@ import { CreateGroupRequest, createGroupSchema, UpdateGroupRequest, updateGroupS
 const router = Router();
 const groupController = new GroupController();
 
-router.get('/group', groupController.getGroup);
+router.get('/', groupController.getGroup);
 // Route to create a group
 router.post( //have seperate endpoint for updating?
-    '/group',
+    '/create',
     validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
     groupController.createGroup
 );
 
 router.post( //have seperate endpoint for updating?
-    '/group-update',
+    '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
     groupController.updateGroup
 );

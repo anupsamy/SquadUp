@@ -1,13 +1,15 @@
 package com.cpen321.squadup.data.remote.dto
 
 data class CreateGroupRequest(
-    val name: String,
-    val description: String
+    val groupName: String? = null,
+    val meetingTime: String? = null,
+    val groupLeaderId: String? = null,
+    val expectedPeople: Number? = null
 )
 
 data class GroupData(
     val groupName: String,
     val meetingTime: String,
-    val groupLeaderID: String,
+    val groupLeaderId: String,
     val expectedPeople: Number
 )

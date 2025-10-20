@@ -23,6 +23,6 @@ router.use('/news', newsRoutes);
 
 router.use('/test', testRoutes);
 
-router.use('/group', groupRoutes);
+router.use('/group', authenticateToken, groupRoutes);
 
 export default router;

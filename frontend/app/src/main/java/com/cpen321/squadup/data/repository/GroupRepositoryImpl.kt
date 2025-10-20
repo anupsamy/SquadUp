@@ -19,10 +19,10 @@ class GroupRepositoryImpl @Inject constructor(
         private const val TAG = "GroupRepositoryImpl"
     }
 
-    override suspend fun createGroup(groupName: String, meetingTime: String, groupLeader: String, expectedPeople: Number): Result<GroupData> {
+    override suspend fun createGroup(groupName: String, meetingTime: String, groupLeaderId: String, expectedPeople: Number): Result<GroupData> {
         return try {
-            val request = GroupData(groupName = groupName, meetingTime = meetingTime, groupLeaderID = groupLeader, expectedPeople = expectedPeople)
-            val response = groupInterface.createGroup("Bearer your-auth-token", request)
+            val request = CreateGroupRequest(groupName = groupName, meetingTime = meetingTime, groupLeaderId = groupLeaderId, expectedPeople = expectedPeople)
+            val response = groupInterface.createGroup("", request)
 
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!)
@@ -32,8 +32,17 @@ class GroupRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to create group: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error creating group", e)
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while creating group", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while reating group", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while reating group", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while reating group: ${e.code()}", e)
             Result.failure(e)
         }
     }

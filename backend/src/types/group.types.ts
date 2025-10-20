@@ -8,9 +8,9 @@ import { userModel } from '../user.model';
 export interface IGroup extends Document {
     _id: mongoose.Types.ObjectId;
     groupName:string;
-    meetingTime: Date;
+    meetingTime: string;
     joinCode: string;
-    groupLeader: string;
+    groupLeaderId: string;
     expectedPeople: number;
     groupMemberIds: String[]; //Change to object of users later maybe
     createdAt: Date;
@@ -19,12 +19,20 @@ export interface IGroup extends Document {
 
 // Zod schemas
 // ------------------------------------------------------------
+export const basicGroupSchema = z.object({
+  joinCode: z.string().min(6, 'Join code is required'),
+  groupName: z.string().min(1, 'Group name is required'),
+  meetingTime: z.string().min(1, 'Meeting time is required'),
+  groupLeaderId: z.string().min(1, 'Group leader ID is required'),
+  expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
+  groupMemberIds: z.array(z.string()).default([]).optional(),
+});
+
 export const createGroupSchema = z.object({
-  groupName: z.string().min(1),
-  meetingTime: z.date(),
-  groupLeaderId: z.string().min(1),
-  expectedPeople: z.number().max(100),
-  //groupMemberIds: z.array(z.string()).default([]), //Change to object of users later maybe
+  groupName: z.string().min(1, 'Group name is required'),
+  meetingTime: z.string().min(1, 'Meeting time is required'),
+  groupLeaderId: z.string().min(1, 'Group leader ID is required'),
+  expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
 });
 
 export const updateGroupSchema = z.object({
@@ -47,19 +55,18 @@ export type UpdateGroupRequest = z.infer<typeof updateGroupSchema>;
 // ------------------------------------------------------------
 export type BasicGroupInfo = {
     joinCode: string;
-    meetingTime: Date
-    groupLeader: string;
+    groupName: string;
+    meetingTime: string;
+    groupLeaderId: string;
     expectedPeople: number;
-    groupMemberIds: String[];
-    createdAt: Date;
+    groupMemberIds?: String[];
 };
 
 export type CreateGroupInfo = {
   groupName: string;
-  meetingTime: Date
-  groupLeader: string;
+  meetingTime: string;
+  groupLeaderId: string;
   expectedPeople: number;
-  createdAt: Date;
 };
 
 export type UpdateInfo = {

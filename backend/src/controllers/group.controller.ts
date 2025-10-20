@@ -9,26 +9,28 @@ import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest } from '../typ
 export class GroupController {
   async createGroup(
     req: Request<unknown, unknown, CreateGroupRequest>,
-    res: Response,
+    res: Response<GetGroupResponse>,
     next: NextFunction
   ) {
     try {
-      const { groupName, meetingTime, groupLeaderId, expectedPeople} = req.body;
+      const {groupName, meetingTime, groupLeaderId, expectedPeople} = req.body;
       const joinCode = Math.random().toString(36).slice(2, 8);
 
       // Use the GroupModel to create the group
       const newGroup = await groupModel.create({
         joinCode,
-        groupLeader: groupLeaderId,
+        groupName,
+        groupLeaderId: groupLeaderId,
         expectedPeople,
         groupMemberIds: [],
         meetingTime: meetingTime, // Default to current time for now
-        createdAt: new Date(),
       });
 
       res.status(201).json({
         message: 'Group created successfully',
-        data: newGroup,
+        data: {
+          group: newGroup,
+        }
       });
     } catch (error) {
       logger.error('Failed to create group:', error);

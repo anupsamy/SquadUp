@@ -170,7 +170,7 @@ class ProfileViewModel @Inject constructor(
                     successMessage = null
                 )
 
-            val result = profileRepository.updateProfile(name, address, transitType) //TODO: Fix
+            val result = profileRepository.updateProfile(name, address, transitType)
             if (result.isSuccess) {
                 val updatedUser = result.getOrNull()!!
                 _uiState.value = _uiState.value.copy(

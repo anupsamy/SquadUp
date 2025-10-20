@@ -33,7 +33,7 @@ class AddressPickerViewModel @Inject constructor(
     private var searchJob: Job? = null
 
     /**
-     * Call this when the user types in the TextField
+     * Called when the user types in the TextField
      */
     fun onQueryChanged(newQuery: String) {
         query = newQuery
@@ -43,22 +43,30 @@ class AddressPickerViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(300) // 300ms debounce
-            if (newQuery.isNotBlank()) {
-                predictions = placesRepository.getPredictions(newQuery)
+            predictions = if (newQuery.isNotBlank()) {
+                placesRepository.getPredictions(newQuery)
             } else {
-                predictions = emptyList()
+                emptyList()
             }
         }
     }
 
     /**
-     * Call this when the user selects a prediction
+     * Called when the user selects a prediction
      */
+    suspend fun fetchPlace(placeId: String): Address? {
+        return placesRepository.fetchPlace(placeId)
+    }
+
     fun onPredictionSelected(prediction: AutocompletePrediction) {
         viewModelScope.launch {
-            val address = placesRepository.fetchPlace(prediction.placeId)
-            selectedAddress = address
-            query = address?.formatted ?: prediction.getFullText(null).toString()
+            val fullAddress = fetchPlace(prediction.placeId)
+            fullAddress?.let {
+                selectedAddress = it
+                query = it.formatted
+            } ?: run {
+                query = prediction.getFullText(null).toString()
+            }
             predictions = emptyList() // clear suggestions
         }
     }

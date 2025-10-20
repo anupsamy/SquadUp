@@ -1,5 +1,8 @@
 package com.cpen321.squadup.data.remote.dto
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 
 data class Address(
     val formatted: String,
@@ -18,9 +21,10 @@ data class AddressComponents(
     val postalCode: String? = null
 )
 
+@Serializable
 enum class TransitType {
-    DRIVING,
-    WALKING,
-    BICYCLING,
-    TRANSIT
+    @SerialName("driving") DRIVING,
+    @SerialName("walking") WALKING,
+    @SerialName("bicycling") BICYCLING,
+    @SerialName("transit") TRANSIT
 }

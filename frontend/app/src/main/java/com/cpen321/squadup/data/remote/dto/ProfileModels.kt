@@ -3,7 +3,7 @@ package com.cpen321.squadup.data.remote.dto
 data class UpdateProfileRequest(
     val name: String? = null,
     val address: Address? = null,
-    val transitType: TransitType? = null,
+    val transitType: String? = null,
     val profilePicture: String? = null
 )
 

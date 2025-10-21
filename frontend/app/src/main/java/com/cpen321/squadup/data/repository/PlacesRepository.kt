@@ -35,7 +35,6 @@ object PlacesModule {
     }
 }
 
-
 @Singleton
 class PlacesRepository @Inject constructor(
     private val placesClient: PlacesClient
@@ -64,11 +63,10 @@ class PlacesRepository @Inject constructor(
      * Fetches full place details for a given placeId and converts it to our Address model.
      */
     suspend fun fetchPlace(placeId: String): Address? {
-        // ⚠️ FIX: Updated Place.Field constants
         val fields = listOf(
             Place.Field.ID,
-            Place.Field.LOCATION, // Used to be LAT_LNG
-            Place.Field.FORMATTED_ADDRESS, // Used to be ADDRESS
+            Place.Field.LOCATION,
+            Place.Field.FORMATTED_ADDRESS,
             Place.Field.ADDRESS_COMPONENTS
         )
 
@@ -78,7 +76,6 @@ class PlacesRepository @Inject constructor(
             val response = placesClient.fetchPlace(request).await()
             val place = response.place
             Address(
-                // ⚠️ FIX: Accessing the new formattedAddress property
                 formatted = place.formattedAddress ?: "",
                 placeId = place.id,
                 lat = place.location?.latitude, // Used to be latLng
@@ -96,7 +93,6 @@ class PlacesRepository @Inject constructor(
      */
     private fun com.google.android.libraries.places.api.model.AddressComponents.asAddressComponents() =
         AddressComponents(
-            // ⚠️ FIX: Replaced Place.Type enums with their String representations
             streetNumber = getComponent("street_number"),
             route = getComponent("route"),
             city = getComponent("locality"),
@@ -105,7 +101,6 @@ class PlacesRepository @Inject constructor(
             postalCode = getComponent("postal_code")
         )
 
-    // ⚠️ FIX: getComponent now accepts a String, since Place.Type address component enums were removed
     private fun com.google.android.libraries.places.api.model.AddressComponents.getComponent(type: String) =
         this.asList().firstOrNull { it.types.contains(type) }?.name
 }

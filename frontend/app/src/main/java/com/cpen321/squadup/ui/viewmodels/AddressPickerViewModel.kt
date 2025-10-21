@@ -58,19 +58,6 @@ class AddressPickerViewModel @Inject constructor(
         return placesRepository.fetchPlace(placeId)
     }
 
-    fun onPredictionSelected(prediction: AutocompletePrediction) {
-        viewModelScope.launch {
-            val fullAddress = fetchPlace(prediction.placeId)
-            fullAddress?.let {
-                selectedAddress = it
-                query = it.formatted
-            } ?: run {
-                query = prediction.getFullText(null).toString()
-            }
-            predictions = emptyList() // clear suggestions
-        }
-    }
-
     /**
      * Optional: clear the current selection and query
      */

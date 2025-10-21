@@ -36,18 +36,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.cpen321.squadup.R
 import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.TransitType
-import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.ProfileUiState
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
-import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 
 private data class ProfileCompletionFormState(
     val address: Address? = null,

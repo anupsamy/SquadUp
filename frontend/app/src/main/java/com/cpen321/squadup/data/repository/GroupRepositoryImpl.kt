@@ -4,6 +4,7 @@ import android.util.Log
 import com.cpen321.squadup.data.remote.api.GroupInterface
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import com.cpen321.squadup.data.remote.dto.GroupData
+import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
 import com.cpen321.squadup.utils.JsonUtils.parseErrorMessage
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,7 +22,12 @@ class GroupRepositoryImpl @Inject constructor(
         private const val TAG = "GroupRepositoryImpl"
     }
 
-    override suspend fun createGroup(groupName: String, meetingTime: String, groupLeaderId: String, expectedPeople: Number): Result<GroupData> {
+    override suspend fun createGroup(
+        groupName: String, 
+        meetingTime: String, 
+        groupLeaderId: GroupLeaderUser, 
+        expectedPeople: Number
+        ): Result<GroupData> {
         return try {
             val request = CreateGroupRequest(
                 groupName = groupName, 

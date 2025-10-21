@@ -1,7 +1,8 @@
 import mongoose, { Document } from 'mongoose';
 import z from 'zod';
 import { HOBBIES } from '../hobbies';
-import { userModel } from '../user.model';
+import { UserModel, userModel } from '../user.model';
+import { GoogleUserInfo } from '../types/user.types';
 
 // Group model
 // ------------------------------------------------------------
@@ -10,7 +11,7 @@ export interface IGroup extends Document {
     groupName:string;
     meetingTime: string;
     joinCode: string;
-    groupLeaderId: string;
+    groupLeaderId: GroupUser;
     expectedPeople: number;
     groupMemberIds: String[]; //Change to object of users later maybe
     createdAt: Date;
@@ -23,7 +24,11 @@ export const basicGroupSchema = z.object({
   joinCode: z.string().min(6, 'Join code is required'),
   groupName: z.string().min(1, 'Group name is required'),
   meetingTime: z.string().min(1, 'Meeting time is required'),
-  groupLeaderId: z.string().min(1, 'Group leader ID is required'),
+  groupLeaderId: z.object({
+    id: z.string().min(1, 'User ID is required'),
+    name: z.string().min(1, "Name is required"),
+    email: z.string().min(1, "Email is required")
+  }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
   groupMemberIds: z.array(z.string()).default([]).optional(),
 });
@@ -31,7 +36,11 @@ export const basicGroupSchema = z.object({
 export const createGroupSchema = z.object({
   groupName: z.string().min(1, 'Group name is required'),
   meetingTime: z.string().min(1, 'Meeting time is required'),
-  groupLeaderId: z.string().min(1, 'Group leader ID is required'),
+  groupLeaderId: z.object({
+    id: z.string().min(1, 'User ID is required'),
+    name: z.string().min(1, "Name is required"),
+    email: z.string().min(1, "Email is required")
+  }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
 });
 
@@ -57,7 +66,7 @@ export type BasicGroupInfo = {
     joinCode: string;
     groupName: string;
     meetingTime: string;
-    groupLeaderId: string;
+    groupLeaderId: GroupUser;
     expectedPeople: number;
     groupMemberIds?: String[];
 };
@@ -65,7 +74,7 @@ export type BasicGroupInfo = {
 export type CreateGroupInfo = {
   groupName: string;
   meetingTime: string;
-  groupLeaderId: string;
+  groupLeaderId: GroupUser;
   expectedPeople: number;
 };
 
@@ -73,4 +82,12 @@ export type UpdateInfo = {
     expectedPeople: number;
     groupMemberIds: String[];
 };
+
+export type GroupUser = {
+  id: string;
+  name: string;
+  email: string;
+}
+
+
 

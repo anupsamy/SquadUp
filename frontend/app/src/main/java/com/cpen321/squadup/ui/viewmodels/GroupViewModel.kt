@@ -6,6 +6,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.cpen321.squadup.data.repository.GroupRepository
 import com.cpen321.squadup.data.remote.dto.GroupData
+import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -29,7 +30,7 @@ class GroupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(GroupUiState())
     val uiState: StateFlow<GroupUiState> = _uiState
 
-    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: String, expectedPeople: Number) {
+    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupLeaderUser, expectedPeople: Number) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
     

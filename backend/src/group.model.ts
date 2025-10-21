@@ -9,7 +9,10 @@ import {
   createGroupSchema,
   IGroup,
   updateGroupSchema,
+  GroupUser,
 } from './types/group.types';
+import {userModel, UserModel} from './user.model';
+import {GoogleUserInfo} from './types/user.types';
 import logger from './utils/logger.util';
 
 
@@ -32,9 +35,12 @@ const groupSchema = new Schema<IGroup>(
         trim: true,
       },
         groupLeaderId: {
-        type: String,
+        type: {
+          id: String, // Define the fields of GoogleUserInfo
+          name: String,
+          email: String,
+        },
         required: true,
-        trim: true,
       },
       expectedPeople: {
         type: Number,

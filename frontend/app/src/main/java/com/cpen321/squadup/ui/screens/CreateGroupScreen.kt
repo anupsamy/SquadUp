@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Log
+import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
 
 @Composable
 fun CreateGroupScreen(
@@ -71,15 +72,6 @@ fun CreateGroupScreen(
                     value = groupName,
                     onValueChange = { groupName = it },
                     label = { Text("Group Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Input for Group Leader ID
-                TextField(
-                    value = groupLeaderId,
-                    onValueChange = { groupLeaderId = it },
-                    label = { Text("Group Leader ID") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -155,11 +147,16 @@ fun CreateGroupScreen(
                 // Create Group Button
                 Button(
                     onClick = {
-                        if (meetingDateTime.isNotEmpty()) {
+                        if (meetingDateTime.isNotEmpty() && currentUserId!= null) {
+                            val groupLeaderUser = GroupLeaderUser(
+                                id = currentUserId._id,
+                                name = currentUserId.name,
+                                email = currentUserId.email
+                            )
                             groupViewModel.createGroup(
                                 groupName = groupName,
                                 meetingTime = meetingDateTime,
-                                groupLeaderId = groupLeaderId,
+                                groupLeaderId = groupLeaderUser,
                                 expectedPeople = expectedPeople.toIntOrNull() ?: 0
                             )
                         } else {

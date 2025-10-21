@@ -4,6 +4,7 @@ import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
+import { UserModel } from '../user.model';
 import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest } from '../types/group.types';
 
 export class GroupController {

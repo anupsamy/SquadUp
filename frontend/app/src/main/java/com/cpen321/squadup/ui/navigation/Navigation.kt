@@ -267,5 +267,28 @@ private fun AppNavHost(
             )
         }
 
+        composable("group_details/{groupId}") { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
+            val groups = mainViewModel.fetchGroups() // Replace with getGroupById API call
+            
+            groups.forEach { groupData ->
+                val group = groupData.group
+                group?.let {
+                    GroupDetailsScreen(
+                        navController = navController,
+                        group = it
+                    )
+                }
+            }
+            /*
+            group?.let {
+                GroupDetailsScreen(
+                    navController = navController,
+                    group = it
+                )
+            }
+            */
+        }
+
     }
 }

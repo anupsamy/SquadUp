@@ -53,10 +53,12 @@ fun MainScreen(
         uiState = uiState,
         newsViewModel = newsViewModel,
         selectedHobbies = selectedHobbies,
-        snackBarHostState = snackBarHostState,
-        onProfileClick = onProfileClick,
+        groups = uiState.groups,
+        onGroupClick = { groupId ->
+            navController.navigate("group_details/$groupId")
+        },
         onCreateGroupClick = {
-            navController.navigate(NavRoutes.CREATE_GROUP) // Update the route to use NavRoutes.CREATE_GROUP
+            navController.navigate(NavRoutes.CREATE_GROUP)
         },
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
@@ -175,6 +177,8 @@ private fun MainBody(
     newsViewModel: NewsViewModel,
     selectedHobbies: List<String>,
     onCreateGroupClick: () -> Unit,
+    groups: List<GroupData>,
+    onGroupClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -190,6 +194,23 @@ private fun MainBody(
             selectedHobbies = selectedHobbies,
             modifier = Modifier.weight(1f) // Allow space for the button
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display the list of groups
+        groups.forEach { groupData ->
+            val group = groupData.group
+            Button(
+                onClick = { onGroupClick(group._id) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Text(text = group.groupName)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Add the "Create Group" button
         Button(

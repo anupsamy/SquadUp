@@ -6,6 +6,10 @@ data class CreateGroupRequest(
     val groupLeaderId: GroupLeaderUser? = null,
     val expectedPeople: Number? = null
 )
+
+data class GroupsDataAll(
+    val groups: Array<GroupData>
+)
 data class GroupData(
     val group: GroupDataDetailed
 )

@@ -21,7 +21,34 @@ class GroupRepositoryImpl @Inject constructor(
     companion object {
         private const val TAG = "GroupRepositoryImpl"
     }
-
+    override suspend fun getProfile(): Result<GroupsDataAll> {
+        return try {
+            val response = groupInterface.getGroups("") // Auth header is handled by interceptor
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.user)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage =
+                    parseErrorMessage(errorBodyString, "Failed to fetch groups.")
+                Log.e(TAG, "Failed to get groups: $errorMessage")
+                tokenManager.clearToken()
+                RetrofitClient.setAuthToken(null)
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while getting groups", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while getting groups", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while getting groups", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while getting groups: ${e.code()}", e)
+            Result.failure(e)
+        }
+    }
     override suspend fun createGroup(
         groupName: String, 
         meetingTime: String, 

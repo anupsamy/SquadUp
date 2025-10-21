@@ -1,5 +1,6 @@
 package com.cpen321.squadup.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -23,8 +24,8 @@ data class AddressComponents(
 
 @Serializable
 enum class TransitType {
-    @SerialName("driving") DRIVING,
-    @SerialName("walking") WALKING,
-    @SerialName("bicycling") BICYCLING,
-    @SerialName("transit") TRANSIT
+    @SerializedName("driving") DRIVING,
+    @SerializedName("walking") WALKING,
+    @SerializedName("bicycling") BICYCLING,
+    @SerializedName("transit") TRANSIT
 }

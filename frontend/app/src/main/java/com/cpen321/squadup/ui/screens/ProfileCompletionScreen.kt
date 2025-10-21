@@ -54,7 +54,8 @@ private data class ProfileCompletionFormState(
     val transitType: TransitType? = null,
     val hasSavedProfile: Boolean = false
 ) {
-    fun canSave(): Boolean = address != null && transitType != null
+    //fun canSave(): Boolean = address != null && transitType != null
+    fun canSave(): Boolean = transitType != null
 }
 
 private data class ProfileCompletionScreenData(
@@ -192,17 +193,17 @@ private fun ProfileCompletionBody(
 
         Spacer(modifier = Modifier.height(spacing.extraLarge2))
 
-        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
-        AddressPicker(
-            viewModel = addressPickerViewModel,
-            initialValue = data.formState.address,
-            onAddressSelected = { address ->
-                // Save to your form state or call backend
-                data.onAddressChange
-            }
-        )
+//        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+//        AddressPicker(
+//            viewModel = addressPickerViewModel,
+//            initialValue = data.formState.address,
+//            onAddressSelected = { address ->
+//                // Save to your form state or call backend
+//                data.onAddressChange
+//            }
+//        )
 
-        Spacer(modifier = Modifier.height(spacing.medium))
+//        Spacer(modifier = Modifier.height(spacing.medium))
 
         TransitTypeInputField(
             transitType = data.formState.transitType,

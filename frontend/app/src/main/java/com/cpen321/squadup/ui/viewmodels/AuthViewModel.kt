@@ -179,7 +179,7 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(
                 isAuthenticated = false,
                 isCheckingAuth = false,
-                shouldSkipAuthCheck = true // Skip auth check after manual sign out
+                shouldSkipAuthCheck = true
             )
         }
     }

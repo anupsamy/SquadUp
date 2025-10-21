@@ -3,6 +3,7 @@ package com.cpen321.squadup.ui.screens
 import Button
 import Icon
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -160,6 +161,28 @@ fun ManageProfileScreen(
                 address = user.address,
                 originalAddress = user.address,
                 transitType = user.transitType,
+                originalTransitType = user.transitType
+            )
+        }
+    }
+
+    LaunchedEffect(uiState.successMessage) {
+        if (uiState.successMessage != null) {
+            // Reload profile after successful save to get updated data
+            profileViewModel.loadProfile()
+        }
+    }
+
+    // Also update the existing LaunchedEffect(uiState.user) to handle null transit type:
+    LaunchedEffect(uiState.user) {
+        uiState.user?.let { user ->
+            formState = ProfileFormState(
+                name = user.name,
+                originalName = user.name,
+                email = user.email,
+                address = user.address,
+                originalAddress = user.address,
+                transitType = user.transitType, // This should now properly include the saved value
                 originalTransitType = user.transitType
             )
         }
@@ -482,12 +505,10 @@ private fun ProfileFields(
 
         //transitType field
 
-        Row(Modifier.focusProperties { canFocus = true }) {
-            TransitTypeDropdown(
-                selectedType = data.transitType,
-                onTypeSelected = data.onTransitChange
-            )
-        }
+        TransitTypeDropdown(
+            selectedType = data.transitType,
+            onTypeSelected = data.onTransitChange
+        )
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
@@ -498,6 +519,10 @@ fun TransitTypeDropdown(
 ) {
     val transitOptions = TransitType.entries.toList()
     var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedType) {
+        Log.d("TransitTypeDropdown", "Selected type changed to: $selectedType (name: ${selectedType?.name})")
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded,

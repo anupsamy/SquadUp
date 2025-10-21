@@ -61,7 +61,7 @@ private data class ProfileCompletionFormState(
 private data class ProfileCompletionScreenData(
     val formState: ProfileCompletionFormState,
     val isSavingProfile: Boolean,
-    val onAddressChange: (Address?) -> Unit,
+//    val onAddressChange: (Address?) -> Unit,
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit
@@ -71,7 +71,7 @@ private data class ProfileCompletionScreenContentData(
     val uiState: ProfileUiState,
     val formState: ProfileCompletionFormState,
     val snackBarHostState: SnackbarHostState,
-    val onAddressChange: (Address?) -> Unit,
+//    val onAddressChange: (Address?) -> Unit,
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit,
@@ -102,8 +102,8 @@ fun ProfileCompletionScreen(
 
     LaunchedEffect(uiState.user) {
         uiState.user?.let { user ->
-            // Auto-complete if user already has address and transitType filled
-            if (user.address != null &&
+            // Auto-complete if user already has transitType filled
+            if ( //user.address != null &&
                 user.transitType != null &&
                 !formState.hasSavedProfile) {
                 onProfileCompleted()
@@ -116,9 +116,9 @@ fun ProfileCompletionScreen(
             uiState = uiState,
             formState = formState,
             snackBarHostState = snackBarHostState,
-            onAddressChange = { newAddress: Address? ->
-                formState = formState.copy(address = newAddress)
-            },
+//            onAddressChange = { newAddress: Address? ->
+//                formState = formState.copy(address = newAddress)
+//            },
 
             onTransitTypeChange = { formState = formState.copy(transitType = it) },
             onSkipClick = onProfileCompleted,
@@ -164,7 +164,7 @@ private fun ProfileCompletionContent(
             data = ProfileCompletionScreenData(
                 formState = data.formState,
                 isSavingProfile = data.uiState.isSavingProfile,
-                onAddressChange = data.onAddressChange,
+//                onAddressChange = data.onAddressChange,
                 onTransitTypeChange = data.onTransitTypeChange,
                 onSkipClick = data.onSkipClick,
                 onSaveClick = data.onSaveClick

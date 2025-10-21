@@ -32,6 +32,10 @@ fun CreateGroupScreen(
     val profileUiState by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        profileViewModel.loadProfile()
+    }
+
     // State variables for input fields
     var groupName by remember { mutableStateOf("") }
     var groupLeaderId by remember { mutableStateOf("") }
@@ -42,8 +46,12 @@ fun CreateGroupScreen(
     // State for the combined date-time string
     var meetingDateTime by remember { mutableStateOf("") }
 
+    val TAG = "CreateGroupScreen"
+
+
     // Get the current user's user ID
-    val currentUserId = profileUiState.user?._id
+    val currentUserId = profileUiState.user
+    Log.d(TAG, "profileUiState: ${currentUserId}")
 
     var dateObject:Date
 
@@ -166,9 +174,12 @@ fun CreateGroupScreen(
 
                 // Observe the success message and navigate to the success screen
                 LaunchedEffect(uiState.successMessage) {
-                    uiState.successMessage?.let { message ->
-                        val joinCode = message.substringAfter("Join Code: ").trim() // Extract joinCode from the message
-                        navController.navigate("group_success/$groupName/$joinCode")
+                    //val joinCode = uiState.data?.group.joinCode
+                    uiState.responseData?.let { respData ->
+                        //val joinCode = message.substringAfter("Join Code: ").trim() // Extract joinCode from the message
+                        val joinCode = respData["joinCode"]
+                        val gName = respData["groupName"]
+                        navController.navigate("group_success/$gName/$joinCode")
                         groupViewModel.clearMessages() // Clear the success message after navigation
                     }
                 }

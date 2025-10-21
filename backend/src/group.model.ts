@@ -18,18 +18,16 @@ const groupSchema = new Schema<IGroup>(
       groupName: {
         type: String,
         required: true,
-        unique: true,
-        index: true,
       },
         meetingTime: {
         type: String,
         required: true,
-        index: true,
       },
         joinCode: {
         type: String,
         required: true,
         unique: true,
+        index: true,
         lowercase: true,
         trim: true,
       },
@@ -65,6 +63,7 @@ export class GroupModel {
       try {
         console.error('GroupModel BasicGroupInfo:', groupInfo);
         const validatedData = basicGroupSchema.parse(groupInfo);
+        console.error('GroupModel ValidatedData:', validatedData);
 
   
         return await this.group.create(validatedData);

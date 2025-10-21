@@ -39,16 +39,16 @@ fun GroupSuccessScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "New group \"$groupName\" created!",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Join Code: $joinCode",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    text = "Group \"$groupName\" created!",
+                    style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "Join Code: $joinCode",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { navController.navigate("main") }, // Navigate back to home
                     modifier = Modifier.fillMaxWidth()

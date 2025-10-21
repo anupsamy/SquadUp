@@ -6,10 +6,13 @@ data class CreateGroupRequest(
     val groupLeaderId: String? = null,
     val expectedPeople: Number? = null
 )
-
 data class GroupData(
+    val group: GroupDataDetailed
+)
+data class GroupDataDetailed(
     val groupName: String,
     val meetingTime: String,
+    val joinCode: String,
     val groupLeaderId: String,
     val expectedPeople: Number
 )

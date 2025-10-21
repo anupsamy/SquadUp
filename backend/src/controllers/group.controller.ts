@@ -25,7 +25,7 @@ export class GroupController {
         groupMemberIds: [],
         meetingTime: meetingTime, // Default to current time for now
       });
-
+      console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
         message: 'Group ${groupName} created successfully',
         data: {
@@ -37,7 +37,7 @@ export class GroupController {
       next(error);
     }
   }
-  
+
   async getGroupByJoinCode(
     req: Request<{ joinCode: string }>, // Define the route parameter type
     res: Response<GetGroupResponse>,

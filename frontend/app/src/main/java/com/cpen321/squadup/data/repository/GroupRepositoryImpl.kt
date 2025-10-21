@@ -9,6 +9,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 import com.cpen321.squadup.data.remote.api.RetrofitClient
+import com.cpen321.squadup.data.remote.dto.ApiResponse
+import retrofit2.Response
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
@@ -21,8 +23,16 @@ class GroupRepositoryImpl @Inject constructor(
 
     override suspend fun createGroup(groupName: String, meetingTime: String, groupLeaderId: String, expectedPeople: Number): Result<GroupData> {
         return try {
-            val request = CreateGroupRequest(groupName = groupName, meetingTime = meetingTime, groupLeaderId = groupLeaderId, expectedPeople = expectedPeople)
+            val request = CreateGroupRequest(
+                groupName = groupName, 
+                meetingTime = meetingTime, 
+                groupLeaderId = groupLeaderId, 
+                expectedPeople = expectedPeople
+            )
             val response = groupInterface.createGroup("", request)
+            //:Response<ApiResponse<GroupData>>
+            Log.d(TAG, "GroupRepImpl response: ${response.body()}")
+            Log.d(TAG, "GroupRepImpl groupdata: ${response.body()!!.data}")
 
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!)

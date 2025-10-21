@@ -36,7 +36,6 @@ export class LocationService {
     const RAD_TO_DEG = 180 / Math.PI;
 
     let x = 0, y = 0, z = 0;
-
     for (const { lat, lng } of coords) {
       const latRad = lat * DEG_TO_RAD;
       const lonRad = lng * DEG_TO_RAD;
@@ -58,34 +57,79 @@ export class LocationService {
     return { lat: latMid * RAD_TO_DEG, lng: lonMid * RAD_TO_DEG };
   }
 
+  async getTopNearbyPlaces(
+  location: UserLocation,
+  type: string = "restaurant",
+  radius: number = 5000,
+  maxResults: number = 5
+): Promise<{ name: string; lat: number; lng: number }[]> {
+  try {
+    const response = await this.mapsClient.placesNearby({
+      params: {
+        location: `${location.lat},${location.lng}`,
+        radius,
+        type,
+        key: process.env.MAPS_API_KEY!,
+      },
+    });
+
+    if (response.data.status !== "OK") return [];
+
+    return (response.data.results || [])
+      .map(place => {
+        const loc = place.geometry?.location;
+        if (!place.name || !loc) return null;
+        return {
+          name: place.name,
+          lat: loc.lat,
+          lng: loc.lng,
+        };
+      })
+      .filter((p): p is { name: string; lat: number; lng: number } => p !== null)
+      .slice(0, maxResults);
+
+  } catch (err) {
+    console.error("Error fetching nearby places:", err);
+    return [];
+  }
+}
+
   async findOptimalMeetingPoint(
-    users: UserLocation[],
-    transitType: string,
-    maxIterations = 10
-  ): Promise<UserLocation> {
-    let coords = users.map(u => ({ lat: u.lat, lng: u.lng }));
-    let midpoint = this.getGeographicMidpoint(coords);
+  users: UserLocation[],
+  transitType: string,
+  maxIterations = 20,
+  epsilon = 1e-5
+): Promise<UserLocation> {
+  let midpoint = this.getGeographicMidpoint(users);
 
-    for (let i = 0; i < maxIterations; i++) {
-      const travelTimes = await Promise.all(
-        users.map(u => this.getTravelTime({ lat: u.lat, lng: u.lng }, midpoint, transitType))
-      );
+  for (let i = 0; i < maxIterations; i++) {
+    const travelTimes = await Promise.all(
+      users.map(u => this.getTravelTime(u, midpoint, transitType))
+    );
 
-      let totalWeight = 0;
-      let newLat = 0, newLng = 0;
+    let totalWeight = 0;
+    let newLat = 0, newLng = 0;
 
-      for (let j = 0; j < users.length; j++) {
-        const weight = travelTimes[j]; 
-        totalWeight += weight;
-        newLat += users[j].lat * weight;
-        newLng += users[j].lng * weight;
-      }
-
-      midpoint = { lat: newLat / totalWeight, lng: newLng / totalWeight };
+    for (let j = 0; j < users.length; j++) {
+      const weight = 1 / (travelTimes[j] + 1e-6);
+      totalWeight += weight;
+      newLat += users[j].lat * weight;
+      newLng += users[j].lng * weight;
     }
 
-    return midpoint;
+    const updatedMidpoint = { lat: newLat / totalWeight, lng: newLng / totalWeight };
+
+    const delta = Math.sqrt(
+      (updatedMidpoint.lat - midpoint.lat) ** 2 + (updatedMidpoint.lng - midpoint.lng) ** 2
+    );
+    midpoint = updatedMidpoint;
+
+    if (delta < epsilon) break;
   }
+
+  return midpoint;
+}
+
 }
 
 export const locationService = new LocationService();

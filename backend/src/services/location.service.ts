@@ -1,11 +1,8 @@
 import {Client} from "@googlemaps/google-maps-services-js";
+import type { LatLng } from '../types/location.types';
 
 // Remeber to install @googlemaps/google-maps-services-js
 
-interface LatLng {
-  lat: number;
-  lng: number;
-}
 //export class LocationService(location: [number, number]): Promise<[number, number]> {
   // Location service methods would go here
   // Call get user address in the same group
@@ -47,7 +44,6 @@ export function getGeographicMidpoint(coords: LatLng[]): LatLng {
 }
 
 async function getUserTravelTime(src: LatLng, dest: LatLng): Promise<string> {
-
-
+  // Placeholder function to simulate travel time calculation
   return "15 mins"; // Placeholder
 }

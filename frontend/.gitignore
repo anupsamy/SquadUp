@@ -31,6 +31,9 @@ proguard/
 # Android Studio Navigation editor temp files
 .navigation/
 
+# Firebase config
+.app/google-services.json
+
 # Android Studio captures folder
 captures/
 

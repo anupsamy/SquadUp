@@ -31,6 +31,7 @@ export class LocationService {
     }
   }
 
+  // set to private
   getGeographicMidpoint(coords: UserLocation[]): UserLocation {
     const DEG_TO_RAD = Math.PI / 180;
     const RAD_TO_DEG = 180 / Math.PI;
@@ -94,6 +95,7 @@ export class LocationService {
   }
 }
 
+  // set to private
   async findOptimalMeetingPoint(
   users: UserLocation[],
   transitType: string,
@@ -158,7 +160,7 @@ export class LocationService {
       const delta = Math.sqrt(
         (newCentroid.lat - centroids[i].lat) ** 2 + (newCentroid.lng - centroids[i].lng) ** 2
       );
-      
+
       if (delta > epsilon) converged = false;
       centroids[i] = newCentroid;
     }

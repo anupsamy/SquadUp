@@ -10,6 +10,30 @@ import {
 } from './types/user.types';
 import logger from './utils/logger.util';
 
+const addressComponentsSchema = new Schema(
+  {
+    streetNumber: { type: String },
+    route: { type: String },
+    city: { type: String },
+    province: { type: String },
+    country: { type: String },
+    postalCode: { type: String },
+  },
+  { _id: false } // prevents automatic _id field
+);
+
+const addressSchema = new Schema(
+  {
+    formatted: { type: String, required: true },
+    placeId: { type: String },
+    lat: { type: Number },
+    lng: { type: Number },
+    components: { type: addressComponentsSchema },
+  },
+  { _id: false }
+);
+
+// --- Main user schema ---
 const userSchema = new Schema<IUser>(
   {
     googleId: {
@@ -31,9 +55,8 @@ const userSchema = new Schema<IUser>(
       trim: true,
     },
     address: {
-      type: String,
+      type: addressSchema,
       required: false,
-      trim: true,
     },
     transitType: {
       type: String,

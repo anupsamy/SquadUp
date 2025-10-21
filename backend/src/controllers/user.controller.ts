@@ -4,7 +4,6 @@ import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { userModel } from '../user.model';
-import { addressSchema } from '../types/address.types';
 
 export class UserController {
   getProfile(req: Request, res: Response<GetProfileResponse>) {
@@ -29,37 +28,22 @@ export class UserController {
 
     const { name, transitType, address } = req.body;
 
-    // Sanitize helper
-    function sanitize(input: string) {
-      return input.replace(/[\r\n]/g, '');
-    }
-
-    if (address) {
-      if (address.formatted) address.formatted = sanitize(address.formatted);
-      if (address.components) {
-        Object.keys(address.components).forEach(key => {
-          const value = address.components![key as keyof typeof address.components];
-          if (typeof value === 'string') {
-            address.components![key as keyof typeof address.components] = sanitize(value);
-          }
-        });
-      }
-    }
-
-    
 
     const updatedUser = await userModel.update(user._id, {
-      name: name ? sanitize(name) : name,
+      name: name,
       transitType: transitType,
       address, // already sanitized inline
     });
-    if (!updatedUser) res.status(500);
-    else {
-      res.status(200).json({
-              message: 'User info updated successfully',
-              data: { user: updatedUser },
-            });
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: 'User not found',
+      });
     }
+
+    res.status(200).json({
+      message: 'User info updated successfully',
+      data: { user: updatedUser },
+    });
 
     
     } catch (error) {

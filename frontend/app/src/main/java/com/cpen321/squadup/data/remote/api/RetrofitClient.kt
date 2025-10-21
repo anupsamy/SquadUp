@@ -8,10 +8,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-
 object RetrofitClient {
     private const val BASE_URL = BuildConfig.API_BASE_URL
     private const val IMAGE_BASE_URL = BuildConfig.IMAGE_BASE_URL

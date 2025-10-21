@@ -47,6 +47,9 @@ import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+
 
 @Composable
 fun MainScreen(
@@ -205,41 +208,41 @@ private fun MainBody(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(paddingValues),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween // Adjust layout to fit the button
+            .padding(paddingValues)
     ) {
-        // Existing content (e.g., NewsScreen)
-        /*NewsScreen(
-            newsViewModel = newsViewModel,
-            selectedHobbies = selectedHobbies,
-            modifier = Modifier.weight(1f) // Allow space for the button
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))*/
-        // Display the list of groups
-        groups.forEach { group ->
-            Button(
-                onClick = { onGroupClick(group.joinCode) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                Text(text = group.groupName)
-                Text(
-                    text = "Leader: ${group.groupLeaderId?.name ?: "Unknown Leader"}",
-                    style = MaterialTheme.typography.bodySmall
-                )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+        ) {
+            groups.forEach { group ->
+                Button(
+                    onClick = { onGroupClick(group.joinCode) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Column {
+                        Text(text = group.groupName, style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = "Leader: ${group.groupLeaderId?.name ?: "Unknown Leader"}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             }
         }
 
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add the "Create Group" button
+        // Add the "Create Group" button at the bottom
         Button(
             onClick = onCreateGroupClick,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             Text(text = "Create Group")
         }

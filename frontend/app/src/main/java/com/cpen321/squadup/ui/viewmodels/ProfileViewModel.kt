@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.squadup.data.remote.api.RetrofitClient
+import com.cpen321.squadup.data.remote.dto.Address
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.data.remote.dto.User
 import com.cpen321.squadup.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -159,7 +161,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun updateProfile(name: String, address: String, transitType: String, onSuccess: () -> Unit = {}) {
+    fun updateProfile(name: String, address: Address?, transitType: TransitType?, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             _uiState.value =
                 _uiState.value.copy(
@@ -168,7 +170,7 @@ class ProfileViewModel @Inject constructor(
                     successMessage = null
                 )
 
-            val result = profileRepository.updateProfile(name, address, transitType) //TODO: Fix
+            val result = profileRepository.updateProfile(name, address, transitType)
             if (result.isSuccess) {
                 val updatedUser = result.getOrNull()!!
                 _uiState.value = _uiState.value.copy(

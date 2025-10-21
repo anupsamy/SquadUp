@@ -62,8 +62,9 @@ class AuthViewModel @Inject constructor(
 
                 val isAuthenticated = authRepository.isUserAuthenticated()
                 val user = if (isAuthenticated) authRepository.getCurrentUser() else null
-                val needsProfileCompletion = user?.address == null || user.address.isBlank() || //TODO: replace
-                        user.transitType == null || user.transitType.isBlank()
+                val needsProfileCompletion = user?.address?.formatted.isNullOrBlank() ||
+                        user.transitType == null
+
 
                 _uiState.value = _uiState.value.copy(
                     isAuthenticated = isAuthenticated,
@@ -127,9 +128,10 @@ class AuthViewModel @Inject constructor(
 
             authOperation(credential.idToken)
                 .onSuccess { authData ->
-                    val needsProfileCompletion = //TODO: Replace with proper address and transit types
-                        authData.user.address == null || authData.user.address.isBlank() ||
-                        authData.user.transitType == null || authData.user.transitType.isBlank()
+                    val needsProfileCompletion =
+                        authData.user.address?.formatted.isNullOrBlank() ||
+                        authData.user.transitType == null
+
 
                     _uiState.value = _uiState.value.copy(
                         isSigningIn = false,
@@ -177,7 +179,7 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(
                 isAuthenticated = false,
                 isCheckingAuth = false,
-                shouldSkipAuthCheck = true // Skip auth check after manual sign out
+                shouldSkipAuthCheck = true
             )
         }
     }

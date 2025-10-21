@@ -23,18 +23,29 @@ export class UserController {
     try {
       const user = req.user!;
 
-      const updatedUser = await userModel.update(user._id, req.body);
+    logger.info('--- Incoming profile update ---');
+    logger.info('Body: ' + JSON.stringify(req.body));
 
-      if (!updatedUser) {
-        return res.status(404).json({
-          message: 'User not found',
-        });
-      }
+    const { name, transitType, address } = req.body;
 
-      res.status(200).json({
-        message: 'User info updated successfully',
-        data: { user: updatedUser },
+
+    const updatedUser = await userModel.update(user._id, {
+      name: name,
+      transitType: transitType,
+      address, // already sanitized inline
+    });
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: 'User not found',
       });
+    }
+
+    res.status(200).json({
+      message: 'User info updated successfully',
+      data: { user: updatedUser },
+    });
+
+    
     } catch (error) {
       logger.error('Failed to update user info:', error);
 

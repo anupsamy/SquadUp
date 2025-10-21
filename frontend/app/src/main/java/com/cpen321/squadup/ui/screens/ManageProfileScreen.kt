@@ -3,6 +3,7 @@ package com.cpen321.squadup.ui.screens
 import Button
 import Icon
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,38 +48,43 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.cpen321.squadup.R
 import com.cpen321.squadup.data.remote.api.RetrofitClient
+import com.cpen321.squadup.data.remote.dto.Address
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.data.remote.dto.User
+import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.components.ImagePicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.ProfileUiState
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalSpacing
+import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 
 private data class ProfileFormState(
     val name: String = "",
     val originalName: String = "",
     val email: String = "",
-    val transitType: String = "", //TODO: Swap with enum (?) for transit types
-    val originalTransitType: String = "",
-    val address: String = "", //TODO: swap with proper address type with google maps integration
-    val originalAddress: String = ""
+    val transitType: TransitType? = null,
+    val originalTransitType: TransitType? = null,
+    val address: Address? = null,
+    val originalAddress: Address? = null
 ) {
     fun hasChanges(): Boolean {
         return (name.isNotBlank() && name != originalName) ||
-                (transitType != originalTransitType && transitType.isNotBlank()) ||
-                (address != originalAddress && address.isNotBlank())
+                (transitType != originalTransitType) ||
+                (address != originalAddress)
     }
 }
 
 private data class ManageProfileScreenActions(
     val onBackClick: () -> Unit,
     val onNameChange: (String) -> Unit,
-    val onTransitChange: (String) -> Unit,
-    val onAddressChange: (String) -> Unit,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onImagePickerDismiss: () -> Unit,
@@ -94,8 +100,8 @@ private data class ProfileFormData(
     val isLoadingPhoto: Boolean,
     val isSavingProfile: Boolean,
     val onNameChange: (String) -> Unit,
-    val onTransitChange: (String) -> Unit,
-    val onAddressChange: (String) -> Unit,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
@@ -105,8 +111,8 @@ private data class ProfileBodyData(
     val uiState: ProfileUiState,
     val formState: ProfileFormState,
     val onNameChange: (String) -> Unit,
-    val onTransitChange: (String) -> Unit,
-    val onAddressChange: (String) -> Unit,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
@@ -116,10 +122,10 @@ private data class ProfileFieldsData(
     val name: String,
     val email: String,
     val onNameChange: (String) -> Unit,
-    val transitType: String,
-    val address: String,
-    val onTransitChange: (String) -> Unit,
-    val onAddressChange: (String) -> Unit
+    val transitType: TransitType?,
+    val address: Address?,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit
 )
 
 @Composable
@@ -152,10 +158,32 @@ fun ManageProfileScreen(
                 name = user.name,
                 originalName = user.name,
                 email = user.email,
-                address = user.address ?: "",
-                originalAddress = user.address ?: "",
-                transitType = user.transitType ?: "",
-                originalTransitType = user.transitType ?: ""
+                address = user.address,
+                originalAddress = user.address,
+                transitType = user.transitType,
+                originalTransitType = user.transitType
+            )
+        }
+    }
+
+    LaunchedEffect(uiState.successMessage) {
+        if (uiState.successMessage != null) {
+            // Reload profile after successful save to get updated data
+            profileViewModel.loadProfile()
+        }
+    }
+
+    // Also update the existing LaunchedEffect(uiState.user) to handle null transit type:
+    LaunchedEffect(uiState.user) {
+        uiState.user?.let { user ->
+            formState = ProfileFormState(
+                name = user.name,
+                originalName = user.name,
+                email = user.email,
+                address = user.address,
+                originalAddress = user.address,
+                transitType = user.transitType, // This should now properly include the saved value
+                originalTransitType = user.transitType
             )
         }
     }
@@ -163,8 +191,12 @@ fun ManageProfileScreen(
     val actions = ManageProfileScreenActions(
         onBackClick = onBackClick,
         onNameChange = { formState = formState.copy(name = it) },
-        onAddressChange = { formState = formState.copy(address = it) },
-        onTransitChange = { formState = formState.copy(transitType = it) },
+        onAddressChange = { newAddress: Address? ->
+            formState = formState.copy(address = newAddress)
+        },
+        onTransitChange = { newTransit: TransitType? ->
+            formState = formState.copy(transitType = newTransit)
+        },
         onEditPictureClick = { showImagePickerDialog = true },
         onSaveClick = {
             profileViewModel.updateProfile(formState.name, formState.address, formState.transitType)
@@ -462,42 +494,42 @@ private fun ProfileFields(
             enabled = false
         )
         //address field
-        Row(Modifier.focusProperties { canFocus = true }) {
-            OutlinedTextField(
-                value = data.address,
-                onValueChange = data.onAddressChange,
-                label = { Text(stringResource(R.string.address)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-        }
+        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+        AddressPicker(
+            viewModel = addressPickerViewModel,
+            initialValue = data.address,
+            onAddressSelected = { selected ->
+                data.onAddressChange(selected)
+            }
+        )
 
         //transitType field
 
-        Row(Modifier.focusProperties { canFocus = true }) {
-            TransitTypeDropdown(
-                selectedType = data.transitType,
-                onTypeSelected = data.onTransitChange
-            )
-        }
+        TransitTypeDropdown(
+            selectedType = data.transitType,
+            onTypeSelected = data.onTransitChange
+        )
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransitTypeDropdown(
-    selectedType: String,
-    onTypeSelected: (String) -> Unit
+    selectedType: TransitType?,
+    onTypeSelected: (TransitType) -> Unit
 ) {
-    val transitOptions = listOf("Transit", "Driving", "Biking", "Walking") //TODO: replace with enum from backend
+    val transitOptions = TransitType.entries.toList()
     var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedType) {
+        Log.d("TransitTypeDropdown", "Selected type changed to: $selectedType (name: ${selectedType?.name})")
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded }
     ) {
         OutlinedTextField(
-            value = selectedType,
+            value = selectedType?.name?.replaceFirstChar { it.uppercase() } ?: "",
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(R.string.transit_type)) },
@@ -505,7 +537,7 @@ fun TransitTypeDropdown(
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
             modifier = Modifier
-                .menuAnchor() // required for correct positioning
+                .menuAnchor()
                 .fillMaxWidth()
         )
 
@@ -515,7 +547,7 @@ fun TransitTypeDropdown(
         ) {
             transitOptions.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option) },
+                    text = { Text(option.name.replaceFirstChar { it.uppercase() }) },
                     onClick = {
                         onTypeSelected(option)
                         expanded = false
@@ -525,6 +557,7 @@ fun TransitTypeDropdown(
         }
     }
 }
+
 
 
 @Composable

@@ -36,27 +36,33 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.cpen321.squadup.R
+import com.cpen321.squadup.data.remote.dto.Address
+import com.cpen321.squadup.data.remote.dto.TransitType
+import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.ProfileUiState
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
+import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 
 private data class ProfileCompletionFormState(
-    val address: String = "",
-    val transitType: String = "",
+    val address: Address? = null,
+    val transitType: TransitType? = null,
     val hasSavedProfile: Boolean = false
 ) {
-    fun canSave(): Boolean = address.isNotBlank() && transitType.isNotBlank()
+    //fun canSave(): Boolean = address != null && transitType != null
+    fun canSave(): Boolean = transitType != null
 }
 
 private data class ProfileCompletionScreenData(
     val formState: ProfileCompletionFormState,
     val isSavingProfile: Boolean,
-    val onAddressChange: (String) -> Unit,
-    val onTransitTypeChange: (String) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
+    val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit
 )
@@ -65,8 +71,8 @@ private data class ProfileCompletionScreenContentData(
     val uiState: ProfileUiState,
     val formState: ProfileCompletionFormState,
     val snackBarHostState: SnackbarHostState,
-    val onAddressChange: (String) -> Unit,
-    val onTransitTypeChange: (String) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
+    val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onErrorMessageShown: () -> Unit
@@ -97,8 +103,8 @@ fun ProfileCompletionScreen(
     LaunchedEffect(uiState.user) {
         uiState.user?.let { user ->
             // Auto-complete if user already has address and transitType filled
-            if (user.address != null && user.address.isNotBlank() &&
-                user.transitType != null && user.transitType.isNotBlank() &&
+            if (user.address != null &&
+                user.transitType != null &&
                 !formState.hasSavedProfile) {
                 onProfileCompleted()
             }
@@ -110,7 +116,10 @@ fun ProfileCompletionScreen(
             uiState = uiState,
             formState = formState,
             snackBarHostState = snackBarHostState,
-            onAddressChange = { formState = formState.copy(address = it) },
+            onAddressChange = { newAddress: Address? ->
+                formState = formState.copy(address = newAddress)
+            },
+
             onTransitTypeChange = { formState = formState.copy(transitType = it) },
             onSkipClick = onProfileCompleted,
             onSaveClick = {
@@ -184,16 +193,20 @@ private fun ProfileCompletionBody(
 
         Spacer(modifier = Modifier.height(spacing.extraLarge2))
 
-        AddressInputField(
-            addressText = data.formState.address,
-            isEnabled = !data.isSavingProfile,
-            onAddressChange = data.onAddressChange
-        )
+//        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+//        AddressPicker(
+//            viewModel = addressPickerViewModel,
+//            initialValue = data.formState.address,
+//            onAddressSelected = { address ->
+//                // Save to your form state or call backend
+//                data.onAddressChange
+//            }
+//        )
 
-        Spacer(modifier = Modifier.height(spacing.medium))
+//        Spacer(modifier = Modifier.height(spacing.medium))
 
         TransitTypeInputField(
-            transitTypeText = data.formState.transitType,
+            transitType = data.formState.transitType,
             isEnabled = !data.isSavingProfile,
             onTransitTypeChange = data.onTransitTypeChange
         )
@@ -253,37 +266,38 @@ private fun ProfileDescription(
         modifier = modifier
     )
 }
-
-@Composable
-private fun AddressInputField(
-    addressText: String,
-    isEnabled: Boolean,
-    onAddressChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    OutlinedTextField(
-        value = addressText,
-        onValueChange = onAddressChange,
-        label = { Text(stringResource(R.string.address)) },
-        placeholder = { Text(stringResource(R.string.address_placeholder)) },
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(spacing.medium),
-        enabled = isEnabled,
-        singleLine = true
-    )
-}
+//legacy just basic text box replaced with AddressPicker.kt
+//
+//@Composable
+//private fun AddressInputField(
+//    addressText: String,
+//    isEnabled: Boolean,
+//    onAddressChange: (String) -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//    val spacing = LocalSpacing.current
+//
+//    OutlinedTextField(
+//        value = addressText,
+//        onValueChange = onAddressChange,
+//        label = { Text(stringResource(R.string.address)) },
+//        placeholder = { Text(stringResource(R.string.address_placeholder)) },
+//        modifier = modifier.fillMaxWidth(),
+//        shape = RoundedCornerShape(spacing.medium),
+//        enabled = isEnabled,
+//        singleLine = true
+//    )
+//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TransitTypeInputField(
-    transitTypeText: String,
+    transitType: TransitType?,
     isEnabled: Boolean,
-    onTransitTypeChange: (String) -> Unit,
+    onTransitTypeChange: (TransitType?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val transitOptions = listOf("Transit", "Driving", "Biking", "Walking")
+    val transitOptions = TransitType.entries.toList() // Use enum
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -292,7 +306,7 @@ private fun TransitTypeInputField(
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = transitTypeText,
+            value = transitType?.name?.replaceFirstChar { it.uppercase() } ?: "",
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(R.string.transit_type)) },
@@ -312,9 +326,9 @@ private fun TransitTypeInputField(
         ) {
             transitOptions.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option) },
+                    text = { Text(option.name.replaceFirstChar { it.uppercase() }) },
                     onClick = {
-                        onTransitTypeChange(option)
+                        onTransitTypeChange(option) // pass enum, not string
                         expanded = false
                     }
                 )
@@ -322,6 +336,7 @@ private fun TransitTypeInputField(
         }
     }
 }
+
 
 @Composable
 private fun ActionButtons(

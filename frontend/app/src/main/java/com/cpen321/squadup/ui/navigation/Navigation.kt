@@ -16,6 +16,7 @@ import com.cpen321.squadup.ui.screens.AuthScreen
 import com.cpen321.squadup.ui.screens.LoadingScreen
 import com.cpen321.squadup.ui.screens.CreateGroupScreen
 import com.cpen321.squadup.ui.screens.GroupSuccessScreen
+import com.cpen321.squadup.ui.screens.GroupDetailsScreen
 import com.cpen321.squadup.ui.screens.MainScreen
 import com.cpen321.squadup.ui.screens.ManageHobbiesScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
@@ -29,6 +30,10 @@ import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.navigation.NavRoutes
+import com.cpen321.squadup.data.remote.dto.GroupData
+import com.cpen321.squadup.data.remote.dto.GroupsDataAll
+import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -268,26 +273,15 @@ private fun AppNavHost(
         }
 
         composable("group_details/{groupId}") { backStackEntry ->
-            val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
-            val groups = mainViewModel.fetchGroups() // Replace with getGroupById API call
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val group = mainViewModel.getGroupById(joinCode) // Replace with getGroupById API call
             
-            groups.forEach { groupData ->
-                val group = groupData.group
-                group?.let {
-                    GroupDetailsScreen(
-                        navController = navController,
-                        group = it
-                    )
-                }
-            }
-            /*
             group?.let {
                 GroupDetailsScreen(
                     navController = navController,
                     group = it
                 )
             }
-            */
         }
 
     }

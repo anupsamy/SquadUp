@@ -8,7 +8,7 @@ data class CreateGroupRequest(
 )
 
 data class GroupsDataAll(
-    val groups: Array<GroupData>
+    val groups: List<GroupDataDetailed>
 )
 data class GroupData(
     val group: GroupDataDetailed
@@ -17,7 +17,7 @@ data class GroupDataDetailed(
     val groupName: String,
     val meetingTime: String,
     val joinCode: String,
-    val groupLeaderId: GroupLeaderUser,
+    val groupLeaderId: GroupLeaderUser?,
     val expectedPeople: Number
 )
 

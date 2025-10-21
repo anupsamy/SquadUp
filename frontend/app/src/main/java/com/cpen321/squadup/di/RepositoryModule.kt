@@ -12,6 +12,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.cpen321.squadup.data.local.preferences.TokenManager
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -37,8 +38,9 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideGroupRepository(
-        groupInterface: GroupInterface
+        groupInterface: GroupInterface,
+        tokenManager: TokenManager
     ): GroupRepository {
-        return GroupRepositoryImpl(groupInterface)
+        return GroupRepositoryImpl(groupInterface, tokenManager)
     }
 }

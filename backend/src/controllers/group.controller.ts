@@ -5,7 +5,7 @@ import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
 import { UserModel } from '../user.model';
-import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse } from '../types/group.types';
 
 export class GroupController {
   async createGroup(
@@ -38,6 +38,23 @@ export class GroupController {
       next(error);
     }
   }
+
+  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>, next: NextFunction) {
+    try {
+      // Fetch all groups from the database
+      const groups = await groupModel.findAll();
+      console.error('GroupController getAllGroups:', groups);
+      
+      res.status(200).json({
+        message: 'Groups fetched successfully',
+        data: { groups },
+      });
+    } catch (error) {
+      logger.error('Failed to fetch groups:', error);
+      next(error);
+    }
+  }
+
 
   async getGroupByJoinCode(
     req: Request<{ joinCode: string }>, // Define the route parameter type

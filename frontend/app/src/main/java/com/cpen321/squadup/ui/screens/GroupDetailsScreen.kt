@@ -8,7 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 
+import com.cpen321.squadup.data.remote.dto.GroupData
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreen(
     navController: NavController,
@@ -40,7 +45,10 @@ fun GroupDetailsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Join Code: ${group.joinCode}", style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Group Leader: ${group.groupLeaderId.name}", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = "Group Leader: ${group.groupLeaderId?.name ?: "Unknown Leader"}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Expected People: ${group.expectedPeople}", style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(16.dp))

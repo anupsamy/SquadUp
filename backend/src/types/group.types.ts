@@ -57,6 +57,14 @@ export type GetGroupResponse = {
     group: IGroup;
   };
 };
+
+export type GetAllGroupsResponse = {
+  message: string;
+  data?: {
+    groups: IGroup[];
+  };
+};
+
 export type CreateGroupRequest = z.infer<typeof createGroupSchema>;
 export type UpdateGroupRequest = z.infer<typeof updateGroupSchema>;
 

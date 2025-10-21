@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
+import androidx.compose.runtime.LaunchedEffect
+
 import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.components.MessageSnackbar
@@ -30,12 +32,20 @@ import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 
 import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.unit.dp
+
+import com.cpen321.squadup.data.remote.dto.GroupData
+import com.cpen321.squadup.data.remote.dto.GroupsDataAll
+import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
 
 
 @Composable
@@ -48,19 +58,26 @@ fun MainScreen(
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
+    
+    LaunchedEffect(Unit) {
+        mainViewModel.fetchGroups()
+    }
 
     MainContent(
         uiState = uiState,
         newsViewModel = newsViewModel,
         selectedHobbies = selectedHobbies,
         groups = uiState.groups,
+        snackBarHostState = snackBarHostState,
+        onProfileClick = onProfileClick,
         onGroupClick = { groupId ->
             navController.navigate("group_details/$groupId")
         },
         onCreateGroupClick = {
             navController.navigate(NavRoutes.CREATE_GROUP)
         },
-        onSuccessMessageShown = mainViewModel::clearSuccessMessage
+        onSuccessMessageShown = mainViewModel::clearSuccessMessage,
+        modifier = Modifier
     )
 }
 @Composable
@@ -68,11 +85,13 @@ private fun MainContent(
     uiState: MainUiState,
     newsViewModel: NewsViewModel,
     selectedHobbies: List<String>,
+    groups: List<GroupDataDetailed>,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     onCreateGroupClick: () -> Unit, 
     onSuccessMessageShown: () -> Unit,
-    modifier: Modifier = Modifier
+    onGroupClick: (String) -> Unit,
+    modifier: Modifier
 ) {
     Scaffold(
         modifier = modifier,
@@ -91,7 +110,9 @@ private fun MainContent(
             paddingValues = paddingValues,
             newsViewModel = newsViewModel,
             selectedHobbies = selectedHobbies,
-            onCreateGroupClick = onCreateGroupClick
+            onCreateGroupClick = onCreateGroupClick,
+            groups = groups,
+            onGroupClick = onGroupClick
         )
     }
 }
@@ -177,7 +198,7 @@ private fun MainBody(
     newsViewModel: NewsViewModel,
     selectedHobbies: List<String>,
     onCreateGroupClick: () -> Unit,
-    groups: List<GroupData>,
+    groups: List<GroupDataDetailed>,
     onGroupClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -189,26 +210,29 @@ private fun MainBody(
         verticalArrangement = Arrangement.SpaceBetween // Adjust layout to fit the button
     ) {
         // Existing content (e.g., NewsScreen)
-        NewsScreen(
+        /*NewsScreen(
             newsViewModel = newsViewModel,
             selectedHobbies = selectedHobbies,
             modifier = Modifier.weight(1f) // Allow space for the button
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(modifier = Modifier.height(16.dp))*/
         // Display the list of groups
-        groups.forEach { groupData ->
-            val group = groupData.group
+        groups.forEach { group ->
             Button(
-                onClick = { onGroupClick(group._id) },
+                onClick = { onGroupClick(group.joinCode) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
                 Text(text = group.groupName)
+                Text(
+                    text = "Leader: ${group.groupLeaderId?.name ?: "Unknown Leader"}",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 

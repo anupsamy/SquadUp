@@ -82,6 +82,17 @@ export class GroupModel {
         throw new Error('Failed to update user');
       }
     }
+
+    async findAll(): Promise<IGroup[]> {
+      try {
+        const groups = await this.group.find(); // Fetch all groups
+        console.error('GroupModel findAll:', groups);
+        return groups;
+      } catch (error) {
+        logger.error('Error fetching all groups:', error);
+        throw new Error('Failed to fetch all groups');
+      }
+    }
   
     async update(
       groupId: mongoose.Types.ObjectId,

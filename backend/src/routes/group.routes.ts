@@ -6,7 +6,7 @@ import { CreateGroupRequest, createGroupSchema, UpdateGroupRequest, updateGroupS
 const router = Router();
 const groupController = new GroupController();
 
-router.get('/info', groupController.getGroup);
+router.get('/info', groupController.getAllGroups.bind(groupController));
 
 router.get(
     '/:joinCode', // Define the route parameter

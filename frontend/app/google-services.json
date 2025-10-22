@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "328288768389",
+    "project_id": "squadup-a976d",
+    "storage_bucket": "squadup-a976d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:328288768389:android:8a3b1234c39d082fd1f4ec",
+        "android_client_info": {
+          "package_name": "com.cpen321.squadup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2ls20LEJOMtbI1Uwig0k487N7khSCmOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

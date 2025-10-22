@@ -32,7 +32,8 @@ fun GroupDetailsScreen(
                     Column {
                         Text(
                             text = group.groupName,
-                            fontSize = 20.sp,
+                            //fontSize = 20.sp,
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             fontWeight = FontWeight.Bold
                         )
 
@@ -42,11 +43,11 @@ fun GroupDetailsScreen(
                         ) {
                             Text(
                                 text = group.meetingTime ?: "",
-                                fontSize = 16.sp
+                                style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
                                 text = "Member: x/${group.expectedPeople}",
-                                fontSize = 16.sp
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }

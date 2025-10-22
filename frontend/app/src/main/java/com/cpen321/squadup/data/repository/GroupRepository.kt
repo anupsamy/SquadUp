@@ -13,4 +13,6 @@ interface GroupRepository {
         groupLeaderId: GroupLeaderUser, 
         expectedPeople: Number
     ): Result<GroupData>
+    suspend fun getGroupByJoinCode(joinCode: String): Result<GroupDataDetailed>
+
 }

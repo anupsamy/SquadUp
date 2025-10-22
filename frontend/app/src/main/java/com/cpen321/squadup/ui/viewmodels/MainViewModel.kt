@@ -57,6 +57,19 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    fun fetchGroupByJoinCode(joinCode: String, onSuccess: (GroupDataDetailed) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = groupRepository.getGroupByJoinCode(joinCode)
+            if (result.isSuccess) {
+                val group = result.getOrNull()
+                group?.let { onSuccess(it) }
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to fetch group"
+                onError(error)
+            }
+        }
+    }
     
     fun getGroupById(groupId: String): GroupDataDetailed? {
         return _uiState.value.groups.find { it.joinCode == groupId } // Use joinCode directly

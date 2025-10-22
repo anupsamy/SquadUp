@@ -2,6 +2,7 @@ package com.cpen321.squadup.data.remote.api
 
 import com.cpen321.squadup.data.remote.dto.ApiResponse
 import com.cpen321.squadup.data.remote.dto.GroupData
+import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import okhttp3.MultipartBody
@@ -19,6 +20,12 @@ interface GroupInterface {
     suspend fun getGroups(
         @Header("Authorization") authHeader: String
     ): Response<ApiResponse<GroupsDataAll>>
+
+    @GET("group/{joinCode}")
+    suspend fun getGroupByJoinCode(
+        @Header("Authorization") authHeader: String,
+        @retrofit2.http.Path("joinCode") joinCode: String
+    ): Response<ApiResponse<GroupData>>
 
     @POST("group/create")
     suspend fun createGroup(

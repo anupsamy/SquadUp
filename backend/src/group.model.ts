@@ -127,6 +127,7 @@ export class GroupModel {
     async findByJoinCode(joinCode: string): Promise<IGroup | null> {
       try {
         const group = await this.group.findOne({ joinCode }); // Query the database
+        console.error('GroupModel findByJoinCode:', group);
         return group;
       } catch (error) {
         logger.error('Error finding group by joinCode:', error);

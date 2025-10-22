@@ -284,5 +284,35 @@ private fun AppNavHost(
             }
         }
 
+        composable("group_details/{joinCode}") { backStackEntry ->
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val mainViewModel: MainViewModel = hiltViewModel()
+        
+            LaunchedEffect(joinCode) {
+                mainViewModel.fetchGroupByJoinCode(
+                    joinCode = joinCode,
+                    onSuccess = { group ->
+                        navController.navigate("group_details_screen/${group.joinCode}")
+                    },
+                    onError = { errorMessage ->
+                        Log.e("Navigation", "Error fetching group: $errorMessage")
+                    }
+                )
+            }
+        }
+        
+        // Define a new route for the GroupDetailsScreen
+        composable("group_details_screen/{joinCode}") { backStackEntry ->
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val group = mainViewModel.getGroupById(joinCode)
+        
+            group?.let {
+                GroupDetailsScreen(
+                    navController = navController,
+                    group = it
+                )
+            }
+        }
+
     }
 }

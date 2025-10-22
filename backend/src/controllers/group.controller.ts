@@ -44,7 +44,7 @@ export class GroupController {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
       console.error('GroupController getAllGroups:', groups);
-      
+
       res.status(200).json({
         message: 'Groups fetched successfully',
         data: { groups },
@@ -66,6 +66,7 @@ export class GroupController {
   
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
+      console.error('GroupController getGroupByJoinCode:', group);
   
       if (!group) {
         return res.status(404).json({

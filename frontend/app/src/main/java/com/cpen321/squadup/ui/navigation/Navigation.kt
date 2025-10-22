@@ -15,7 +15,6 @@ import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.screens.AuthScreen
 import com.cpen321.squadup.ui.screens.LoadingScreen
 import com.cpen321.squadup.ui.screens.MainScreen
-import com.cpen321.squadup.ui.screens.ManageHobbiesScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
 import com.cpen321.squadup.ui.screens.ProfileScreenActions
 import com.cpen321.squadup.ui.screens.ProfileCompletionScreen
@@ -153,16 +152,8 @@ private fun MainScreenWithHobbies(
     profileViewModel: ProfileViewModel,
     onProfileClick: () -> Unit
 ) {
-    val uiState by profileViewModel.uiState.collectAsState()
-    val selectedHobbies = uiState.selectedHobbies.toList()
+    val selectedHobbies = emptyList<String>()
 
-    LaunchedEffect(Unit) {
-        profileViewModel.uiState.collect { profileState ->
-            if (profileState.selectedHobbies.isEmpty()) {
-                newsViewModel.clearData()
-            }
-        }
-    }
     MainScreen(
         mainViewModel = mainViewModel,
         newsViewModel = newsViewModel,
@@ -218,7 +209,6 @@ private fun AppNavHost(
                 actions = ProfileScreenActions(
                     onBackClick = { navigationStateManager.navigateBack() },
                     onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
-                    onManageHobbiesClick = { navigationStateManager.navigateToManageHobbies() },
                     onAccountDeleted = { navigationStateManager.handleAccountDeletion() }
                 )
             )
@@ -226,13 +216,6 @@ private fun AppNavHost(
 
         composable(NavRoutes.MANAGE_PROFILE) {
             ManageProfileScreen(
-                profileViewModel = profileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() }
-            )
-        }
-
-        composable(NavRoutes.MANAGE_HOBBIES) {
-            ManageHobbiesScreen(
                 profileViewModel = profileViewModel,
                 onBackClick = { navigationStateManager.navigateBack() }
             )

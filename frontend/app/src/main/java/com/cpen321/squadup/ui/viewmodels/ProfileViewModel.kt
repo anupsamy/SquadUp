@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.squadup.data.remote.api.RetrofitClient
+import com.cpen321.squadup.data.remote.dto.Address
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.data.remote.dto.User
 import com.cpen321.squadup.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,8 +30,6 @@ data class ProfileUiState(
 
     // Data states
     val user: User? = null,
-    val allHobbies: List<String> = emptyList(),
-    val selectedHobbies: Set<String> = emptySet(),
 
     // Message states
     val errorMessage: String? = null,
@@ -54,18 +54,13 @@ class ProfileViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoadingProfile = true, errorMessage = null)
 
             val profileResult = profileRepository.getProfile()
-            val hobbiesResult = profileRepository.getAvailableHobbies()
 
-            if (profileResult.isSuccess && hobbiesResult.isSuccess) {
+            if (profileResult.isSuccess) {
                 val user = profileResult.getOrNull()!!
-                val availableHobbies = hobbiesResult.getOrNull()!!
-                val selectedHobbies = user.hobbies?.toSet() ?: emptySet()
 
                 _uiState.value = _uiState.value.copy(
                     isLoadingProfile = false,
-                    user = user,
-                    allHobbies = availableHobbies,
-                    selectedHobbies = selectedHobbies
+                    user = user
                 )
             } else {
                 val errorMessage = when {
@@ -73,12 +68,6 @@ class ProfileViewModel @Inject constructor(
                         val error = profileResult.exceptionOrNull()
                         Log.e(TAG, "Failed to load profile", error)
                         error?.message ?: "Failed to load profile"
-                    }
-
-                    hobbiesResult.isFailure -> {
-                        val error = hobbiesResult.exceptionOrNull()
-                        Log.e(TAG, "Failed to load hobbies", error)
-                        error?.message ?: "Failed to load hobbies"
                     }
 
                     else -> {
@@ -89,53 +78,6 @@ class ProfileViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoadingProfile = false,
-                    errorMessage = errorMessage
-                )
-            }
-        }
-    }
-
-    fun toggleHobby(hobby: String) {
-        val currentSelected = _uiState.value.selectedHobbies.toMutableSet()
-        if (currentSelected.contains(hobby)) {
-            currentSelected.remove(hobby)
-        } else {
-            currentSelected.add(hobby)
-        }
-        _uiState.value = _uiState.value.copy(selectedHobbies = currentSelected)
-    }
-
-    fun saveHobbies() {
-        viewModelScope.launch {
-            val originalHobbies = _uiState.value.user?.hobbies?.toSet() ?: emptySet()
-
-            _uiState.value =
-                _uiState.value.copy(
-                    isSavingProfile = true,
-                    errorMessage = null,
-                    successMessage = null
-                )
-
-            val selectedHobbiesList = _uiState.value.selectedHobbies.toList()
-            val result = profileRepository.updateUserHobbies(selectedHobbiesList)
-
-            if (result.isSuccess) {
-                val updatedUser = result.getOrNull()!!
-                _uiState.value = _uiState.value.copy(
-                    isSavingProfile = false,
-                    user = updatedUser,
-                    successMessage = "Hobbies updated successfully!"
-                )
-            } else {
-                // Revert to original hobbies on failure
-                val error = result.exceptionOrNull()
-                Log.d(TAG, "error: $error")
-                Log.e(TAG, "Failed to update hobbies", error)
-                val errorMessage = error?.message ?: "Failed to update hobbies"
-
-                _uiState.value = _uiState.value.copy(
-                    isSavingProfile = false,
-                    selectedHobbies = originalHobbies, // Revert the selected hobbies
                     errorMessage = errorMessage
                 )
             }
@@ -219,7 +161,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun updateProfile(name: String, bio: String, onSuccess: () -> Unit = {}) {
+    fun updateProfile(name: String, address: Address?, transitType: TransitType?, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             _uiState.value =
                 _uiState.value.copy(
@@ -228,7 +170,7 @@ class ProfileViewModel @Inject constructor(
                     successMessage = null
                 )
 
-            val result = profileRepository.updateProfile(name, bio)
+            val result = profileRepository.updateProfile(name, address, transitType)
             if (result.isSuccess) {
                 val updatedUser = result.getOrNull()!!
                 _uiState.value = _uiState.value.copy(

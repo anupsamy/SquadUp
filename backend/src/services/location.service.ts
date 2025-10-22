@@ -1,5 +1,6 @@
 import { Client } from "@googlemaps/google-maps-services-js";
 import type { UserLocation } from "../types/location.types";
+import { format } from "path";
 
 export class LocationService {
   private mapsClient: Client;
@@ -61,8 +62,8 @@ export class LocationService {
   async getTopNearbyPlaces(
   location: UserLocation,
   type: string = "restaurant",
-  radius: number = 5000,
-  maxResults: number = 10
+  radius: number = 1000,
+  maxResults: number = 5
 ): Promise<{ name: string; lat: number; lng: number }[]> {
   try {
     const response = await this.mapsClient.placesNearby({
@@ -84,9 +85,10 @@ export class LocationService {
           name: place.name,
           lat: loc.lat,
           lng: loc.lng,
+          formatted_address: place.vicinity,
         };
       })
-      .filter((p): p is { name: string; lat: number; lng: number } => p !== null)
+      .filter((p): p is { name: string; lat: number; lng: number; formatted_address: string } => p !== null)
       .slice(0, maxResults);
 
   } catch (err) {

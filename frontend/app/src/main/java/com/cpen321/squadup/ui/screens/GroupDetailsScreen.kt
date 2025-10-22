@@ -16,7 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.background
-import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalClipboardManager
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +71,7 @@ fun GroupDetailsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
+                        .height(400.dp)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -84,7 +84,7 @@ fun GroupDetailsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Join code + copy button
-                val clipboardManager = LocalClipboard.current
+                val clipboardManager = LocalClipboardManager.current
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -106,6 +106,26 @@ fun GroupDetailsScreen(
                         )
                     }) {
                         Text("Copy")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Activity category
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Activity",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "Restaurants",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
 

@@ -21,7 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
-import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Search
@@ -144,7 +144,7 @@ fun GroupListScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Person,
+                                    imageVector = Icons.Default.AccountCircle,
                                     contentDescription = "Member",
                                     modifier = Modifier.size(24.dp)
                                 )

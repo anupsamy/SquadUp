@@ -32,7 +32,6 @@ fun GroupDetailsScreen(
                     Column {
                         Text(
                             text = group.groupName,
-                            //fontSize = 20.sp,
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             fontWeight = FontWeight.Bold
                         )
@@ -46,7 +45,7 @@ fun GroupDetailsScreen(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = "Member: x/${group.expectedPeople}",
+                                text = "x/${group.expectedPeople} members",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -101,7 +100,7 @@ fun GroupDetailsScreen(
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
-                    Button(onClick = {
+                    OutlinedButton(onClick = {
                         clipboardManager.setText(
                             AnnotatedString(group.joinCode ?: "")
                         )
@@ -153,7 +152,7 @@ fun GroupDetailsScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // See Details button
-                Button(onClick = { navController.navigateUp() }) {
+                Button(onClick = { navController.navigate("group_list") }) {
                     Text(text = "See Details")
                 }
             }

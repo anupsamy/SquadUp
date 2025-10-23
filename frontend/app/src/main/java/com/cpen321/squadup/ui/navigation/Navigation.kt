@@ -44,6 +44,8 @@ object NavRoutes {
     const val MANAGE_PROFILE = "manage_profile"
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
+    const val GROUP_DETAIL = "group_detail"
+    const val GROUP_LIST = "group_list"
 
 }
 

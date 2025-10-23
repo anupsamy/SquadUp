@@ -44,6 +44,8 @@ object NavRoutes {
     const val MANAGE_PROFILE = "manage_profile"
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
+    const val GROUP_DETAILS = "group_details"
+
 
 }
 
@@ -60,6 +62,7 @@ fun AppNavigation(
     val profileViewModel: ProfileViewModel = hiltViewModel()
     val mainViewModel: MainViewModel = hiltViewModel()
     val newsViewModel: NewsViewModel = hiltViewModel()
+    val groupViewModel: GroupViewModel = hiltViewModel()
 
     // Handle navigation events from NavigationStateManager
     LaunchedEffect(navigationEvent) {
@@ -68,7 +71,8 @@ fun AppNavigation(
             navController,
             navigationStateManager,
             authViewModel,
-            mainViewModel
+            mainViewModel,
+            groupViewModel
         )
     }
 
@@ -78,7 +82,8 @@ fun AppNavigation(
         profileViewModel = profileViewModel,
         mainViewModel = mainViewModel,
         navigationStateManager = navigationStateManager,
-        newsViewModel = newsViewModel
+        newsViewModel = newsViewModel,
+        groupViewModel = groupViewModel
     )
 }
 
@@ -87,7 +92,8 @@ private fun handleNavigationEvent(
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
     authViewModel: AuthViewModel,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    groupViewModel: GroupViewModel
 ) {
     when (navigationEvent) {
         is NavigationEvent.NavigateToAuth -> {
@@ -195,7 +201,8 @@ private fun AppNavHost(
     profileViewModel: ProfileViewModel,
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
-    navigationStateManager: NavigationStateManager
+    navigationStateManager: NavigationStateManager,
+    groupViewModel: GroupViewModel
 ) {
     NavHost(
         navController = navController,
@@ -272,47 +279,45 @@ private fun AppNavHost(
             )
         }
 
-        composable("group_details/{groupId}") { backStackEntry ->
+        /*composable("group_details/{groupId}") { backStackEntry ->
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
             val group = mainViewModel.getGroupById(joinCode) // Replace with getGroupById API call
             
             group?.let {
                 GroupDetailsScreen(
                     navController = navController,
-                    group = it
+                    group = group,
+                    groupViewModel = groupViewModel
                 )
             }
-        }
+        }*/
 
         composable("group_details/{joinCode}") { backStackEntry ->
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            val mainViewModel: MainViewModel = hiltViewModel()
-        
-            LaunchedEffect(joinCode) {
-                mainViewModel.fetchGroupByJoinCode(
-                    joinCode = joinCode,
-                    onSuccess = { group ->
-                        navController.navigate("group_details_screen/${group.joinCode}")
-                    },
-                    onError = { errorMessage ->
-                        Log.e("Navigation", "Error fetching group: $errorMessage")
-                    }
-                )
-            }
-        }
-        
-        // Define a new route for the GroupDetailsScreen
-        composable("group_details_screen/{joinCode}") { backStackEntry ->
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
             val group = mainViewModel.getGroupById(joinCode)
         
             group?.let {
                 GroupDetailsScreen(
                     navController = navController,
-                    group = it
+                    group = group,
+                    groupViewModel = groupViewModel
                 )
             }
         }
+        
+        // Define a new route for the GroupDetailsScreen
+        /*composable("group_details_screen/{joinCode}") { backStackEntry ->
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val group = mainViewModel.getGroupById(joinCode)
+        
+            group?.let {
+                GroupDetailsScreen(
+                    navController = navController,
+                    group = it,
+                    groupViewModel = groupViewModel
+                )
+            }
+        }*/
 
     }
 }

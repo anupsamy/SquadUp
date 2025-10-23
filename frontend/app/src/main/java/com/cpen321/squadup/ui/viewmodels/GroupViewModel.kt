@@ -30,6 +30,9 @@ class GroupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(GroupUiState())
     val uiState: StateFlow<GroupUiState> = _uiState
 
+    private val _isGroupDeleted = MutableStateFlow(false)
+    val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
+
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupLeaderUser, expectedPeople: Number) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
@@ -57,6 +60,23 @@ class GroupViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun deleteGroup(joinCode: String) {
+        viewModelScope.launch {
+            val result = groupRepository.deleteGroupByJoinCode(joinCode)
+            if (result.isSuccess) {
+                Log.d(TAG, "Group deleted successfully: $joinCode")
+                _isGroupDeleted.value = true // Update the deletion state
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to delete group"
+                Log.e(TAG, "Error deleting group: $error")
+            }
+        }
+    }
+
+    fun resetGroupDeletedState() {
+        _isGroupDeleted.value = false
     }
 
     fun clearMessages() {

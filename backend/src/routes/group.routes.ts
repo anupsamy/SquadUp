@@ -25,4 +25,11 @@ router.post( //have seperate endpoint for updating?
     groupController.updateGroup
 );
 
+router.delete(
+    '/delete/:joinCode', // Define the route parameter
+    groupController.deleteGroupByJoinCode.bind(groupController) // Bind the controller method
+);
+
+
+
 export default router;

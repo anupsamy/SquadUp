@@ -101,4 +101,20 @@ class GroupRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun deleteGroupByJoinCode(joinCode: String): Result<Unit> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val response = groupInterface.deleteGroup("Bearer $authToken", joinCode)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to delete group.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

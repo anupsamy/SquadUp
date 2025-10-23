@@ -115,12 +115,17 @@ export class GroupModel {
       }
     }
   
-    async delete(groupId: mongoose.Types.ObjectId): Promise<void> {
+
+
+    async delete(joinCode:string): Promise<void> {
       try {
-        await this.group.findByIdAndDelete(groupId);
+        const deletedGroup = await this.group.findOneAndDelete({ joinCode });
+        if (!deletedGroup) {
+            throw new Error(`Group with joinCode '${joinCode}' not found`);
+        }
       } catch (error) {
-        logger.error('Error deleting group:', error);
-        throw new Error('Failed to delete group');
+        logger.error('Error deleting user:', error);
+        throw new Error('Failed to delete user');
       }
     }
 

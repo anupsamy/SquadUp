@@ -32,4 +32,10 @@ interface GroupInterface {
         @Header("Authorization") authHeader: String,
         @Body request: CreateGroupRequest
     ): Response<ApiResponse<GroupData>>
+
+    @DELETE("group/delete/{joinCode}")
+    suspend fun deleteGroup(
+        @Header("Authorization") authHeader: String,
+        @retrofit2.http.Path("joinCode") joinCode: String
+    ): Response<Unit>
 }

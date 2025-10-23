@@ -1,5 +1,5 @@
 package com.cpen321.squadup.ui.screens
-
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -10,15 +10,29 @@ import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.data.remote.dto.GroupData
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreen(
     navController: NavController,
-    group: GroupDataDetailed
+    group: GroupDataDetailed,
+    groupViewModel: GroupViewModel
 ) {
+    val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
+
+    LaunchedEffect(isGroupDeleted) {
+        if (isGroupDeleted) {
+            navController.navigate("main") {
+                popUpTo(0) { inclusive = true } // Clear the back stack
+            }
+            groupViewModel.resetGroupDeletedState()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,6 +66,19 @@ fun GroupDetailsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Expected People: ${group.expectedPeople}", style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Add the "Delete Group" button
+                Button(
+                    onClick = {
+                        groupViewModel.deleteGroup(group.joinCode)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(text = "Delete Group")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Button(onClick = { navController.navigateUp() }) {
                     Text(text = "Back to Groups")
                 }

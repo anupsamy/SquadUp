@@ -126,13 +126,16 @@ export class GroupController {
     }
   }
 
-  async deleteGroup(req: Request, res: Response, next: NextFunction) {
+  async deleteGroupByJoinCode(
+    req: Request<{joinCode: string}>, 
+    res: Response, 
+    next: NextFunction) {
     try {
-      const group = req.group!;
+      const {joinCode} = req.params;
 
       //await MediaService.deleteAllUserImages(user._id.toString());
 
-      await groupModel.delete(group._id); //NOTE: see if anything else needs to be removed first
+      await groupModel.delete(joinCode); //NOTE: see if anything else needs to be removed first
 
       res.status(200).json({
         message: 'group deleted successfully',

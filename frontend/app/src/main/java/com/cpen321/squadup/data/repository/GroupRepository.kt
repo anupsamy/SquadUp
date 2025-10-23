@@ -14,5 +14,6 @@ interface GroupRepository {
         expectedPeople: Number
     ): Result<GroupData>
     suspend fun getGroupByJoinCode(joinCode: String): Result<GroupDataDetailed>
+    suspend fun deleteGroupByJoinCode(joinCode:String): Result<Unit>
 
 }

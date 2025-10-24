@@ -13,7 +13,7 @@ export interface IGroup extends Document {
     joinCode: string;
     groupLeaderId: GroupUser;
     expectedPeople: number;
-    groupMemberIds: String[]; //Change to object of users later maybe
+    groupMemberIds: GroupUser[]; //Change to object of users later maybe
     createdAt: Date;
   }
 
@@ -45,8 +45,13 @@ export const createGroupSchema = z.object({
 });
 
 export const updateGroupSchema = z.object({
+  joinCode: z.string().min(6, 'Join code is required'),
   expectedPeople: z.number().max(100).optional(),
-  groupMemberIds: z.array(z.string()).default([]).optional(),
+  groupMemberIds: z.array(z.object({
+    id: z.string().min(1, 'User ID is required'),
+    name: z.string().min(1, "Name is required"),
+    email: z.string().min(1, "Email is required")
+  })).default([]).optional(),
 });
 
 // Request types
@@ -76,7 +81,7 @@ export type BasicGroupInfo = {
     meetingTime: string;
     groupLeaderId: GroupUser;
     expectedPeople: number;
-    groupMemberIds?: String[];
+    groupMemberIds?: GroupUser[];
 };
 
 export type CreateGroupInfo = {
@@ -87,8 +92,9 @@ export type CreateGroupInfo = {
 };
 
 export type UpdateInfo = {
+    joinCode: string;
     expectedPeople: number;
-    groupMemberIds: String[];
+    groupMemberIds: GroupUser[];
 };
 
 export type GroupUser = {

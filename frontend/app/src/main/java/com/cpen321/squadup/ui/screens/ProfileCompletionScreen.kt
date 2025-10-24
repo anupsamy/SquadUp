@@ -71,7 +71,13 @@ fun ProfileCompletionScreen(
     onProfileCompleted: () -> Unit,
     onProfileCompletedWithMessage: (String) -> Unit = { onProfileCompleted() }
 ) {
-    val uiState by profileViewModel.uiState.collectAsState()
+    val user = profileViewModel.uiState.collectAsState().value.user
+    val uiState = profileViewModel.uiState.collectAsState().value
+    if (user != null) {
+        Text(text = "Welcome, ${user.name}")
+    } else {
+        Text(text = "Loading user data...")
+    }
     val snackBarHostState = remember { SnackbarHostState() }
     val successfulBioUpdateMessage = stringResource(R.string.successful_bio_update)
 
@@ -87,8 +93,8 @@ fun ProfileCompletionScreen(
         }
     }
 
-    LaunchedEffect(uiState.user) {
-        uiState.user?.let { user ->
+    LaunchedEffect(user) {
+        user?.let { user ->
             if (user.bio != null && user.bio.isNotBlank() && !formState.hasSavedBio) {
                 onProfileCompleted()
             }

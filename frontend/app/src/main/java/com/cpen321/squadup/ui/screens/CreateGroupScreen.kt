@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Log
-import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
+import com.cpen321.squadup.data.remote.dto.GroupUser
 
 @Composable
 fun CreateGroupScreen(
@@ -148,7 +148,7 @@ fun CreateGroupScreen(
                 Button(
                     onClick = {
                         if (meetingDateTime.isNotEmpty() && currentUserId!= null) {
-                            val groupLeaderUser = GroupLeaderUser(
+                            val groupLeaderUser = GroupUser(
                                 id = currentUserId._id,
                                 name = currentUserId.name,
                                 email = currentUserId.email

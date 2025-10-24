@@ -33,7 +33,7 @@ import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
+import com.cpen321.squadup.data.remote.dto.GroupUser
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -177,7 +177,7 @@ private fun MainScreenWithHobbies(
     onProfileClick: () -> Unit
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
-    val selectedHobbies = uiState.selectedHobbies.toList()
+    val selectedHobbies = uiState.selectedHobbies?.toList() ?: emptyList()
 
     LaunchedEffect(Unit) {
         profileViewModel.uiState.collect { profileState ->

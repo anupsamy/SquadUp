@@ -29,6 +29,7 @@ import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
@@ -45,44 +46,140 @@ import androidx.compose.ui.unit.dp
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
+import com.cpen321.squadup.data.remote.dto.GroupUser
 
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.TextField
+import android.util.Log
 
 
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
+    profileViewModel: ProfileViewModel = hiltViewModel(),
     selectedHobbies: List<String>,
     onProfileClick: () -> Unit,
     navController: NavController 
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-    
+    val joinCode = remember { mutableStateOf("") } // State for the join code input
+    val joinGroupMessage = remember { mutableStateOf<String?>(null) } // State for success/error messages
+    val profileUiState by profileViewModel.uiState.collectAsState()
+
     LaunchedEffect(Unit) {
         mainViewModel.fetchGroups()
     }
 
-    MainContent(
-        uiState = uiState,
-        newsViewModel = newsViewModel,
-        selectedHobbies = selectedHobbies,
-        groups = uiState.groups,
-        snackBarHostState = snackBarHostState,
-        onProfileClick = onProfileClick,
-        onGroupClick = { groupId ->
-            navController.navigate("group_details/$groupId")
+    LaunchedEffect(Unit) {
+        profileViewModel.loadProfile()
+    }
+
+    Scaffold(
+        topBar = {
+            MainTopBar(onProfileClick = onProfileClick)
         },
-        onCreateGroupClick = {
-            navController.navigate(NavRoutes.CREATE_GROUP)
-        },
-        onSuccessMessageShown = mainViewModel::clearSuccessMessage,
-        modifier = Modifier
-    )
+        snackbarHost = {
+            MainSnackbarHost(
+                hostState = snackBarHostState,
+                successMessage = uiState.successMessage,
+                onSuccessMessageShown = mainViewModel::clearSuccessMessage
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Existing group list and create group button
+            MainBody(
+                paddingValues = PaddingValues(0.dp),
+                newsViewModel = newsViewModel,
+                selectedHobbies = selectedHobbies,
+                onCreateGroupClick = {
+                    navController.navigate(NavRoutes.CREATE_GROUP)
+                },
+                groups = uiState.groups,
+                onGroupClick = { groupId ->
+                    navController.navigate("group_details/$groupId")
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // New section for joining a group
+            JoinGroupSection(
+                joinCode = joinCode.value,
+                onJoinCodeChange = { joinCode.value = it },
+                onJoinGroupClick = {
+                    val currentUser = GroupUser(
+                        id = "currentUserId", // Replace with the actual user ID
+                        name = "Current User", // Replace with the actual user name
+                        email = "currentuser@example.com" // Replace with the actual user email
+                    )
+                    mainViewModel.joinGroup(
+                        joinCode = joinCode.value,
+                        currentUser = currentUser,
+                        onSuccess = { message ->
+                            joinGroupMessage.value = message
+                            mainViewModel.fetchGroups() // Refresh groups after joining
+                        },
+                        onError = { error ->
+                            joinGroupMessage.value = error
+                        }
+                    )
+                },
+                joinGroupMessage = joinGroupMessage.value
+            )
+        }
+    }
 }
+
+@Composable
+private fun JoinGroupSection(
+    joinCode: String,
+    onJoinCodeChange: (String) -> Unit,
+    onJoinGroupClick: () -> Unit,
+    joinGroupMessage: String?
+) {
+    Log.d("MainScreen", "JoinGroupSection is being rendered")
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TextField(
+            value = joinCode,
+            onValueChange = onJoinCodeChange,
+            label = { Text("Enter Join Code") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            maxLines = 1
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = onJoinGroupClick,
+            enabled = joinCode.length == 6 // Enable only if the join code is 6 characters
+        ) {
+            Text("Join Group")
+        }
+        joinGroupMessage?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = if (it.contains("success", ignoreCase = true)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+            )
+        }
+    }
+}
+
 @Composable
 private fun MainContent(
     uiState: MainUiState,

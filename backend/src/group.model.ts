@@ -48,7 +48,12 @@ const groupSchema = new Schema<IGroup>(
         trim: true,
       },
       groupMemberIds: {
-        type: new Array<String>,
+        type: [{
+          id: String, // Define the fields of GoogleUserInfo
+          name: String,
+          email: String,
+        },
+      ],
         required: false,
         trim: true,
       },
@@ -100,9 +105,33 @@ export class GroupModel {
     ): Promise<IGroup | null> {
       try {
         const validatedData = updateGroupSchema.parse(group);
-  
+        
         const updatedGroup = await this.group.findByIdAndUpdate(
           groupId,
+          validatedData,
+          {
+            new: true,
+          }
+        );
+        
+        return updatedGroup;
+      } catch (error) {
+        logger.error('Error updating group:', error);
+        throw new Error('Failed to update group');
+      }
+    }
+
+    async updateGroupByJoinCode(
+      joinCode: string,
+      group: Partial<IGroup>
+    ): Promise<IGroup | null> {
+      try {
+        console.error('GroupModel joinCode:', joinCode);
+        console.error('GroupModel update by joinCode group:', group);
+        const validatedData = updateGroupSchema.parse(group);
+        console.error('GroupModel validatedData:', validatedData);
+        const updatedGroup = await this.group.findOneAndUpdate(
+          {joinCode},
           validatedData,
           {
             new: true,
@@ -115,8 +144,6 @@ export class GroupModel {
       }
     }
   
-
-
     async delete(joinCode:string): Promise<void> {
       try {
         const deletedGroup = await this.group.findOneAndDelete({ joinCode });

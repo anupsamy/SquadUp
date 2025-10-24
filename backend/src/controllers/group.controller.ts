@@ -126,6 +126,41 @@ export class GroupController {
     }
   }
 
+  async updateGroupByJoinCode(
+    req: Request<unknown, unknown, UpdateGroupRequest>,
+    res: Response<GetGroupResponse>,
+    next: NextFunction
+  ) {
+    try {
+      const {joinCode, expectedPeople, groupMemberIds} = req.body;
+      console.error('GroupController updateByJoincode joinCode:', joinCode);
+      console.error('GroupController updateByJoincode groupMembers:', groupMemberIds);
+      console.error('GroupController updateByJoincode expectedPeople:', expectedPeople);
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, expectedPeople, groupMemberIds});
+
+      if (!updatedGroup) {
+        return res.status(404).json({
+          message: 'Group not found',
+        });
+      }
+
+      res.status(200).json({
+        message: 'Group info updated successfully',
+        data: { group: updatedGroup },
+      });
+    } catch (error) {
+      logger.error('Failed to update group info:', error);
+
+      if (error instanceof Error) {
+        return res.status(500).json({
+          message: error.message || 'Failed to update group info',
+        });
+      }
+
+      next(error);
+    }
+  }
+
   async deleteGroupByJoinCode(
     req: Request<{joinCode: string}>, 
     res: Response, 

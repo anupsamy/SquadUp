@@ -4,9 +4,10 @@ import android.util.Log
 import com.cpen321.squadup.data.local.preferences.TokenManager
 import com.cpen321.squadup.data.remote.api.GroupInterface
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
+import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupsDataAll
-import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
+import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.utils.JsonUtils.parseErrorMessage
 import javax.inject.Inject
@@ -64,7 +65,7 @@ class GroupRepositoryImpl @Inject constructor(
     override suspend fun createGroup(
         groupName: String, 
         meetingTime: String, 
-        groupLeaderId: GroupLeaderUser, 
+        groupLeaderId: GroupUser, 
         expectedPeople: Number
         ): Result<GroupData> {
         return try {
@@ -111,6 +112,32 @@ class GroupRepositoryImpl @Inject constructor(
             } else {
                 val errorBodyString = response.errorBody()?.string()
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to delete group.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun joinGroup(joinCode: String, expectedPeople: Number, updatedMembers: List<GroupUser>): Result<Unit> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val request = UpdateGroupRequest(
+                joinCode = joinCode, 
+                expectedPeople = expectedPeople, 
+                groupMemberIds = updatedMembers
+            )
+            Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
+            val response = groupInterface.joinGroup(
+                authHeader = "Bearer $authToken",
+                request = request
+            )
+            Log.d(TAG, "GroupRepImpl updateGroupRequest response ${response}")
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {

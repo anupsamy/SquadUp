@@ -185,7 +185,7 @@ private fun ManageHobbiesBody(
                 HobbiesForm(
                     formData = HobbiesFormData(
                         allHobbies = uiState.allHobbies,
-                        selectedHobbies = uiState.selectedHobbies,
+                        selectedHobbies = uiState.selectedHobbies ?: emptySet(),
                         onHobbyToggle = onHobbyToggle,
                         onSaveClick = onSaveClick
                     ),

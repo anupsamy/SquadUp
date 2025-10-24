@@ -28,13 +28,25 @@ wss.on('connection', function connection(ws) {
     });
 
     // Send periodic test messages
+    let notifCount = 0;
+    const maxNotifs = 5;
+
     const interval = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
+            notifCount++;
+
             ws.send(JSON.stringify({
                 type: 'notification',
-                message: `Test notification ${Date.now()}`,
+                message: `Test notification ${notifCount}`,
                 timestamp: new Date().toISOString()
             }));
+
+            if (notifCount >= maxNotifs) {
+                console.log('Sent 5 notifications. Stopping test messages.');
+                clearInterval(interval);
+            }
+        } else {
+            clearInterval(interval);
         }
     }, 5000); // Send every 5 seconds
 

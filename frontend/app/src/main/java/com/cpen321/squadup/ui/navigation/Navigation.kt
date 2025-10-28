@@ -175,12 +175,9 @@ private fun MainScreenWithHobbies(
     profileViewModel: ProfileViewModel,
     onProfileClick: () -> Unit
 ) {
-<<<<<<< Updated upstream
     val selectedHobbies = emptyList<String>()
-=======
     val uiState by profileViewModel.uiState.collectAsState()
-    val selectedHobbies = uiState.selectedHobbies?.toList() ?: emptyList()
->>>>>>> Stashed changes
+    //val selectedHobbies = uiState.selectedHobbies?.toList() ?: emptyList()
 
     MainScreen(
         mainViewModel = mainViewModel,
@@ -251,15 +248,6 @@ private fun AppNavHost(
                 onBackClick = { navigationStateManager.navigateBack() }
             )
         }
-<<<<<<< Updated upstream
-=======
-
-        composable(NavRoutes.MANAGE_HOBBIES) {
-            ManageHobbiesScreen(
-                profileViewModel = profileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() }
-            )
-        }
 
         composable(NavRoutes.CREATE_GROUP) {
             CreateGroupScreen(navController = navController)
@@ -276,19 +264,6 @@ private fun AppNavHost(
             )
         }
 
-        /*composable("group_details/{groupId}") { backStackEntry ->
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            val group = mainViewModel.getGroupById(joinCode) // Replace with getGroupById API call
-            
-            group?.let {
-                GroupDetailsScreen(
-                    navController = navController,
-                    group = group,
-                    groupViewModel = groupViewModel
-                )
-            }
-        }*/
-
         composable("group_details/{joinCode}") { backStackEntry ->
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
             val group = mainViewModel.getGroupById(joinCode)
@@ -303,19 +278,6 @@ private fun AppNavHost(
             }
         }
         
-        // Define a new route for the GroupDetailsScreen
-        /*composable("group_details_screen/{joinCode}") { backStackEntry ->
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            val group = mainViewModel.getGroupById(joinCode)
-        
-            group?.let {
-                GroupDetailsScreen(
-                    navController = navController,
-                    group = it,
-                    groupViewModel = groupViewModel
-                )
-            }
-        }*/
 
         composable(NavRoutes.JOIN_GROUP) {
             JoinGroupScreen(
@@ -326,6 +288,5 @@ private fun AppNavHost(
             )
         }   
 
->>>>>>> Stashed changes
     }
 }

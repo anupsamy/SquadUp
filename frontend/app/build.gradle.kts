@@ -115,11 +115,8 @@ dependencies {
     
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
-<<<<<<< Updated upstream
     implementation(libs.firebase.messaging)
-=======
     implementation(libs.androidx.compose.foundation)
->>>>>>> Stashed changes
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
     

@@ -103,18 +103,9 @@ fun ProfileCompletionScreen(
         }
     }
 
-<<<<<<< Updated upstream
     LaunchedEffect(uiState.user) {
-        uiState.user?.let { user ->
-            // Auto-complete if user already has transitType filled
-            if ( //user.address != null &&
-                user.transitType != null &&
-                !formState.hasSavedProfile) {
-=======
-    LaunchedEffect(user) {
         user?.let { user ->
-            if (user.bio != null && user.bio.isNotBlank() && !formState.hasSavedBio) {
->>>>>>> Stashed changes
+            if ( user.transitType != null && !formState.hasSavedProfile) {
                 onProfileCompleted()
             }
         }

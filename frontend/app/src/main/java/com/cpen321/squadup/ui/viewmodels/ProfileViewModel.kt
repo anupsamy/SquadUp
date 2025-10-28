@@ -57,12 +57,9 @@ class ProfileViewModel @Inject constructor(
 
             if (profileResult.isSuccess) {
                 val user = profileResult.getOrNull()!!
-<<<<<<< Updated upstream
-=======
-                val availableHobbies = hobbiesResult.getOrNull()!!
+                //val availableHobbies = hobbiesResult.getOrNull()!!
                 
-                val selectedHobbies = user?.hobbies?.toSet() ?: emptySet()
->>>>>>> Stashed changes
+                //val selectedHobbies = user?.hobbies?.toSet() ?: emptySet()
 
                 _uiState.value = _uiState.value.copy(
                     isLoadingProfile = false,
@@ -90,9 +87,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-<<<<<<< Updated upstream
-=======
-    fun toggleHobby(hobby: String) {
+    /*fun toggleHobby(hobby: String) {
         val currentSelected = _uiState.value.selectedHobbies?.toMutableSet() ?: mutableSetOf()
         if (currentSelected.contains(hobby)) {
             currentSelected.remove(hobby)
@@ -137,9 +132,8 @@ class ProfileViewModel @Inject constructor(
                 )
             }
         }
-    }
+    }*/
 
->>>>>>> Stashed changes
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }

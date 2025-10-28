@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,12 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.squadup.R
+import com.cpen321.squadup.ui.components.ActivityPicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
+import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 
 @Composable
@@ -34,6 +37,7 @@ fun MainScreen(
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
     selectedHobbies: List<String>,
+
     onProfileClick: () -> Unit
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
@@ -161,10 +165,10 @@ private fun MainBody(
     selectedHobbies: List<String>,
     modifier: Modifier = Modifier
 ) {
-    // Show NewsScreen instead of welcome message
-    NewsScreen(
-        newsViewModel = newsViewModel,
-        selectedHobbies = selectedHobbies,
+    val activityPickerViewModel = remember { ActivityPickerViewModel() }
+
+    ActivityPicker(
+        viewModel = activityPickerViewModel,
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues)

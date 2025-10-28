@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +10,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     // secrets gradle plugin
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -21,6 +24,10 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
+
+        val localProperties = Properties()
+        localProperties.load(FileInputStream(rootProject.file("local.properties")))
+        buildConfigField("String", "GOOGLE_PLACES_API_KEY", "\"${localProperties.getProperty("GOOGLE_PLACES_API_KEY")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -98,37 +105,37 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    
+
     // Navigation
     implementation(libs.androidx.navigation.compose)
-    
+
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    
+
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
-    implementation(libs.androidx.compose.foundation)
+    implementation(libs.firebase.messaging)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
-    
+
     // Google Sign-In
     implementation(libs.play.services.auth)
-    
+
     // HTTP client
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
-    
+
     // Image loading
     implementation(libs.coil.compose)
-    
+
     // Camera and Image handling
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.activity.compose)
-    
+
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-    
+
     // Shared Preferences
     implementation(libs.androidx.datastore.preferences)
 
@@ -140,6 +147,10 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    implementation(libs.places) // maps places api
+    implementation(libs.maps.compose)// map view with compose
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

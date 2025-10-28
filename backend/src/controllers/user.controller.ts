@@ -22,15 +22,19 @@ export class UserController {
   ) {
     try {
       const user = req.user!;
-
-      const updatedUser = await userModel.update(user._id, req.body);
+      const { name, transitType, address } = req.body;
+      const updatedUser = await userModel.update(user._id, {
+        name: name,
+        transitType: transitType,
+        address, 
+      });
 
       if (!updatedUser) {
         return res.status(404).json({
           message: 'User not found',
         });
       }
-
+      
       res.status(200).json({
         message: 'User info updated successfully',
         data: { user: updatedUser },

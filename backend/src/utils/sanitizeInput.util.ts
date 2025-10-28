@@ -3,8 +3,8 @@ export const sanitizeArgs = (args: unknown[]): unknown[] => {
 };
 
 export const sanitizeInput = (input: string): string => {
-  if (/[\r\n]/.test(input)) {
-    throw new Error('CRLF injection attempt detected');
-  }
+  // if (/[\r\n]/.test(input)) {
+  //   throw new Error('CRLF injection attempt detected');
+  // }
   return input;
 };

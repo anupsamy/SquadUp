@@ -1,7 +1,6 @@
 package com.cpen321.squadup.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 

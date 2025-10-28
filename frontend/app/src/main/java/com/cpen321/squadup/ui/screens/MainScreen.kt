@@ -14,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -27,16 +26,12 @@ import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
-import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
-import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
-    newsViewModel: NewsViewModel,
-    selectedHobbies: List<String>,
 
     onProfileClick: () -> Unit
 ) {
@@ -45,8 +40,6 @@ fun MainScreen(
 
     MainContent(
         uiState = uiState,
-        newsViewModel = newsViewModel,
-        selectedHobbies = selectedHobbies,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
@@ -55,8 +48,6 @@ fun MainScreen(
 @Composable
 private fun MainContent(
     uiState: MainUiState,
-    newsViewModel: NewsViewModel,
-    selectedHobbies: List<String>,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     onSuccessMessageShown: () -> Unit,
@@ -76,9 +67,7 @@ private fun MainContent(
         }
     ) { paddingValues ->
         MainBody(
-            paddingValues = paddingValues,
-            newsViewModel = newsViewModel,
-            selectedHobbies = selectedHobbies
+            paddingValues = paddingValues
         )
     }
 }
@@ -161,8 +150,6 @@ private fun MainSnackbarHost(
 @Composable
 private fun MainBody(
     paddingValues: PaddingValues,
-    newsViewModel: NewsViewModel,
-    selectedHobbies: List<String>,
     modifier: Modifier = Modifier
 ) {
     val activityPickerViewModel = remember { ActivityPickerViewModel() }
@@ -172,19 +159,5 @@ private fun MainBody(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues)
-    )
-}
-@Composable
-private fun WelcomeMessage(
-    modifier: Modifier = Modifier
-) {
-    val fontSizes = LocalFontSizes.current
-
-    Text(
-        text = stringResource(R.string.welcome),
-        style = MaterialTheme.typography.bodyLarge,
-        fontSize = fontSizes.extraLarge3,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
     )
 }

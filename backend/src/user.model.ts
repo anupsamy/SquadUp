@@ -51,7 +51,7 @@ const userSchema = new Schema<IUser>(
     },
     bio: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     name: {

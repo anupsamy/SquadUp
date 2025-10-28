@@ -51,8 +51,8 @@ android {
         create("local") {
             dimension = "env"
             // Local dev endpoints
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api\"")
-            buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000\"")
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
+            buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
             buildConfigField("String", "NEWS_API_KEY", "\"e614e65892e045deb1d4ad50f2449ef0\"")
             buildConfigField(
                 "String",
@@ -77,7 +77,7 @@ android {
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
-                "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\""
+                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
             )
         }
     }

@@ -43,14 +43,14 @@ export class GroupController {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
-      console.error('GroupController getAllGroups:', groups);
-      console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
-        console.error('GroupController groups[4]:', groups[4]);
+      // console.error('GroupController getAllGroups:', groups);
+      // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
+      //   console.error('GroupController groups[4]:', groups[4]);
       const sanitizedGroups:IGroup[] = groups.map(group => ({
       ...group.toObject(),
       groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
       }));
-      console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
+      // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
       res.status(200).json({
         message: 'Groups fetched successfully',

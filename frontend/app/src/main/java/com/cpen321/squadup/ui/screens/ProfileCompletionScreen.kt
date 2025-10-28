@@ -81,7 +81,13 @@ fun ProfileCompletionScreen(
     onProfileCompleted: () -> Unit,
     onProfileCompletedWithMessage: (String) -> Unit = { onProfileCompleted() }
 ) {
-    val uiState by profileViewModel.uiState.collectAsState()
+    val user = profileViewModel.uiState.collectAsState().value.user
+    val uiState = profileViewModel.uiState.collectAsState().value
+    if (user != null) {
+        Text(text = "Welcome, ${user.name}")
+    } else {
+        Text(text = "Loading user data...")
+    }
     val snackBarHostState = remember { SnackbarHostState() }
     val successfulUpdateMessage = stringResource(R.string.successful_profile_update)
 
@@ -97,12 +103,18 @@ fun ProfileCompletionScreen(
         }
     }
 
+<<<<<<< Updated upstream
     LaunchedEffect(uiState.user) {
         uiState.user?.let { user ->
             // Auto-complete if user already has transitType filled
             if ( //user.address != null &&
                 user.transitType != null &&
                 !formState.hasSavedProfile) {
+=======
+    LaunchedEffect(user) {
+        user?.let { user ->
+            if (user.bio != null && user.bio.isNotBlank() && !formState.hasSavedBio) {
+>>>>>>> Stashed changes
                 onProfileCompleted()
             }
         }

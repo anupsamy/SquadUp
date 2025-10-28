@@ -184,8 +184,13 @@ private fun ManageHobbiesBody(
             else -> {
                 HobbiesForm(
                     formData = HobbiesFormData(
+<<<<<<< Updated upstream
                         allHobbies = emptyList<String>(),
                         selectedHobbies = emptySet<String>(),
+=======
+                        allHobbies = uiState.allHobbies,
+                        selectedHobbies = uiState.selectedHobbies ?: emptySet(),
+>>>>>>> Stashed changes
                         onHobbyToggle = onHobbyToggle,
                         onSaveClick = onSaveClick
                     ),

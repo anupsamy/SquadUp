@@ -57,6 +57,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun updateProfile(name: String, address: Address?, transitType: TransitType?): Result<User> {
         return try {
+<<<<<<< Updated upstream
             Log.d(TAG, "=== CRLF Detection Debug ===")
             Log.d(TAG, "name contains \\r: ${name.contains("\r")}")
             Log.d(TAG, "name contains \\n: ${name.contains("\n")}")
@@ -125,6 +126,10 @@ class ProfileRepositoryImpl @Inject constructor(
                 address = sanitizedAddress,
                 transitType = transitType?.name?.lowercase()  // Use .name instead of .toString()
             )
+=======
+            val updateRequest = UpdateProfileRequest(name = name, bio = bio)
+            Log.d(TAG, "UpdateProfileRequest: $updateRequest")
+>>>>>>> Stashed changes
             val response = userInterface.updateProfile("", updateRequest) // Auth header is handled by interceptor
             Log.d("update profile test", "update profile test" + response.body()?.message.toString())
             if (response.isSuccessful && response.body()?.data != null) {

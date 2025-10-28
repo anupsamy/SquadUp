@@ -6,6 +6,7 @@ import com.cpen321.squadup.data.remote.api.ImageInterface
 import com.cpen321.squadup.data.remote.api.NewsInterface
 import com.cpen321.squadup.data.remote.api.RetrofitClient
 import com.cpen321.squadup.data.remote.api.UserInterface
+import com.cpen321.squadup.data.remote.api.GroupInterface
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,6 +27,12 @@ object NetworkModule {
     @Singleton
     fun provideUserService(): UserInterface {
         return RetrofitClient.userInterface
+    }
+
+    @Provides
+    @Singleton
+    fun provideGroupInterface(): GroupInterface {
+        return RetrofitClient.groupInterface
     }
 
     @Provides

@@ -156,8 +156,6 @@ private fun MainScreenWithHobbies(
 
     MainScreen(
         mainViewModel = mainViewModel,
-        newsViewModel = newsViewModel,
-        selectedHobbies = selectedHobbies,
         onProfileClick = onProfileClick
     )
 }

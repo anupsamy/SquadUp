@@ -4,8 +4,8 @@ import android.util.Log
 import com.cpen321.squadup.data.remote.api.ActivityInterface
 import com.cpen321.squadup.data.remote.api.SelectActivityRequest
 import com.cpen321.squadup.data.remote.dto.Activity
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ActivityRepository @Inject constructor(

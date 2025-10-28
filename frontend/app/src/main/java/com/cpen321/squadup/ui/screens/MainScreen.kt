@@ -28,6 +28,7 @@ import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun MainScreen(
@@ -152,7 +153,7 @@ private fun MainBody(
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier
 ) {
-    val activityPickerViewModel = remember { ActivityPickerViewModel() }
+    val activityPickerViewModel: ActivityPickerViewModel = hiltViewModel()
 
     ActivityPicker(
         viewModel = activityPickerViewModel,

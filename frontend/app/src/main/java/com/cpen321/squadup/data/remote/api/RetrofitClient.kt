@@ -41,6 +41,8 @@ object RetrofitClient {
 
     val newsInterface: NewsInterface = retrofit.create(NewsInterface::class.java)
 
+    val activityInterface: ActivityInterface = retrofit.create(ActivityInterface::class.java)
+
     fun setAuthToken(token: String?) {
         authToken = token
     }

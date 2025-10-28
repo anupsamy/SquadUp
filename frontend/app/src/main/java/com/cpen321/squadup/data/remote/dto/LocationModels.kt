@@ -42,3 +42,4 @@ data class Activity(
     val businessStatus: String,
     val isOpenNow: Boolean
 )
+

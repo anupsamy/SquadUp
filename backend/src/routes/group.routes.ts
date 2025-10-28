@@ -22,7 +22,14 @@ router.post( //have seperate endpoint for updating?
 router.post( //have seperate endpoint for updating?
     '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
-    groupController.updateGroup
+    groupController.updateGroupByJoinCode.bind(groupController)
 );
+
+router.delete(
+    '/delete/:joinCode', // Define the route parameter
+    groupController.deleteGroupByJoinCode.bind(groupController) // Bind the controller method
+);
+
+
 
 export default router;

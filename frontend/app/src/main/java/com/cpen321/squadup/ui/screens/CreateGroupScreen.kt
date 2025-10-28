@@ -21,8 +21,11 @@ import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Log
-import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
+import com.cpen321.squadup.data.remote.dto.GroupUser
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateGroupScreen(
     navController: NavController,
@@ -57,7 +60,15 @@ fun CreateGroupScreen(
     var dateObject:Date
 
     Scaffold(
-        topBar = { /* Add top bar if needed */ },
+        topBar = {
+            TopAppBar(
+                title = { Text("Create Group") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )},
         content = { paddingValues ->
             Column(
                 modifier = Modifier
@@ -148,7 +159,7 @@ fun CreateGroupScreen(
                 Button(
                     onClick = {
                         if (meetingDateTime.isNotEmpty() && currentUserId!= null) {
-                            val groupLeaderUser = GroupLeaderUser(
+                            val groupLeaderUser = GroupUser(
                                 id = currentUserId._id,
                                 name = currentUserId.name,
                                 email = currentUserId.email

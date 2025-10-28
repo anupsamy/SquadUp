@@ -4,9 +4,10 @@ import android.util.Log
 import com.cpen321.squadup.data.local.preferences.TokenManager
 import com.cpen321.squadup.data.remote.api.GroupInterface
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
+import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupsDataAll
-import com.cpen321.squadup.data.remote.dto.GroupLeaderUser
+import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.utils.JsonUtils.parseErrorMessage
 import javax.inject.Inject
@@ -50,6 +51,7 @@ class GroupRepositoryImpl @Inject constructor(
             Log.d(TAG, "GroupRepImpl getGroups response: ${groupsDataAll}")
             if (response.isSuccessful && groupsDataAll != null) {
                 val groups = groupsDataAll.groups // Directly use the list of GroupDataDetailed
+                Log.d(TAG, "GroupRepImpl getGroups response 2: ${groups}")
                 Result.success(groups)
             } else {
                 val errorBodyString = response.errorBody()?.string()
@@ -62,16 +64,16 @@ class GroupRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createGroup(
-        groupName: String, 
-        meetingTime: String, 
-        groupLeaderId: GroupLeaderUser, 
+        groupName: String,
+        meetingTime: String,
+        groupLeaderId: GroupUser,
         expectedPeople: Number
         ): Result<GroupData> {
         return try {
             val request = CreateGroupRequest(
-                groupName = groupName, 
-                meetingTime = meetingTime, 
-                groupLeaderId = groupLeaderId, 
+                groupName = groupName,
+                meetingTime = meetingTime,
+                groupLeaderId = groupLeaderId,
                 expectedPeople = expectedPeople
             )
             val response = groupInterface.createGroup("", request)
@@ -98,6 +100,48 @@ class GroupRepositoryImpl @Inject constructor(
             Result.failure(e)
         } catch (e: retrofit2.HttpException) {
             Log.e(TAG, "HTTP error while reating group: ${e.code()}", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteGroupByJoinCode(joinCode: String): Result<Unit> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val response = groupInterface.deleteGroup("Bearer $authToken", joinCode)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to delete group.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun joinGroup(joinCode: String, expectedPeople: Number, updatedMembers: List<GroupUser>): Result<Unit> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val request = UpdateGroupRequest(
+                joinCode = joinCode,
+                expectedPeople = expectedPeople,
+                groupMemberIds = updatedMembers
+            )
+            Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
+            val response = groupInterface.joinGroup(
+                authHeader = "Bearer $authToken",
+                request = request
+            )
+            Log.d(TAG, "GroupRepImpl updateGroupRequest response ${response}")
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }

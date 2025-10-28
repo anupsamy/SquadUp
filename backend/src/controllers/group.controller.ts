@@ -5,7 +5,7 @@ import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
 import { UserModel } from '../user.model';
-import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup } from '../types/group.types';
 
 export class GroupController {
   async createGroup(
@@ -43,11 +43,18 @@ export class GroupController {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
-      console.error('GroupController getAllGroups:', groups);
+      // console.error('GroupController getAllGroups:', groups);
+      // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
+      //   console.error('GroupController groups[4]:', groups[4]);
+      const sanitizedGroups:IGroup[] = groups.map(group => ({
+      ...group.toObject(),
+      groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
+      }));
+      // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
       res.status(200).json({
         message: 'Groups fetched successfully',
-        data: { groups },
+        data: { groups: sanitizedGroups },
       });
     } catch (error) {
       logger.error('Failed to fetch groups:', error);
@@ -63,21 +70,25 @@ export class GroupController {
   ) {
     try {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
-  
+
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
       console.error('GroupController getGroupByJoinCode:', group);
-  
+
       if (!group) {
         return res.status(404).json({
           message: `Group with joinCode '${joinCode}' not found`,
         });
       }
-  
+
       res.status(200).json({
         message: 'Group fetched successfully',
-        data: { group },
-      });
+        data: {
+          group: {
+            ...group.toObject(),
+            groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
+          },
+      }});
     } catch (error) {
       logger.error('Failed to fetch group by joinCode:', error);
       next(error);
@@ -126,13 +137,53 @@ export class GroupController {
     }
   }
 
-  async deleteGroup(req: Request, res: Response, next: NextFunction) {
+  async updateGroupByJoinCode(
+    req: Request<unknown, unknown, UpdateGroupRequest>,
+    res: Response<GetGroupResponse>,
+    next: NextFunction
+  ) {
     try {
-      const group = req.group!;
+      const {joinCode, expectedPeople, groupMemberIds} = req.body;
+      console.error('GroupController updateByJoincode joinCode:', joinCode);
+      console.error('GroupController updateByJoincode groupMembers:', groupMemberIds);
+      console.error('GroupController updateByJoincode expectedPeople:', expectedPeople);
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
+        {joinCode, expectedPeople,
+        groupMemberIds: groupMemberIds || []});
+
+      if (!updatedGroup) {
+        return res.status(404).json({
+          message: 'Group not found',
+        });
+      }
+
+      res.status(200).json({
+        message: 'Group info updated successfully',
+        data: { group: updatedGroup },
+      });
+    } catch (error) {
+      logger.error('Failed to update group info:', error);
+
+      if (error instanceof Error) {
+        return res.status(500).json({
+          message: error.message || 'Failed to update group info',
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  async deleteGroupByJoinCode(
+    req: Request<{joinCode: string}>,
+    res: Response,
+    next: NextFunction) {
+    try {
+      const {joinCode} = req.params;
 
       //await MediaService.deleteAllUserImages(user._id.toString());
 
-      await groupModel.delete(group._id); //NOTE: see if anything else needs to be removed first
+      await groupModel.delete(joinCode); //NOTE: see if anything else needs to be removed first
 
       res.status(200).json({
         message: 'group deleted successfully',

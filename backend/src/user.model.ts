@@ -49,6 +49,11 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       trim: true,
     },
+    bio: {
+      type: String,
+      required: false,
+      trim: true,
+    },
     name: {
       type: String,
       required: true,

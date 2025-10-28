@@ -5,6 +5,7 @@ import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
+import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -32,4 +33,16 @@ interface GroupInterface {
         @Header("Authorization") authHeader: String,
         @Body request: CreateGroupRequest
     ): Response<ApiResponse<GroupData>>
+
+    @POST("group/update")
+    suspend fun joinGroup(
+        @Header("Authorization") authHeader: String,
+        @Body request: UpdateGroupRequest
+    ): Response<Unit>
+
+    @DELETE("group/delete/{joinCode}")
+    suspend fun deleteGroup(
+        @Header("Authorization") authHeader: String,
+        @retrofit2.http.Path("joinCode") joinCode: String
+    ): Response<Unit>
 }

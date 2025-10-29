@@ -6,6 +6,7 @@ import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
 import { UserModel } from '../user.model';
 import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup } from '../types/group.types';
+import { getWebSocketService } from '../services/websocket.service';
 
 export class GroupController {
   async createGroup(
@@ -147,6 +148,15 @@ export class GroupController {
       console.error('GroupController updateByJoincode joinCode:', joinCode);
       console.error('GroupController updateByJoincode groupMembers:', groupMemberIds);
       console.error('GroupController updateByJoincode expectedPeople:', expectedPeople);
+      
+      // Get the current group to compare member changes
+      const currentGroup = await groupModel.findByJoinCode(joinCode);
+      if (!currentGroup) {
+        return res.status(404).json({
+          message: 'Group not found',
+        });
+      }
+
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, 
         {joinCode, expectedPeople, 
         groupMemberIds: groupMemberIds || []});
@@ -154,6 +164,28 @@ export class GroupController {
       if (!updatedGroup) {
         return res.status(404).json({
           message: 'Group not found',
+        });
+      }
+
+      // Send WebSocket notifications for new members
+      const wsService = getWebSocketService();
+      if (wsService) {
+        const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
+        const newMemberIds = (groupMemberIds || []).map(member => member.id);
+        
+        // Find new members (users who joined)
+        const joinedMembers = (groupMemberIds || []).filter(member => 
+          !currentMemberIds.includes(member.id)
+        );
+        
+        // Send notifications for each new member
+        joinedMembers.forEach(member => {
+          wsService.notifyGroupJoin(
+            joinCode, 
+            member.id, 
+            member.name, 
+            updatedGroup.groupName
+          );
         });
       }
 
@@ -209,13 +241,54 @@ export class GroupController {
       const {joinCode} = req.params;
       const {userId} = req.body;
 
+      // Get the current group to get user info before they leave
+      const currentGroup = await groupModel.findByJoinCode(joinCode);
+      if (!currentGroup) {
+        return res.status(404).json({
+          message: 'Group not found',
+        });
+      }
+
+      // Find the user who is leaving
+      const leavingUser = currentGroup.groupMemberIds?.find(member => member.id === userId) ||
+                         (currentGroup.groupLeaderId.id === userId ? currentGroup.groupLeaderId : null);
+
       const result = await groupModel.leaveGroup(joinCode, userId);
 
+      // Send WebSocket notification for user leaving
+      const wsService = getWebSocketService();
+      if (wsService && leavingUser) {
+        wsService.notifyGroupLeave(
+          joinCode, 
+          leavingUser.id, 
+          leavingUser.name, 
+          currentGroup.groupName
+        );
+      }
+
       if (result.deleted) {
+        // Notify about group deletion
+        if (wsService) {
+          wsService.notifyGroupUpdate(
+            joinCode,
+            `Group "${currentGroup.groupName}" has been deleted as no members remain`,
+            { deleted: true }
+          );
+        }
+        
         res.status(200).json({
           message: 'Group deleted successfully as no members remain',
         });
       } else {
+        // Notify about leadership transfer if applicable
+        if (wsService && result.newLeader) {
+          wsService.notifyGroupUpdate(
+            joinCode,
+            `${result.newLeader.name} is now the new group leader`,
+            { newLeader: result.newLeader }
+          );
+        }
+        
         res.status(200).json({
           message: 'Left group successfully',
           data: result.newLeader ? { newLeader: result.newLeader } : undefined,
@@ -230,6 +303,39 @@ export class GroupController {
         });
       }
 
+      next(error);
+    }
+  }
+
+  // Test endpoint for WebSocket notifications
+  async testWebSocketNotification(
+    req: Request<{joinCode: string}>, 
+    res: Response, 
+    next: NextFunction) {
+    try {
+      const {joinCode} = req.params;
+      const {message, type} = req.body;
+
+      const wsService = getWebSocketService();
+      if (!wsService) {
+        return res.status(500).json({
+          message: 'WebSocket service not available',
+        });
+      }
+
+      // Send a test notification
+      wsService.notifyGroupUpdate(
+        joinCode,
+        message || 'Test notification from backend',
+        { type: type || 'test' }
+      );
+
+      res.status(200).json({
+        message: 'Test notification sent successfully',
+        data: wsService.getStats(),
+      });
+    } catch (error) {
+      logger.error('Failed to send test notification:', error);
       next(error);
     }
   }

@@ -1,8 +1,4 @@
 .idea/*
 !.idea/codeStyles
 !.idea/inspectionProfiles
-<<<<<<< Updated upstream
-frontend/app/src/main/java/com/cpen321/squadup/data/remote/.DS_Store
-=======
 .vscode/*
->>>>>>> Stashed changes

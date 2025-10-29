@@ -33,6 +33,10 @@ class GroupViewModel @Inject constructor(
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
+    //data class Midpoint(val lat: Double, val lng: Double)
+    private val _midpoint = MutableStateFlow<String?>(null)
+    val midpoint: StateFlow<String?> = _midpoint
+
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
@@ -74,6 +78,41 @@ class GroupViewModel @Inject constructor(
             }
         }
     }
+
+    data class Midpoint(val lat: Double, val lng: Double)
+
+    fun getMidpoint(joinCode: String) {
+        viewModelScope.launch {
+            val result = groupRepository.getMidpointByJoinCode(joinCode)
+            if (result.isSuccess) {
+                val midpointString = result.getOrNull() ?: ""
+                //val midpointValue = parseMidpointString(midpointString)
+                _midpoint.value = midpointString
+                //Log.d(TAG, "Parsed midpoint: $midpointValue")
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
+                Log.e(TAG, "Error fetching midpoint: $error")
+            }
+        }
+    }
+
+    private fun parseMidpointString(midpointString: String): Midpoint? {
+        return try {
+            val parts = midpointString.trim().split("\\s+".toRegex())
+            if (parts.size == 2) {
+                val lat = parts[0].toDouble()
+                val lng = parts[1].toDouble()
+                Midpoint(lat, lng)
+            } else {
+                Log.e("GroupViewModel", "Unexpected midpoint format: $midpointString")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("GroupViewModel", "Failed to parse midpoint: $midpointString", e)
+            null
+        }
+    }
+
 
     fun resetGroupDeletedState() {
         _isGroupDeleted.value = false

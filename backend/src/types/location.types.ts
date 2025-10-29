@@ -7,7 +7,16 @@ export interface LocationInfo {
 }
 
 export interface GeoLocation {
+    formatted?: String,
     lat: number,
     lng: number,
     transitType?: TransitType
+}
+
+export type getGeoLocationResponse = {
+  message: string;
+    data?: {
+      lat: number,
+      lng: number,
+    };
 }

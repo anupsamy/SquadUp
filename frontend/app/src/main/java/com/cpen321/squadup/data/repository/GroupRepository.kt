@@ -20,6 +20,7 @@ interface GroupRepository {
         expectedPeople: Number,
         updatedMembers: List<GroupUser>
     ): Result<Unit> //add exp members later
+    suspend fun getMidpointByJoinCode(joinCode: String): Result<String>
 
 
 }

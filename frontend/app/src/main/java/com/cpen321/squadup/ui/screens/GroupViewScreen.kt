@@ -25,6 +25,7 @@ import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.ui.navigation.NavRoutes
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.joinAll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,12 +33,11 @@ fun GroupViewScreen(
     navController: NavController,
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
-    //groupViewModel: GroupViewModelPlaceholder,
     profileViewModel: ProfileViewModel,
-    //profileViewModel: ProfileViewModelDummy
 ) {
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
+    val midpoint by groupViewModel.midpoint.collectAsState()
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
@@ -92,7 +92,6 @@ fun GroupViewScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                // Map placeholder
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,10 +99,14 @@ fun GroupViewScreen(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (group.groupLeaderId?.id != currentUserId) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                    if (midpoint?.isNotEmpty() == true) {
+                        // ✅ Show midpoint when available and not empty
+                        Text(
+                            text = "Midpoint: $midpoint",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    } else if (group.groupLeaderId?.id == currentUserId) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "Waiting for members to join...",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
@@ -119,7 +122,7 @@ fun GroupViewScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Button(onClick = {
-                                /* handle find midpoint action */
+                                groupViewModel.getMidpoint(group.joinCode)
                             }) {
                                 Text(text = "Find midpoint")
                             }
@@ -131,8 +134,6 @@ fun GroupViewScreen(
                         )
                     }
                 }
-
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Join code + copy button
@@ -160,15 +161,6 @@ fun GroupViewScreen(
                         Text("Copy")
                     }
                 }
-		// Add the "Delete Group" button
-//                if (group.groupLeaderId?.id == currentUserId) {
-//                    Button(
-//                        onClick = {
-//                            groupViewModel.deleteGroup(group.joinCode)
-//                        },
-//                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-//                    ) {
-//                        Text(text = "Delete Group")
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -234,66 +226,3 @@ fun GroupViewScreen(
         }
     )
 }
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewGroupDetailsScreen() {
-    val navController = rememberNavController()
-
-// Mock data
-    val leader = GroupUser(
-        id = "1",
-        name = "Alice",
-        email = "alice@example.com"
-    )
-
-// Group members
-    val members = listOf(
-        GroupUser(id = "2", name = "Bob", email = "bob@example.com"),
-        GroupUser(id = "3", name = "Charlie", email = "charlie@example.com"),
-        GroupUser(id = "4", name = "Diana", email = "diana@example.com"),
-        GroupUser(id = "5", name = "Ethan", email = "ethan@example.com")
-    )
-
-    val fakeGroup = GroupDataDetailed(
-        groupName = "Study Buddies",
-        meetingTime = "Fridays 5 PM",
-        joinCode = "ABC123",
-        groupLeaderId = leader,
-        expectedPeople = 5,
-        groupMemberIds = members
-    )
-
-
-    // Dummy ViewModels for preview
-    val dummyGroupViewModel = object : GroupViewModelDummy() {}
-    val dummyProfileViewModel = object : ProfileViewModelDummy() {}
-
-//    GroupDetailsScreen(navController, fakeGroup, dummyGroupViewModel, dummyProfileViewModel)
-}
-
-// --- Dummy viewmodels for preview ---
-open class GroupViewModelDummy : GroupViewModelPlaceholder() {
-    override val isGroupDeleted: StateFlow<Boolean> = MutableStateFlow(false)
-}
-
-open class ProfileViewModelDummy : ProfileViewModelPlaceholder() {
-    override val uiState: StateFlow<ProfileUiStatePlaceholder> =
-        MutableStateFlow(ProfileUiStatePlaceholder())
-}
-
-// --- Simple placeholders so preview compiles ---
-open class GroupViewModelPlaceholder {
-    open val isGroupDeleted: StateFlow<Boolean> = MutableStateFlow(false)
-    open fun resetGroupDeletedState() {}
-}
-
-open class ProfileViewModelPlaceholder {
-    open val uiState: StateFlow<ProfileUiStatePlaceholder> =
-        MutableStateFlow(ProfileUiStatePlaceholder())
-    open fun loadProfile() {}
-}
-
-data class ProfileUiStatePlaceholder(val user: DummyUser? = null)
-data class DummyUser(val _id: String? = null)

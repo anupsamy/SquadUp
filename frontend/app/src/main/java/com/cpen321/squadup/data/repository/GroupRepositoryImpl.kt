@@ -145,4 +145,21 @@ class GroupRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun getMidpointByJoinCode(joinCode: String): Result<String> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val response = groupInterface.getMidpointByJoinCode("Bearer $authToken", joinCode)
+            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data!!}")
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch group by joinCode.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

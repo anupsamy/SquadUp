@@ -25,7 +25,8 @@ data class GroupDataDetailed(
     val joinCode: String,
     val groupLeaderId: GroupUser? = null,
     val expectedPeople: Number,
-    val groupMemberIds: List<GroupUser>? = null
+    val groupMemberIds: List<GroupUser>? = null,
+    val midpoint: String? = null
 )
 
 data class GroupUser(

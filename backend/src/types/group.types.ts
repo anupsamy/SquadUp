@@ -5,6 +5,7 @@ import { UserModel, userModel } from '../user.model';
 import { GoogleUserInfo } from '../types/user.types';
 import {Address} from './address.types';
 import {TransitType } from './transit.types';
+import { GeoLocation } from './location.types';
 
 
 // Group model
@@ -16,7 +17,8 @@ export interface IGroup extends Document {
     joinCode: string;
     groupLeaderId: GroupUser;
     expectedPeople: number;
-    groupMemberIds: GroupUser[]; //Change to object of users later maybe
+    groupMemberIds: GroupUser[]; //Change to object of users later maybe,
+    midpoint: string,
     createdAt: Date;
   }
 
@@ -34,6 +36,8 @@ export const basicGroupSchema = z.object({
   }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
   groupMemberIds: z.array(z.string()).default([]).optional(),
+  midpoint: z.string().default('').optional()
+
 });
 
 export const createGroupSchema = z.object({
@@ -55,6 +59,7 @@ export const updateGroupSchema = z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().min(1, "Email is required")
   })).default([]).optional(),
+  midpoint: z.string().default('').optional()
 });
 
 // Request types
@@ -107,6 +112,8 @@ export type GroupUser = {
   address?: Address,
   transitType?: TransitType
 }
+
+
 
 
 

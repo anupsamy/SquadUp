@@ -7,7 +7,7 @@ import { groupModel } from '../group.model';
 import { userModel } from '../user.model';
 import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup } from '../types/group.types';
 import { locationService } from '../services/location.service';
-import { LocationInfo } from '../types/location.types';
+import { getGeoLocationResponse, LocationInfo } from '../types/location.types';
 
 export class GroupController {
   async createGroup(
@@ -26,7 +26,7 @@ export class GroupController {
         groupLeaderId: groupLeaderId,
         expectedPeople,
         groupMemberIds: [groupLeaderId],
-        meetingTime: meetingTime, // Default to current time for now
+        meetingTime: meetingTime,  // Default to current time for now
       });
       console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
@@ -63,7 +63,6 @@ export class GroupController {
       next(error);
     }
   }
-
 
   async getGroupByJoinCode(
     req: Request<{ joinCode: string }>, // Define the route parameter type
@@ -205,7 +204,7 @@ export class GroupController {
 
   async getMidpointByJoinCode(
     req: Request<{ joinCode: string }>, // Define the route parameter type
-    res: Response<GetGroupResponse>,
+    res: Response<getGeoLocationResponse>,
     next: NextFunction
   ) {
     try {
@@ -226,8 +225,8 @@ export class GroupController {
         transitType: member.transitType!,
       }));
 
-      //const midpoint = await locationService.findOptimalMeetingPoint();
-      console.error('GroupController getGroupByJoinCode:', group);
+      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
+      const activityList = await locationService.getActivityList(optimizedPoint);
 
       if (!group) {
         return res.status(404).json({
@@ -235,16 +234,20 @@ export class GroupController {
         });
       }
 
+      const lat = optimizedPoint.lat;
+      const lng = optimizedPoint.lng
+
+      const midpoint = lat.toString() + ' ' + lng.toString();
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
+
       res.status(200).json({
-        message: 'Group fetched successfully',
+        message: 'Get midpoint successfully!',
         data: {
-          group: {
-            ...group.toObject(),
-            groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
-          },
+          lat: lat,
+          lng: lng,
       }});
     } catch (error) {
-      logger.error('Failed to fetch group by joinCode:', error);
+      logger.error('Failed to get midpoint joinCode:', error);
       next(error);
     }
   }

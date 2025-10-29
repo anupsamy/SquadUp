@@ -59,12 +59,12 @@ export class LocationService {
     return { lat: latMid * RAD_TO_DEG, lng: lonMid * RAD_TO_DEG };
   }
 
-  async getTopNearbyPlaces(
+  async getActivityList(
   location: GeoLocation,
   type: string = "restaurant",
   radius: number = 1000,
   maxResults: number = 5
-): Promise<{ name: string; lat: number; lng: number }[]> {
+): Promise<{ name: string; lat: number; lng: number, formatted_address: string }[]> {
   try {
     const response = await this.mapsClient.placesNearby({
       params: {

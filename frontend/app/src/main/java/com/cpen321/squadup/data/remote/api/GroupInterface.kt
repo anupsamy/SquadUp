@@ -1,5 +1,6 @@
 package com.cpen321.squadup.data.remote.api
 
+import android.location.Location
 import com.cpen321.squadup.data.remote.dto.ApiResponse
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
@@ -38,7 +39,7 @@ interface GroupInterface {
     suspend fun getMidpointByJoinCode(
         @Header("Authorization") authHeader: String,
         @retrofit2.http.Path("joinCode") joinCode: String
-    ): Response<ApiResponse<GroupData>>
+    ): Response<ApiResponse<String>>
 
     @POST("group/update")
     suspend fun joinGroup(

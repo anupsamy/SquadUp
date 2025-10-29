@@ -64,7 +64,7 @@ fun GroupDetailsScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    if (group.groupLeaderId?.id != currentUserId) {
+                    if (group.groupLeaderId?.id == currentUserId) {
                         Button(
                             onClick = { groupViewModel.deleteGroup(group.joinCode) },
                             colors = ButtonDefaults.buttonColors(

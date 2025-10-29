@@ -23,5 +23,9 @@ interface GroupRepository {
     ): Result<Unit> //add exp members later
     suspend fun getMidpointByJoinCode(joinCode: String): Result<SquadGoal>
 
+    suspend fun leaveGroup(
+        joinCode: String, 
+        userId: String
+    ): Result<Unit>
 
 }

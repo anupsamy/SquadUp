@@ -59,9 +59,13 @@ fun GroupListScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
+
                 actions = {
                     FilledTonalButton(
-                        onClick = { /* Leave squad */ },
+                        onClick = {
+                            currentUserId?.let { userId ->
+                            groupViewModel.leaveGroup(group.joinCode, userId)}
+                        },
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                         modifier = Modifier.height(32.dp)
                     ) {

@@ -31,10 +31,14 @@ router.delete(
 );
 
 router.get(
-    '/midpoint/:joinCode', // Define the route parameter
-    groupController.getMidpointByJoinCode.bind(groupController) // Bind the controller method
+    '/midpoint/:joinCode',
+    groupController.getMidpointByJoinCode.bind(groupController)
 );
 
 
+router.post(
+    '/leave/:joinCode', // Define the route parameter
+    groupController.leaveGroup.bind(groupController) // Bind the controller method
+);
 
 export default router;

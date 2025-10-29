@@ -30,6 +30,7 @@ fun GroupDetailsScreen(
     profileViewModel: ProfileViewModel,
 ) {
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
+    val isGroupLeft by groupViewModel.isGroupLeft.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     val midpoint by groupViewModel.midpoint.collectAsState()
 
@@ -51,6 +52,15 @@ fun GroupDetailsScreen(
         val membersJoined = group.groupMemberIds?.size ?: 0
         if (membersJoined == group.expectedPeople) {
             groupViewModel.getMidpoint(group.joinCode)
+        }
+    }
+
+    LaunchedEffect(isGroupLeft) {
+        if (isGroupLeft) {
+            navController.navigate("main") {
+                popUpTo(0) { inclusive = true } // Clear the back stack
+            }
+            groupViewModel.resetGroupLeftState()
         }
     }
 

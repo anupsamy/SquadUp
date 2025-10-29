@@ -32,14 +32,19 @@ class GroupViewModel @Inject constructor(
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
+<<<<<<< HEAD
     //data class Midpoint(val lat: Double, val lng: Double)
     private val _midpoint = MutableStateFlow<SquadGoal?>(null)
     val midpoint: StateFlow<SquadGoal?> = _midpoint
+=======
+    private val _isGroupLeft = MutableStateFlow(false)
+    val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
+>>>>>>> main
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
-    
+
             val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople)
             if (result.isSuccess) {
                 val group = result.getOrNull()
@@ -94,6 +99,21 @@ class GroupViewModel @Inject constructor(
         }
     }
 
+    fun leaveGroup(joinCode: String, userId: String) {
+        viewModelScope.launch {
+            val result = groupRepository.leaveGroup(joinCode, userId)
+            if (result.isSuccess) {
+                Log.d(TAG, "Left group successfully: $joinCode")
+                _isGroupLeft.value = true // Update the leave state
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to leave group"
+                Log.e(TAG, "Error leaving group: $error")
+                _uiState.value = _uiState.value.copy(errorMessage = error)
+            }
+        }
+    }
+
+<<<<<<< HEAD
     private fun parseMidpointString(midpointString: String): Midpoint? {
         return try {
             val parts = midpointString.trim().split("\\s+".toRegex())
@@ -112,9 +132,15 @@ class GroupViewModel @Inject constructor(
     }
 
 
+=======
+>>>>>>> main
     fun resetGroupDeletedState() {
         _isGroupDeleted.value = false
         _midpoint.value = null
+    }
+
+    fun resetGroupLeftState() {
+        _isGroupLeft.value = false
     }
 
     fun clearMessages() {

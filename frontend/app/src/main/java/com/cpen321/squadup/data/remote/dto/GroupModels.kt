@@ -13,6 +13,10 @@ data class UpdateGroupRequest(
     val groupMemberIds: List<GroupUser>?= null
 )
 
+data class LeaveGroupRequest(
+    val userId: String
+)
+
 data class GroupsDataAll(
     val groups: List<GroupDataDetailed>
 )

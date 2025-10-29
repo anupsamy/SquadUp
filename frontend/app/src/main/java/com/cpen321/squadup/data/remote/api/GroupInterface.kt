@@ -1,5 +1,6 @@
 package com.cpen321.squadup.data.remote.api
 
+import com.cpen321.squadup.data.remote.dto.ActivityCoordinates
 import com.cpen321.squadup.data.remote.dto.ApiResponse
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
@@ -7,6 +8,7 @@ import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import com.cpen321.squadup.data.remote.dto.SquadGoal
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
+import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.LeaveGroupRequest
 import okhttp3.MultipartBody
 import retrofit2.Response
@@ -17,6 +19,7 @@ import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Query
 
 interface GroupInterface {
     @GET("group/info")
@@ -29,6 +32,12 @@ interface GroupInterface {
         @Header("Authorization") authHeader: String,
         @retrofit2.http.Path("joinCode") joinCode: String
     ): Response<ApiResponse<GroupData>>
+
+    @GET("group/midpoints")
+    suspend fun getMidpoints(
+        @Header("Authorization") authHeader: String,
+        @Query("joinCode") joinCode: String
+    ): Response<ApiResponse<List<ActivityCoordinates>>>
 
     @POST("group/create")
     suspend fun createGroup(

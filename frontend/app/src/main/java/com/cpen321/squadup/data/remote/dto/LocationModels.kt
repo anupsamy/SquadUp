@@ -37,3 +37,18 @@ enum class TransitType {
     @SerializedName("bicycling") BICYCLING,
     @SerializedName("transit") TRANSIT
 }
+
+data class Activity(
+    val name: String,
+    val placeId: String,
+    val address: String,
+    val rating: Double,
+    val userRatingsTotal: Int,
+    val priceLevel: Int,
+    val type: String,
+    val latitude: Double,
+    val longitude: Double,
+    val businessStatus: String,
+    val isOpenNow: Boolean
+)
+

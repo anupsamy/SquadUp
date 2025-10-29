@@ -1,5 +1,6 @@
 package com.cpen321.squadup.di
 
+import com.cpen321.squadup.data.remote.api.ActivityInterface
 import com.cpen321.squadup.data.remote.api.AuthInterface
 import com.cpen321.squadup.data.remote.api.HobbyInterface
 import com.cpen321.squadup.data.remote.api.ImageInterface
@@ -51,5 +52,11 @@ object NetworkModule {
     @Singleton
     fun provideNewsService(): NewsInterface {
         return RetrofitClient.newsInterface
+    }
+
+    @Provides
+    @Singleton
+    fun provideActivityService(): ActivityInterface {
+        return RetrofitClient.activityInterface
     }
 }

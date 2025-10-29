@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.squadup.data.remote.dto.Activity
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.asStateFlow
 import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 data class GroupUiState(
@@ -31,6 +34,14 @@ class GroupViewModel @Inject constructor(
 
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
+
+    private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
+    val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
+
+
+    //private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
+    //val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
+
 
     //data class Midpoint(val lat: Double, val lng: Double)
     private val _midpoint = MutableStateFlow<SquadGoal?>(null)
@@ -106,6 +117,20 @@ class GroupViewModel @Inject constructor(
                 val error = result.exceptionOrNull()?.message ?: "Failed to leave group"
                 Log.e(TAG, "Error leaving group: $error")
                 _uiState.value = _uiState.value.copy(errorMessage = error)
+            }
+        }
+    }
+
+    fun getMidpoints(joinCode: String) {
+        viewModelScope.launch {
+            val result = groupRepository.getMidpoints(joinCode)
+            if (result.isSuccess) {
+                val data = result.getOrNull() ?: emptyList()
+                Log.d(TAG, "midpoints retrieved successfully: $data")
+                _midpoints.value = data
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to get midpoints"
+                Log.e(TAG, "Error getting midpoints: $error")
             }
         }
     }

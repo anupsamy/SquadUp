@@ -1,17 +1,41 @@
 package com.cpen321.squadup.ui.screens
-import androidx.compose.runtime.getValue
-import androidx.compose.foundation.layout.*
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.ui.components.ActivityMapView
+import com.cpen321.squadup.ui.components.ActivityPicker
+import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import androidx.compose.runtime.collectAsState
@@ -27,18 +51,23 @@ fun GroupDetailsScreen(
     navController: NavController,
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
-    profileViewModel: ProfileViewModel,
+    profileViewModel: ProfileViewModel
 ) {
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
+    val activityPickerViewModel: ActivityPickerViewModel = hiltViewModel()
+
     val midpoint by groupViewModel.midpoint.collectAsState()
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
     val currentUserId = profileUiState.user?._id
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
+        activityPickerViewModel.loadActivities(group.joinCode)
+        groupViewModel.getMidpoints(group.joinCode)
         groupViewModel.resetMidpoint()
     }
+
 
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
@@ -49,12 +78,21 @@ fun GroupDetailsScreen(
         }
     }
 
-    LaunchedEffect(group.groupMemberIds?.size, group.expectedPeople) {
+    LaunchedEffect(isGroupLeft) {
+        if (isGroupLeft) {
+            navController.navigate("main") {
+                popUpTo(0) { inclusive = true } // Clear the back stack
+            }
+            groupViewModel.resetGroupLeftState()
+        }
+    }
+        LaunchedEffect(group.groupMemberIds?.size, group.expectedPeople) {
         val membersJoined = group.groupMemberIds?.size ?: 0
         if (membersJoined == group.expectedPeople) {
             groupViewModel.getMidpoint(group.joinCode)
         }
     }
+
 
     Scaffold(
         topBar = {
@@ -232,3 +270,30 @@ fun GroupDetailsScreen(
         }
     )
 }
+
+
+
+
+
+
+
+
+/*
+// Map section
+                ActivityMapView(
+                    locations = groupViewModel.midpoints.collectAsState().value,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1.5f)
+                )
+
+                // Activity picker section
+                ActivityPicker(
+                    viewModel = activityPickerViewModel,
+                    joinCode = group.joinCode,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
+
+*/

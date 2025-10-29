@@ -21,5 +21,9 @@ interface GroupRepository {
         updatedMembers: List<GroupUser>
     ): Result<Unit> //add exp members later
 
+    suspend fun leaveGroup(
+        joinCode: String, 
+        userId: String
+    ): Result<Unit>
 
 }

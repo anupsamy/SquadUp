@@ -30,6 +30,9 @@ router.delete(
     groupController.deleteGroupByJoinCode.bind(groupController) // Bind the controller method
 );
 
-
+router.post(
+    '/leave/:joinCode', // Define the route parameter
+    groupController.leaveGroup.bind(groupController) // Bind the controller method
+);
 
 export default router;

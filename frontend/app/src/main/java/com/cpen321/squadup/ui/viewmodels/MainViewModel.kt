@@ -122,4 +122,23 @@ class MainViewModel @Inject constructor(
     fun getGroupById(groupId: String): GroupDataDetailed? {
         return _uiState.value.groups.find { it.joinCode == groupId } // Use joinCode directly
     }
+
+    fun leaveGroup(
+        joinCode: String,
+        userId: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = groupRepository.leaveGroup(joinCode, userId)
+            Log.d(TAG, "MainViewModel leaveGroup result: ${result}")
+            if (result.isSuccess) {
+                onSuccess("Successfully left the group!")
+                fetchGroups() // Refresh the group list
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to leave group"
+                onError(error)
+            }
+        }
+    }
 }

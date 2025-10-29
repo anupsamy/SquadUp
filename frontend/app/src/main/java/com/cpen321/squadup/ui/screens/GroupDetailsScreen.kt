@@ -25,6 +25,7 @@ fun GroupDetailsScreen(
     profileViewModel: ProfileViewModel
 ) {
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
+    val isGroupLeft by groupViewModel.isGroupLeft.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     
     LaunchedEffect(Unit) {
@@ -38,6 +39,15 @@ fun GroupDetailsScreen(
                 popUpTo(0) { inclusive = true } // Clear the back stack
             }
             groupViewModel.resetGroupDeletedState()
+        }
+    }
+
+    LaunchedEffect(isGroupLeft) {
+        if (isGroupLeft) {
+            navController.navigate("main") {
+                popUpTo(0) { inclusive = true } // Clear the back stack
+            }
+            groupViewModel.resetGroupLeftState()
         }
     }
 
@@ -73,9 +83,37 @@ fun GroupDetailsScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Expected People: ${group.expectedPeople}", style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Display group members
+                Text(text = "Group Members:", style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Show leader
+                Text(
+                    text = "• ${group.groupLeaderId?.name ?: "Unknown Leader"} (Leader)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+                
+                // Show other members
+                group.groupMemberIds?.forEach { member ->
+                    Text(
+                        text = "• ${member.name}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Add the "Delete Group" button
+                // Check if current user is a member of the group (leader or regular member)
+                val isGroupMember = currentUserId != null && (
+                    group.groupLeaderId?.id == currentUserId || 
+                    group.groupMemberIds?.any { it.id == currentUserId } == true
+                )
+
+                // Add the "Delete Group" button (only for group leader)
                 if (group.groupLeaderId?.id == currentUserId) {
                     Button(
                         onClick = {
@@ -84,6 +122,20 @@ fun GroupDetailsScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
                         Text(text = "Delete Group")
+                    }
+                }
+
+                // Add the "Leave Group" button (for all members)
+                if (isGroupMember) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            currentUserId?.let { userId ->
+                                groupViewModel.leaveGroup(group.joinCode, userId)
+                            }
+                        }
+                    ) {
+                        Text(text = "Leave Group")
                     }
                 }
 

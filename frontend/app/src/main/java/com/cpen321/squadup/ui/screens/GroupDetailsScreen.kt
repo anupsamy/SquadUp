@@ -93,9 +93,9 @@ fun GroupDetailsScreen(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (midpoint?.isNotEmpty() == true) {
+                    if (midpoint != null) {
                         Text(
-                            text = "Midpoint: $midpoint",
+                            text = "Midpoint: ${midpoint?.location}",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     } else if (group.groupLeaderId?.id == currentUserId) {

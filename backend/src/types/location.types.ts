@@ -13,10 +13,12 @@ export interface GeoLocation {
     transitType?: TransitType
 }
 
-export type getGeoLocationResponse = {
+export type getLocationResponse = {
   message: string;
     data?: {
-      lat: number,
-      lng: number,
+      location: {
+        lat: number,
+        lng: number,
+      }
     };
 }

@@ -2,16 +2,15 @@ package com.cpen321.squadup.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.cpen321.squadup.data.repository.GroupRepository
-import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 data class GroupUiState(
     val isCreatingGroup: Boolean = false,
@@ -34,8 +33,8 @@ class GroupViewModel @Inject constructor(
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
     //data class Midpoint(val lat: Double, val lng: Double)
-    private val _midpoint = MutableStateFlow<String?>(null)
-    val midpoint: StateFlow<String?> = _midpoint
+    private val _midpoint = MutableStateFlow<SquadGoal?>(null)
+    val midpoint: StateFlow<SquadGoal?> = _midpoint
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
@@ -85,9 +84,8 @@ class GroupViewModel @Inject constructor(
         viewModelScope.launch {
             val result = groupRepository.getMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
-                val midpointString = result.getOrNull() ?: ""
                 //val midpointValue = parseMidpointString(midpointString)
-                _midpoint.value = midpointString
+                _midpoint.value = result.getOrNull()
                 //Log.d(TAG, "Parsed midpoint: $midpointValue")
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
@@ -116,6 +114,7 @@ class GroupViewModel @Inject constructor(
 
     fun resetGroupDeletedState() {
         _isGroupDeleted.value = false
+        _midpoint.value = null
     }
 
     fun clearMessages() {

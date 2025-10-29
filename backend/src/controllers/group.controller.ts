@@ -7,7 +7,7 @@ import { groupModel } from '../group.model';
 import { userModel } from '../user.model';
 import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup } from '../types/group.types';
 import { locationService } from '../services/location.service';
-import { getGeoLocationResponse, LocationInfo } from '../types/location.types';
+import { getLocationResponse, LocationInfo } from '../types/location.types';
 
 export class GroupController {
   async createGroup(
@@ -204,7 +204,7 @@ export class GroupController {
 
   async getMidpointByJoinCode(
     req: Request<{ joinCode: string }>, // Define the route parameter type
-    res: Response<getGeoLocationResponse>,
+    res: Response<getLocationResponse>,
     next: NextFunction
   ) {
     try {
@@ -243,8 +243,10 @@ export class GroupController {
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
-          lat: lat,
-          lng: lng,
+          location: {
+            lat: lat,
+            lng: lng,
+          }
       }});
     } catch (error) {
       logger.error('Failed to get midpoint joinCode:', error);

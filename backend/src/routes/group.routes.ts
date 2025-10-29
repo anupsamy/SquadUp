@@ -30,6 +30,11 @@ router.delete(
     groupController.deleteGroupByJoinCode.bind(groupController) // Bind the controller method
 );
 
+router.get(
+    '/midpoint/:joinCode', // Define the route parameter
+    groupController.getMidpointByJoinCode.bind(groupController) // Bind the controller method
+);
+
 
 
 export default router;

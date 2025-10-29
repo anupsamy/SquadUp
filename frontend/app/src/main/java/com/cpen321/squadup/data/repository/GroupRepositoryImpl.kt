@@ -6,16 +6,13 @@ import com.cpen321.squadup.data.remote.api.GroupInterface
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import com.cpen321.squadup.data.remote.dto.GroupData
-import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.utils.JsonUtils.parseErrorMessage
 import javax.inject.Inject
 import javax.inject.Singleton
 
-import com.cpen321.squadup.data.remote.api.RetrofitClient
-import com.cpen321.squadup.data.remote.dto.ApiResponse
-import retrofit2.Response
+import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
@@ -146,11 +143,11 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getMidpointByJoinCode(joinCode: String): Result<String> {
+    override suspend fun getMidpointByJoinCode(joinCode: String): Result<SquadGoal> {
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getMidpointByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data!!}")
+            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data!!.location}")
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
             } else {

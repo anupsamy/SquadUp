@@ -3,7 +3,7 @@ package com.cpen321.squadup.data.repository
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupUser
-import com.cpen321.squadup.data.remote.dto.GroupsDataAll
+import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 interface GroupRepository {
     suspend fun getGroups(): Result<List<GroupDataDetailed>>
@@ -20,7 +20,7 @@ interface GroupRepository {
         expectedPeople: Number,
         updatedMembers: List<GroupUser>
     ): Result<Unit> //add exp members later
-    suspend fun getMidpointByJoinCode(joinCode: String): Result<String>
+    suspend fun getMidpointByJoinCode(joinCode: String): Result<SquadGoal>
 
 
 }

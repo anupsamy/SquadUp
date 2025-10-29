@@ -7,11 +7,13 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ActivityInterface {
     @GET("activities")
     suspend fun getActivities(
-        @Header("Authorization") authHeader: String
+        @Header("Authorization") authHeader: String,
+        @Query("joinCode") joinCode: String  // Changed from @Body to @Query
     ): Response<ApiResponse<List<Activity>>>
 
     @POST("activities/select")
@@ -22,5 +24,7 @@ interface ActivityInterface {
 }
 
 data class SelectActivityRequest(
+    val joinCode: String,
     val placeId: String
 )
+

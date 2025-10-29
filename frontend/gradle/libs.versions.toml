@@ -30,6 +30,7 @@ googleGmsGoogleServices = "4.4.4"
 firebaseMessaging = "25.0.1"
 material3 = "1.4.0"
 foundation = "1.9.3"
+foundationLayout = "1.9.4"
 
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityCompose" }
@@ -70,6 +71,7 @@ secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.se
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

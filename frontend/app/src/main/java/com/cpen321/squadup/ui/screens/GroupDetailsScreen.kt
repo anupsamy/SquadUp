@@ -1,6 +1,7 @@
 package com.cpen321.squadup.ui.screens
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -11,31 +12,46 @@ import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import com.cpen321.squadup.data.remote.dto.GroupData
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.cpen321.squadup.ui.components.ActivityPicker
+import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
+import androidx.compose.foundation.*
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.layout.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreen(
     navController: NavController,
     group: GroupDataDetailed,
-    groupViewModel: GroupViewModel, 
+    groupViewModel: GroupViewModel,
     profileViewModel: ProfileViewModel
 ) {
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
-    
+    val activityPickerViewModel: ActivityPickerViewModel = hiltViewModel()
+
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
+        // Load activities when screen opens
+        activityPickerViewModel.loadActivities(group.joinCode)
     }
+
     val currentUserId = profileUiState.user?._id
 
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
             navController.navigate("main") {
-                popUpTo(0) { inclusive = true } // Clear the back stack
+                popUpTo(0) { inclusive = true }
             }
             groupViewModel.resetGroupDeletedState()
         }
@@ -75,7 +91,6 @@ fun GroupDetailsScreen(
                 Text(text = "Expected People: ${group.expectedPeople}", style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Add the "Delete Group" button
                 if (group.groupLeaderId?.id == currentUserId) {
                     Button(
                         onClick = {
@@ -92,6 +107,15 @@ fun GroupDetailsScreen(
                 Button(onClick = { navController.navigateUp() }) {
                     Text(text = "Back to Groups")
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                ActivityPicker(
+                    viewModel = activityPickerViewModel,
+                    joinCode = group.joinCode,
+                    modifier = Modifier
+                        .weight(1f) // Changed from fillMaxSize
+                )
             }
         }
     )

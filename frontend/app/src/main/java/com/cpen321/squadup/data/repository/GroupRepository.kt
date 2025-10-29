@@ -1,9 +1,9 @@
 package com.cpen321.squadup.data.repository
 
+import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupUser
-import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 
 interface GroupRepository {
     suspend fun getGroups(): Result<List<GroupDataDetailed>>
@@ -21,5 +21,7 @@ interface GroupRepository {
         updatedMembers: List<GroupUser>
     ): Result<Unit> //add exp members later
 
+    suspend fun getActivities(joinCode: String): Result<List<Activity>>
 
+    suspend fun selectActivity(joinCode: String, placeId: String): Result<Unit>
 }

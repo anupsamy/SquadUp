@@ -2,16 +2,16 @@ package com.cpen321.squadup.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.cpen321.squadup.data.repository.GroupRepository
-import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.squadup.data.remote.dto.Activity
+import kotlinx.coroutines.flow.asStateFlow
 
 data class GroupUiState(
     val isCreatingGroup: Boolean = false,

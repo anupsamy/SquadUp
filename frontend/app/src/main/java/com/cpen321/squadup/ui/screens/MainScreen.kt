@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,23 +36,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.R
-import com.cpen321.squadup.ui.components.ActivityPicker
-import com.cpen321.squadup.ui.components.MessageSnackbar
-import com.cpen321.squadup.ui.components.MessageSnackbarState
-import com.cpen321.squadup.ui.viewmodels.MainUiState
-import com.cpen321.squadup.ui.viewmodels.MainViewModel
-import com.cpen321.squadup.ui.theme.LocalSpacing
-import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.navigation.NavRoutes
@@ -62,8 +52,6 @@ import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-
-
 
 
 @Composable

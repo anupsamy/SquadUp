@@ -28,10 +28,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.scale
-
 @Composable
 fun ActivityPicker(
     viewModel: ActivityPickerViewModel,
+    joinCode: String,
     modifier: Modifier = Modifier
 ) {
     val activities by viewModel.activities.collectAsState()
@@ -63,11 +63,7 @@ fun ActivityPicker(
 
         Button(
             onClick = {
-                if (selectedActivityId != null) {
-                    println("Activity confirmed! Selected ID: $selectedActivityId")
-                } else {
-                    println("No activity selected")
-                }
+                viewModel.confirmSelection(joinCode)
             },
             modifier = Modifier
                 .fillMaxWidth()

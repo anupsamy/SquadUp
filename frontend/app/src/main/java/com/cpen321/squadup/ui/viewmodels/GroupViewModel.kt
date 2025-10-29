@@ -35,8 +35,8 @@ class GroupViewModel @Inject constructor(
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
-    private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
-    val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
+//    private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
+//    val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
 
 
     //private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
@@ -121,19 +121,19 @@ class GroupViewModel @Inject constructor(
         }
     }
 
-    fun getMidpoints(joinCode: String) {
-        viewModelScope.launch {
-            val result = groupRepository.getMidpoints(joinCode)
-            if (result.isSuccess) {
-                val data = result.getOrNull() ?: emptyList()
-                Log.d(TAG, "midpoints retrieved successfully: $data")
-                _midpoints.value = data
-            } else {
-                val error = result.exceptionOrNull()?.message ?: "Failed to get midpoints"
-                Log.e(TAG, "Error getting midpoints: $error")
-            }
-        }
-    }
+//    fun getMidpoints(joinCode: String) {
+//        viewModelScope.launch {
+//            val result = groupRepository.getMidpoints(joinCode)
+//            if (result.isSuccess) {
+//                val data = result.getOrNull() ?: emptyList()
+//                Log.d(TAG, "midpoints retrieved successfully: $data")
+//                _midpoints.value = data
+//            } else {
+//                val error = result.exceptionOrNull()?.message ?: "Failed to get midpoints"
+//                Log.e(TAG, "Error getting midpoints: $error")
+//            }
+//        }
+//    }
 
     fun resetGroupDeletedState() {
         _isGroupDeleted.value = false

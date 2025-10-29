@@ -36,7 +36,9 @@ data class GroupDataDetailed(
 data class GroupUser(
     val id: String,
     val name: String,
-    val email: String
+    val email: String,
+    val address: Address? = null,
+    val transitType: TransitType ?= null
 )
 
 data class ActivityCoordinates (

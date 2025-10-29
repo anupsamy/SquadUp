@@ -1,23 +1,24 @@
 package com.cpen321.squadup.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -27,23 +28,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.components.ActivityMapView
-import com.cpen321.squadup.ui.components.ActivityPicker
+import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.foundation.background
-import androidx.compose.ui.platform.LocalClipboardManager
-import com.cpen321.squadup.ui.navigation.NavRoutes
+import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +52,7 @@ fun GroupDetailsScreen(
     profileViewModel: ProfileViewModel
 ) {
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
+    val isGroupLeft by groupViewModel.isGroupLeft.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     val activityPickerViewModel: ActivityPickerViewModel = hiltViewModel()
 
@@ -64,7 +63,7 @@ fun GroupDetailsScreen(
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
         activityPickerViewModel.loadActivities(group.joinCode)
-        groupViewModel.getMidpoints(group.joinCode)
+        //groupViewModel.getMidpoints(group.joinCode)
         groupViewModel.resetMidpoint()
     }
 
@@ -110,7 +109,7 @@ fun GroupDetailsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = group.meetingTime ?: "",
+                                text = group.meetingTime,
                                 style = MaterialTheme.typography.bodyMedium
                             )
 
@@ -148,9 +147,17 @@ fun GroupDetailsScreen(
                             )
                         }
                         midpoint != null -> {
-                            Text(
-                                text = "Midpoint: ${midpoint?.location}",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            val midpoint by groupViewModel.midpoint.collectAsState()
+
+                            val locations = midpoint?.let {
+                                listOf(LatLng(it.location.lat!!, it.location.lng!!))
+                            } ?: emptyList()
+
+                            ActivityMapView(
+                                locations = locations,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(0.6f)
                             )
                         }
                         group.groupLeaderId?.id == currentUserId -> {
@@ -280,12 +287,7 @@ fun GroupDetailsScreen(
 
 /*
 // Map section
-                ActivityMapView(
-                    locations = groupViewModel.midpoints.collectAsState().value,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1.5f)
-                )
+
 
                 // Activity picker section
                 ActivityPicker(

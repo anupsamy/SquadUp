@@ -234,67 +234,6 @@ class GroupRepositoryImpl @Inject constructor(
 
     //activities
 
-    override suspend fun getActivities(joinCode: String): Result<List<Activity>> {
-        return try {
-            val response = activityInterface.getActivities("", joinCode) // Auth header handled by interceptor
-
-            if (response.isSuccessful && response.body()?.data != null) {
-                Result.success(response.body()!!.data!!)
-            } else {
-                Log.e(TAG, "Failed to fetch activities: ${response.message()}")
-                Result.success(emptyList())
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching activities", e)
-            Result.success(emptyList())
-        }
-    }
-
-    override suspend fun selectActivity(joinCode: String, placeId: String): Result<Unit> {
-        return try {
-            val request = SelectActivityRequest(joinCode, placeId)
-            val response = activityInterface.selectActivity(
-                "", // Auth header handled by interceptor
-                request
-            )
-
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else {
-                Log.e(TAG, "Failed to select activity: ${response.message()}")
-                Result.failure(Exception("Failed to select activity"))
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error selecting activity", e)
-            Result.failure(e)
-        }
-    }
-
-
-    //midpoints
-
-    override suspend fun getMidpoints(joinCode: String): Result<List<LatLng>> {
-        return try {
-            val response = groupInterface.getMidpoints(
-                "", // Auth header handled by interceptor
-                joinCode
-            )
-
-            val data = response.body()?.data
-            if (response.isSuccessful && data != null) {
-                // Convert the response data to LatLng objects
-                val latLngList = data
-                Result.success(latLngList.map { LatLng(it.latitude, it.longitude) })
-            } else {
-                Log.e(TAG, "Failed to fetch midpoints: ${response.message()}")
-                Result.success(emptyList())
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching midpoints", e)
-            Result.success(emptyList())
-        }
-    }
-
     override suspend fun leaveGroup(joinCode: String, userId: String): Result<Unit> {
         return try {
             val authToken = tokenManager.getToken() ?: ""

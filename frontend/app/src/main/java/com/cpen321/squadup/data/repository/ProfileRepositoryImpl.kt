@@ -123,8 +123,8 @@ class ProfileRepositoryImpl @Inject constructor(
             val updateRequest = UpdateProfileRequest(
                 name = name.sanitizeCRLF(),  // Sanitize name too!
                 address = sanitizedAddress,
-                transitType = transitType?.name?.lowercase()  // Use .name instead of .toString()
-            )
+                transitType = transitType?.name?.lowercase())
+            Log.d(TAG, "UpdateProfileRequest: $updateRequest")
             val response = userInterface.updateProfile("", updateRequest) // Auth header is handled by interceptor
             Log.d("update profile test", "update profile test" + response.body()?.message.toString())
             if (response.isSuccessful && response.body()?.data != null) {

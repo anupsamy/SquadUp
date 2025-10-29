@@ -57,6 +57,9 @@ class ProfileViewModel @Inject constructor(
 
             if (profileResult.isSuccess) {
                 val user = profileResult.getOrNull()!!
+                //val availableHobbies = hobbiesResult.getOrNull()!!
+                
+                //val selectedHobbies = user?.hobbies?.toSet() ?: emptySet()
 
                 _uiState.value = _uiState.value.copy(
                     isLoadingProfile = false,
@@ -83,6 +86,53 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+
+    /*fun toggleHobby(hobby: String) {
+        val currentSelected = _uiState.value.selectedHobbies?.toMutableSet() ?: mutableSetOf()
+        if (currentSelected.contains(hobby)) {
+            currentSelected.remove(hobby)
+        } else {
+            currentSelected.add(hobby)
+        }
+        _uiState.value = _uiState.value.copy(selectedHobbies = currentSelected)
+    }
+
+    fun saveHobbies() {
+        viewModelScope.launch {
+            val originalHobbies = _uiState.value.user?.hobbies?.toSet() ?: emptySet()
+
+            _uiState.value =
+                _uiState.value.copy(
+                    isSavingProfile = true,
+                    errorMessage = null,
+                    successMessage = null
+                )
+
+                val selectedHobbiesList = _uiState.value.selectedHobbies?.toList() ?: emptyList()
+            val result = profileRepository.updateUserHobbies(selectedHobbiesList)
+
+            if (result.isSuccess) {
+                val updatedUser = result.getOrNull()!!
+                _uiState.value = _uiState.value.copy(
+                    isSavingProfile = false,
+                    user = updatedUser,
+                    successMessage = "Hobbies updated successfully!"
+                )
+            } else {
+                // Revert to original hobbies on failure
+                val error = result.exceptionOrNull()
+                Log.d(TAG, "error: $error")
+                Log.e(TAG, "Failed to update hobbies", error)
+                val errorMessage = error?.message ?: "Failed to update hobbies"
+
+                _uiState.value = _uiState.value.copy(
+                    isSavingProfile = false,
+                    selectedHobbies = originalHobbies, // Revert the selected hobbies
+                    errorMessage = errorMessage
+                )
+            }
+        }
+    }*/
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)

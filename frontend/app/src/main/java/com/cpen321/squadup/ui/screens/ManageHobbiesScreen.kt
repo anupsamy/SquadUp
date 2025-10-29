@@ -184,8 +184,8 @@ private fun ManageHobbiesBody(
             else -> {
                 HobbiesForm(
                     formData = HobbiesFormData(
-                        allHobbies = emptyList<String>(),
-                        selectedHobbies = emptySet<String>(),
+                        allHobbies = emptyList(),
+                        selectedHobbies = emptySet(),
                         onHobbyToggle = onHobbyToggle,
                         onSaveClick = onSaveClick
                     ),

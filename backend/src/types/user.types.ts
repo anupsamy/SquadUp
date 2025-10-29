@@ -13,6 +13,8 @@ export interface IUser extends Document {
   profilePicture?: string;
   address?: Address;
   transitType?: TransitType;
+  bio: string;
+  hobbies: string[];
   createdAt: Date;
   updatedAt: Date;
 }

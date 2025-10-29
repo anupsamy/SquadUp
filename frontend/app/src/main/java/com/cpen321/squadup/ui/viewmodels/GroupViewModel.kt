@@ -37,6 +37,8 @@ class GroupViewModel @Inject constructor(
     val midpoint: StateFlow<SquadGoal?> = _midpoint
     private val _isGroupLeft = MutableStateFlow(false)
     val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
+    private val _isCalculatingMidpoint = MutableStateFlow(false)
+    val isCalculatingMidpoint: StateFlow<Boolean> = _isCalculatingMidpoint
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
@@ -82,15 +84,16 @@ class GroupViewModel @Inject constructor(
 
     fun getMidpoint(joinCode: String) {
         viewModelScope.launch {
+            _midpoint.value = null
+            _isCalculatingMidpoint.value = true
             val result = groupRepository.getMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
-                //val midpointValue = parseMidpointString(midpointString)
                 _midpoint.value = result.getOrNull()
-                //Log.d(TAG, "Parsed midpoint: $midpointValue")
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
                 Log.e(TAG, "Error fetching midpoint: $error")
             }
+            _isCalculatingMidpoint.value = false
         }
     }
 

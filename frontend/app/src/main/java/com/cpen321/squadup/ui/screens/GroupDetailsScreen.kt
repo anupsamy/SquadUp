@@ -32,11 +32,12 @@ fun GroupDetailsScreen(
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     val midpoint by groupViewModel.midpoint.collectAsState()
+    val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
+    val currentUserId = profileUiState.user?._id
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
     }
-    val currentUserId = profileUiState.user?._id
 
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
@@ -100,40 +101,45 @@ fun GroupDetailsScreen(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (midpoint != null) {
-                        Text(
-                            text = "Midpoint: ${midpoint?.location}",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                    } else if (group.groupLeaderId?.id == currentUserId) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    when {
+                        isCalculatingMidpoint -> {
+                            Text(
+                                text = "Getting midpoint...",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        midpoint != null -> {
+                            Text(
+                                text = "Midpoint: ${midpoint?.location}",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        group.groupLeaderId?.id == currentUserId -> {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Waiting for members to join...",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Or you can calculate midpoint now",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(onClick = { groupViewModel.getMidpoint(group.joinCode) }) {
+                                    Text(text = "Find midpoint")
+                                }
+                            }
+                        }
+                        else -> {
                             Text(
                                 text = "Waiting for members to join...",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "Or you can calculate midpoint now",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Button(onClick = {
-                                groupViewModel.getMidpoint(group.joinCode)
-                            }) {
-                                Text(text = "Find midpoint")
-                            }
                         }
-                    } else {
-                        Text(
-                            text = "Waiting for members to join...",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
                     }
                 }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Join code + copy button

@@ -29,6 +29,8 @@ import com.cpen321.squadup.ui.notifications.NotificationManager
 import com.cpen321.squadup.ui.notifications.GlobalNotificationOverlay
 import javax.inject.Inject
 
+
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 

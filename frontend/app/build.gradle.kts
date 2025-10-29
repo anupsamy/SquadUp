@@ -53,10 +53,11 @@ android {
             // Local dev endpoints
             buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
             buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
+            buildConfigField("String", "NEWS_API_KEY", "\"e614e65892e045deb1d4ad50f2449ef0\"")
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
-                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
+                "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\""
             )
         }
 
@@ -104,6 +105,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
     
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -114,6 +116,7 @@ dependencies {
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.compose.foundation)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
     

@@ -84,7 +84,6 @@ class GroupViewModel @Inject constructor(
 
     fun getMidpoint(joinCode: String) {
         viewModelScope.launch {
-            _midpoint.value = null
             _isCalculatingMidpoint.value = true
             val result = groupRepository.getMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
@@ -113,11 +112,14 @@ class GroupViewModel @Inject constructor(
 
     fun resetGroupDeletedState() {
         _isGroupDeleted.value = false
-        _midpoint.value = null
     }
 
     fun resetGroupLeftState() {
         _isGroupLeft.value = false
+    }
+
+    fun resetMidpoint() {
+        _midpoint.value = null
     }
 
     fun clearMessages() {

@@ -37,6 +37,7 @@ fun GroupDetailsScreen(
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
+        groupViewModel.resetMidpoint()
     }
 
     LaunchedEffect(isGroupDeleted) {

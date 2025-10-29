@@ -2,6 +2,7 @@ package com.cpen321.squadup.data.repository
 
 import android.util.Log
 import com.cpen321.squadup.data.local.preferences.TokenManager
+import com.cpen321.squadup.data.remote.api.ActivityInterface
 import com.cpen321.squadup.data.remote.api.GroupInterface
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
@@ -13,11 +14,15 @@ import com.cpen321.squadup.utils.JsonUtils.parseErrorMessage
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.cpen321.squadup.data.remote.api.SelectActivityRequest
+import com.cpen321.squadup.data.remote.dto.Activity
+import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
     private val groupInterface: GroupInterface,
+    private val activityInterface: ActivityInterface,
     private val tokenManager: TokenManager
 ) : GroupRepository {
 
@@ -160,6 +165,74 @@ class GroupRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+
+
+    //activities
+
+    override suspend fun getActivities(joinCode: String): Result<List<Activity>> {
+        return try {
+            val response = activityInterface.getActivities("", joinCode) // Auth header handled by interceptor
+
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!)
+            } else {
+                Log.e(TAG, "Failed to fetch activities: ${response.message()}")
+                Result.success(emptyList())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching activities", e)
+            Result.success(emptyList())
+        }
+    }
+
+    override suspend fun selectActivity(joinCode: String, placeId: String): Result<Unit> {
+        return try {
+            val request = SelectActivityRequest(joinCode, placeId)
+            val response = activityInterface.selectActivity(
+                "", // Auth header handled by interceptor
+                request
+            )
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Log.e(TAG, "Failed to select activity: ${response.message()}")
+                Result.failure(Exception("Failed to select activity"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error selecting activity", e)
+            Result.failure(e)
+        }
+    }
+
+    //midpoints
+
+    override suspend fun getMidpoints(joinCode: String): Result<List<LatLng>> {
+        return try {
+            val response = groupInterface.getMidpoints(
+                "", // Auth header handled by interceptor
+                joinCode
+            )
+
+            val data = response.body()?.data
+            if (response.isSuccessful && data != null) {
+                // Convert the response data to LatLng objects
+                val latLngList = data
+                Result.success(latLngList.map { LatLng(it.latitude, it.longitude) })
+            } else {
+                Log.e(TAG, "Failed to fetch midpoints: ${response.message()}")
+                Result.success(emptyList())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching midpoints", e)
+            Result.success(emptyList())
+        }
+    }
+
+
+
+    //activities
 
     override suspend fun leaveGroup(joinCode: String, userId: String): Result<Unit> {
         return try {

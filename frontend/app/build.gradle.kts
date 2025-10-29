@@ -29,6 +29,7 @@ android {
         localProperties.load(FileInputStream(rootProject.file("local.properties")))
         buildConfigField("String", "GOOGLE_PLACES_API_KEY", "\"${localProperties.getProperty("GOOGLE_PLACES_API_KEY")}\"")
 
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties.getProperty("GOOGLE_PLACES_API_KEY")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -117,6 +118,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
 
@@ -152,6 +154,10 @@ dependencies {
 
     implementation(libs.places) // maps places api
     implementation(libs.maps.compose)// map view with compose
+
+    //map component
+    implementation(libs.maps.compose.v433)
+    implementation(libs.google.android.maps.utils)
 
 
     testImplementation(libs.junit)

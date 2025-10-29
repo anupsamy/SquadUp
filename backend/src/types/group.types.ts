@@ -1,4 +1,4 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import z from 'zod';
 import { HOBBIES } from '../hobbies';
 import { UserModel, userModel } from '../user.model';
@@ -6,7 +6,6 @@ import { GoogleUserInfo } from '../types/user.types';
 import {Address} from './address.types';
 import {TransitType, transitTypeSchema } from './transit.types';
 import { GeoLocation } from './location.types';
-
 
 // Group model
 // ------------------------------------------------------------
@@ -19,6 +18,7 @@ export interface IGroup extends Document {
     expectedPeople: number;
     groupMemberIds: GroupUser[]; //Change to object of users later maybe,
     midpoint: string,
+    selectedActivity?: Activity;
     createdAt: Date;
   }
 
@@ -79,6 +79,66 @@ export const updateGroupSchema = z.object({
   })).optional(),
   midpoint: z.string().default('').optional()
 });
+
+//Activity model
+
+export interface Activity {
+  name: string;
+  placeId: string;
+  address: string;
+  rating: number;
+  userRatingsTotal: number;
+  priceLevel: number;
+  type: string;
+  latitude: number;
+  longitude: number;
+  businessStatus: string;
+  isOpenNow: boolean;
+};
+
+export const activitySchema = new Schema({
+  name: { type: String, required: true },
+  placeId: { type: String, required: true },
+  address: { type: String, required: true },
+  rating: { type: Number, required: true },
+  userRatingsTotal: { type: Number, required: true },
+  priceLevel: { type: Number, required: true },
+  type: { type: String, required: true },
+  latitude: { type: Number, required: true },
+  longitude: { type: Number, required: true },
+  businessStatus: { type: String, required: true },
+  isOpenNow: { type: Boolean, required: true },
+}, { _id: false }); // _id: false prevents creating an _id for subdocument
+
+export const activityZodSchema = z.object({
+  name: z.string(),
+  placeId: z.string(),
+  address: z.string(),
+  rating: z.number(),
+  userRatingsTotal: z.number(),
+  priceLevel: z.number(),
+  type: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  businessStatus: z.string(),
+  isOpenNow: z.boolean(),
+});
+
+//Activity model
+
+export interface Activity {
+  name: string;
+  placeId: string;
+  address: string;
+  rating: number;
+  userRatingsTotal: number;
+  priceLevel: number;
+  type: string;
+  latitude: number;
+  longitude: number;
+  businessStatus: string;
+  isOpenNow: boolean;
+}
 
 // Request types
 // ------------------------------------------------------------

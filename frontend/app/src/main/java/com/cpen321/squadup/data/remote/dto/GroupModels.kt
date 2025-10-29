@@ -40,3 +40,8 @@ data class GroupUser(
     val address: Address? = null,
     val transitType: TransitType ?= null
 )
+
+data class ActivityCoordinates (
+    val latitude: Double,
+    val longitude: Double
+)

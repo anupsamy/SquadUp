@@ -157,7 +157,7 @@ dependencies {
 
     //map component
     implementation(libs.maps.compose.v433)
-    implementation("com.google.maps.android:android-maps-utils:3.19.0")
+    implementation(libs.google.android.maps.utils)
 
 
     testImplementation(libs.junit)

@@ -149,10 +149,11 @@ fun GroupDetailsScreen(
                         midpoint != null -> {
                             val midpoint by groupViewModel.midpoint.collectAsState()
 
-                            val locations = midpoint?.let {
-                                listOf(LatLng(it.location.lat!!, it.location.lng!!))
+                            val locations = midpoint?.location?.let { location ->
+                                val lat = location.lat
+                                val lng = location.lng
+                                if (lat != null && lng != null) listOf(LatLng(lat, lng)) else emptyList()
                             } ?: emptyList()
-
                             ActivityMapView(
                                 locations = locations,
                                 modifier = Modifier

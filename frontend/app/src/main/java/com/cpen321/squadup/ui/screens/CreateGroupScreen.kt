@@ -15,10 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import java.text.SimpleDateFormat
 import java.util.*
-import java.time.format.DateTimeFormatter
-import java.time.LocalDateTime
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Log
 import com.cpen321.squadup.data.remote.dto.GroupUser

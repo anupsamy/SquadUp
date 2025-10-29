@@ -17,8 +17,8 @@ import com.cpen321.squadup.ui.screens.AuthScreen
 import com.cpen321.squadup.ui.screens.LoadingScreen
 import com.cpen321.squadup.ui.screens.CreateGroupScreen
 import com.cpen321.squadup.ui.screens.GroupDetailsScreen
+import com.cpen321.squadup.ui.screens.GroupListScreen
 import com.cpen321.squadup.ui.screens.GroupSuccessScreen
-import com.cpen321.squadup.ui.screens.GroupViewScreen
 import com.cpen321.squadup.ui.screens.MainScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
 import com.cpen321.squadup.ui.screens.ProfileScreenActions
@@ -42,7 +42,7 @@ object NavRoutes {
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
     const val GROUP_DETAILS = "group_details"
-    const val GROUP_VIEW = "group_view"
+    const val GROUP_LIST = "group_list"
     const val JOIN_GROUP = "join_group" 
 }
 
@@ -262,12 +262,12 @@ private fun AppNavHost(
             )
         }
 
-        composable("group_view/{joinCode}") { backStackEntry ->
+        composable("${NavRoutes.GROUP_DETAILS}/{joinCode}") { backStackEntry ->
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
             val group = mainViewModel.getGroupById(joinCode)
         
             group?.let {
-                GroupViewScreen(
+                GroupDetailsScreen(
                     navController = navController,
                     group = group,
                     groupViewModel = groupViewModel,
@@ -276,14 +276,16 @@ private fun AppNavHost(
             }
         }
 
-        composable(NavRoutes.GROUP_DETAILS) { backStackEntry ->
-            val group = backStackEntry.savedStateHandle.get<GroupDataDetailed>("group")
+        composable("${NavRoutes.GROUP_LIST}/{joinCode}") { backStackEntry ->
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val group = mainViewModel.getGroupById(joinCode)
+
             group?.let {
-                GroupDetailsScreen(
+                GroupListScreen(
                     navController = navController,
-                    group = it,
-                    profileViewModel = profileViewModel,
-                    groupViewModel = groupViewModel
+                    group = group,
+                    groupViewModel = groupViewModel,
+                    profileViewModel = profileViewModel
                 )
             }
         }

@@ -117,7 +117,7 @@ fun MainScreen(
                 },
                 groups = filteredGroups,
                 onGroupClick = { groupId ->
-                    navController.navigate("${NavRoutes.GROUP_VIEW}/$groupId")
+                    navController.navigate("${NavRoutes.GROUP_DETAILS}/$groupId")
                 },
                 navController = navController
 

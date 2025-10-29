@@ -34,38 +34,46 @@ const groupSchema = new Schema<IGroup>(
         trim: true,
       },
         groupLeaderId: {
-        type: {
-          id: String, // Define the fields of GoogleUserInfo
-          name: String,
-          email: String,
+          type: {
+            id: { type: String, required: true },
+            name: { type: String, required: true },
+            email: { type: String, required: true },
+            address: {
+              type: {
+                formatted: { type: String, required: true },
+                lat: Number,
+                lng: Number
+              },
+              required: false
+            },
+            transitType: { type: String, required: false }
+          },
+          required: true
         },
-        required: true,
-      },
+
       expectedPeople: {
         type: Number,
         required: false,
         trim: true,
       },
       groupMemberIds: {
-        type: [{
-          id: String, // Define the fields of GoogleUserInfo
-          name: String,
-          email: String,
-          address: {
-            type: addressSchema,
-            required: false,
-            trim: true
-          },
-          transitType: {
-            type: String,
-            required: false,
-            trim: true,
-          },
+          type: [{
+            id: { type: String, required: true },
+            name: { type: String, required: true },
+            email: { type: String, required: true },
+            address: {
+              type: {
+                formatted: { type: String, required: true },
+                lat: Number,
+                lng: Number
+              },
+              required: false
+            },
+            transitType: { type: String, required: false, trim: true }
+          }],
+          required: false,
+          trim: true
         },
-      ],
-        required: false,
-        trim: true,
-      },
       midpoint: {
         type: String,
         required: false,

@@ -200,4 +200,73 @@ export class GroupController {
       next(error);
     }
   }
+
+  async getActivities(req: Request, res: Response): Promise<void> {
+  try {
+    const { joinCode } = req.query;
+    
+    if (!joinCode || typeof joinCode !== 'string') {
+      res.status(400).json({
+        success: false,
+        message: 'Join code is required',
+      });
+      return;
+    }
+    
+    const activities = await groupModel.getActivities(joinCode);
+    
+    res.status(200).json({
+      success: true,
+      data: activities,
+    });
+  } catch (error) {
+    logger.error('Error fetching activities:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch activities',
+    });
+  }
+}
+
+async selectActivity(req: Request, res: Response): Promise<void> {
+  try {
+    const { joinCode, placeId } = req.body;
+    
+    if (!joinCode || !placeId) {
+      res.status(400).json({
+        success: false,
+        message: 'Join code and place ID are required',
+      });
+      return;
+    }
+    
+    // First get the activities to find the one matching placeId
+    const activities = await groupModel.getActivities(joinCode);
+    const selectedActivity = activities.find(activity => activity.placeId === placeId);
+    
+    if (!selectedActivity) {
+      res.status(404).json({
+        success: false,
+        message: 'Activity not found',
+      });
+      return;
+    }
+    
+    // Update the group with the selected activity
+    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, selectedActivity);
+    
+    res.status(200).json({
+      success: true,
+      data: updatedGroup,
+    });
+  } catch (error) {
+    logger.error('Error selecting activity:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to select activity',
+    });
+  }
+}
+
+
 }

@@ -8,6 +8,6 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": ["src/**/*", "testLocationService.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

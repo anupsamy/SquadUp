@@ -47,7 +47,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val result = groupRepository.getGroups()
             if (result.isSuccess) {
-
+                
                 val groups = result.getOrNull() ?: emptyList()
                 Log.d(TAG, "MainViewModel fetchGroups: ${groups}")
                 _uiState.value = _uiState.value.copy(groups = groups)
@@ -118,7 +118,7 @@ class MainViewModel @Inject constructor(
             }
         }
     }
-
+    
     fun getGroupById(groupId: String): GroupDataDetailed? {
         return _uiState.value.groups.find { it.joinCode == groupId } // Use joinCode directly
     }

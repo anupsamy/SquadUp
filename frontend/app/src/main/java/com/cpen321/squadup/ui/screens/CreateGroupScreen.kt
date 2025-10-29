@@ -60,7 +60,7 @@ fun CreateGroupScreen(
     var dateObject:Date
 
     Scaffold(
-        topBar = {
+        topBar = { 
             TopAppBar(
                 title = { Text("Create Group") },
                 navigationIcon = {

@@ -77,7 +77,7 @@ android {
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
-                "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\""
+                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
             )
         }
     }
@@ -106,38 +106,38 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material:material-icons-extended:1.6.8")
-
+    
     // Navigation
     implementation(libs.androidx.navigation.compose)
-
+    
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
+    
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.compose.foundation)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
-
+    
     // Google Sign-In
     implementation(libs.play.services.auth)
-
+    
     // HTTP client
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
-
+    
     // Image loading
     implementation(libs.coil.compose)
-
+    
     // Camera and Image handling
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.activity.compose)
-
+    
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-
+    
     // Shared Preferences
     implementation(libs.androidx.datastore.preferences)
 

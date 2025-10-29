@@ -65,7 +65,7 @@ fun MainScreen(
     profileViewModel: ProfileViewModel = hiltViewModel(),
     selectedHobbies: List<String>,
     onProfileClick: () -> Unit,
-    navController: NavController
+    navController: NavController 
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -82,7 +82,7 @@ fun MainScreen(
     }
 
     val currentUserId = profileUiState.user?._id
-
+    
     val filteredGroups = uiState.groups.filter { group ->
         Log.d("MainScreen", "filteredGroups: ${group}")
     group.groupLeaderId?.id == currentUserId || group.groupMemberIds?.any { it.id == currentUserId } == true
@@ -206,7 +206,7 @@ private fun MainContent(
     groups: List<GroupDataDetailed>,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
-    onCreateGroupClick: () -> Unit,
+    onCreateGroupClick: () -> Unit, 
     onSuccessMessageShown: () -> Unit,
     onGroupClick: (String) -> Unit,
     modifier: Modifier,
@@ -336,7 +336,7 @@ private fun MainBody(
                 .padding(horizontal = 16.dp)
         ) {
             groups.forEach { group ->
-
+            
                 Button(
                     onClick = { onGroupClick(group.joinCode) },
                     modifier = Modifier

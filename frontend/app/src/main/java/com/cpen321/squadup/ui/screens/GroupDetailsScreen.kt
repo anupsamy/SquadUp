@@ -1,5 +1,5 @@
 package com.cpen321.squadup.ui.screens
-
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -14,6 +14,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.data.remote.dto.GroupData
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -23,8 +30,27 @@ import androidx.compose.ui.platform.LocalClipboardManager
 @Composable
 fun GroupDetailsScreen(
     navController: NavController,
-    group: GroupDataDetailed
+    group: GroupDataDetailed,
+    groupViewModel: GroupViewModel,
+    profileViewModel: ProfileViewModel
 ) {
+    val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
+    val profileUiState by profileViewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        profileViewModel.loadProfile()
+    }
+    val currentUserId = profileUiState.user?._id
+
+    LaunchedEffect(isGroupDeleted) {
+        if (isGroupDeleted) {
+            navController.navigate("main") {
+                popUpTo(0) { inclusive = true } // Clear the back stack
+            }
+            groupViewModel.resetGroupDeletedState()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -108,6 +134,15 @@ fun GroupDetailsScreen(
                         Text("Copy")
                     }
                 }
+		// Add the "Delete Group" button
+                if (group.groupLeaderId?.id == currentUserId) {
+                    Button(
+                        onClick = {
+                            groupViewModel.deleteGroup(group.joinCode)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text(text = "Delete Group")
 
                 Spacer(modifier = Modifier.height(16.dp))
 

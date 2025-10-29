@@ -70,17 +70,17 @@ export class GroupController {
   ) {
     try {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
-
+  
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
       console.error('GroupController getGroupByJoinCode:', group);
-
+  
       if (!group) {
         return res.status(404).json({
           message: `Group with joinCode '${joinCode}' not found`,
         });
       }
-
+  
       res.status(200).json({
         message: 'Group fetched successfully',
         data: {
@@ -147,8 +147,8 @@ export class GroupController {
       console.error('GroupController updateByJoincode joinCode:', joinCode);
       console.error('GroupController updateByJoincode groupMembers:', groupMemberIds);
       console.error('GroupController updateByJoincode expectedPeople:', expectedPeople);
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
-        {joinCode, expectedPeople,
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, 
+        {joinCode, expectedPeople, 
         groupMemberIds: groupMemberIds || []});
 
       if (!updatedGroup) {
@@ -175,8 +175,8 @@ export class GroupController {
   }
 
   async deleteGroupByJoinCode(
-    req: Request<{joinCode: string}>,
-    res: Response,
+    req: Request<{joinCode: string}>, 
+    res: Response, 
     next: NextFunction) {
     try {
       const {joinCode} = req.params;

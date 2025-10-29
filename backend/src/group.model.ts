@@ -65,18 +65,18 @@ const groupSchema = new Schema<IGroup>(
 
 export class GroupModel {
     private group: mongoose.Model<IGroup>;
-
+  
     constructor() {
       this.group = mongoose.model<IGroup>('Group', groupSchema);
     }
-
+  
     async create(groupInfo: BasicGroupInfo): Promise<IGroup> {
       try {
         console.error('GroupModel BasicGroupInfo:', groupInfo);
         const validatedData = basicGroupSchema.parse(groupInfo);
         console.error('GroupModel ValidatedData:', validatedData);
 
-
+  
         return await this.group.create(validatedData);
       } catch (error) {
         if (error instanceof z.ZodError) {
@@ -99,14 +99,14 @@ export class GroupModel {
         throw new Error('Failed to fetch all groups');
       }
     }
-
+  
     async update(
       groupId: mongoose.Types.ObjectId,
       group: Partial<IGroup>
     ): Promise<IGroup | null> {
       try {
         const validatedData = updateGroupSchema.parse(group);
-
+        
         const updatedGroup = await this.group.findByIdAndUpdate(
           groupId,
           validatedData,
@@ -114,7 +114,7 @@ export class GroupModel {
             new: true,
           }
         );
-
+        
         return updatedGroup;
       } catch (error) {
         logger.error('Error updating group:', error);
@@ -144,7 +144,7 @@ export class GroupModel {
         throw new Error('Failed to update group');
       }
     }
-
+  
     async delete(joinCode:string): Promise<void> {
       try {
         const deletedGroup = await this.group.findOneAndDelete({ joinCode });
@@ -167,15 +167,15 @@ export class GroupModel {
         throw new Error('Failed to find group by joinCode');
       }
     }
-
+  
     async findById(_id: mongoose.Types.ObjectId): Promise<IGroup | null> { //NOTE: check if group by google id makes sesne
       try {
         const group = await this.group.findOne({ _id });
-
+  
         if (!group) {
           return null;
         }
-
+  
         return group;
       } catch (error) {
         console.error('Error finding group by Google ID:', error);
@@ -183,6 +183,6 @@ export class GroupModel {
       }
     }
   }
-
+  
   export const groupModel = new GroupModel();
   

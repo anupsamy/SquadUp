@@ -1,35 +1,42 @@
 package com.cpen321.squadup.ui.screens
-import androidx.compose.runtime.getValue
-import androidx.compose.foundation.layout.*
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.cpen321.squadup.ui.components.ActivityPicker
-import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import androidx.compose.foundation.*
-
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.components.ActivityMapView
-import com.google.android.gms.maps.model.LatLng
+import com.cpen321.squadup.ui.components.ActivityPicker
+import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +52,7 @@ fun GroupDetailsScreen(
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
-        // Load activities when screen opens
         activityPickerViewModel.loadActivities(group.joinCode)
-        //get midpoints if available
         groupViewModel.getMidpoints(group.joinCode)
     }
 
@@ -78,57 +83,77 @@ fun GroupDetailsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
             ) {
-                Text(text = "Group: ${group.groupName}", style = MaterialTheme.typography.headlineMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Meeting Time: ${group.meetingTime}", style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Join Code: ${group.joinCode}", style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Group Leader: ${group.groupLeaderId?.name ?: "Unknown Leader"}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Expected People: ${group.expectedPeople}", style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(16.dp))
+                // Group info section - ~1/3 of screen
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = group.groupName,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Meeting: ${group.meetingTime}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Code: ${group.joinCode}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Leader: ${group.groupLeaderId?.name ?: "Unknown"}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Members: ${group.expectedPeople}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
-                if (group.groupLeaderId?.id == currentUserId) {
-                    Button(
-                        onClick = {
-                            groupViewModel.deleteGroup(group.joinCode)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(text = "Delete Group")
+                        if (group.groupLeaderId?.id == currentUserId) {
+                            Button(
+                                onClick = { groupViewModel.deleteGroup(group.joinCode) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                ),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text(text = "Delete", style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                        Button(
+                            onClick = { navController.navigateUp() },
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text(text = "Back", style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(onClick = { navController.navigateUp() }) {
-                    Text(text = "Back to Groups")
-                }
-
+                // Map section - ~1/3 of screen
                 ActivityMapView(
                     locations = groupViewModel.midpoints.collectAsState().value,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp)
-                        .padding(16.dp)
+                        .weight(1f)
                 )
 
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+                // Activity picker section - ~1/3 of screen
                 ActivityPicker(
                     viewModel = activityPickerViewModel,
                     joinCode = group.joinCode,
                     modifier = Modifier
-                        .weight(1f) // Changed from fillMaxSize
+                        .fillMaxWidth()
+                        .weight(1f)
                 )
             }
         }

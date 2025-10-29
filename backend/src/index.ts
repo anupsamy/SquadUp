@@ -21,7 +21,12 @@ app.use('*', notFoundHandler);
 app.use(errorHandler);
 
 // Initialize WebSocket service
-initializeWebSocketService(server);
+try {
+  initializeWebSocketService(server);
+  console.log('✅ WebSocket service initialization attempted');
+} catch (error: unknown) {
+  console.error('❌ Failed to initialize WebSocket service:', error);
+}
 
 connectDB();
 server.listen(PORT, () => {

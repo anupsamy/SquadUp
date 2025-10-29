@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { Server } from 'http';
+import { Server, IncomingMessage } from 'http';
 import logger from '../utils/logger.util';
 
 export interface WebSocketMessage {
@@ -19,24 +19,31 @@ export class WebSocketService {
   private groupSubscriptions: Map<string, Set<string>> = new Map(); // joinCode -> Set<userId>
 
   constructor(server: Server) {
-    this.wss = new WebSocket.Server({ 
-      server,
-      path: '/ws'
-    });
+    console.log('🔧 Creating WebSocket server...');
+    try {
+      this.wss = new WebSocket.Server({ 
+        server,
+        path: '/ws'
+      });
 
-    this.setupWebSocketServer();
-    logger.info('WebSocket server initialized');
+      this.setupWebSocketServer();
+      console.log('✅ WebSocket server initialized successfully');
+      logger.info('WebSocket server initialized');
+    } catch (error: unknown) {
+      console.error('❌ Error creating WebSocket server:', error);
+      throw error;
+    }
   }
 
   private setupWebSocketServer() {
-    this.wss.on('connection', (ws: WebSocket, req) => {
+    this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
       logger.info('New WebSocket connection established');
 
       ws.on('message', (data: WebSocket.Data) => {
         try {
           const message = JSON.parse(data.toString());
           this.handleMessage(ws, message);
-        } catch (error) {
+        } catch (error: unknown) {
           logger.error('Error parsing WebSocket message:', error);
           this.sendError(ws, 'Invalid message format');
         }
@@ -46,7 +53,7 @@ export class WebSocketService {
         this.handleDisconnection(ws);
       });
 
-      ws.on('error', (error) => {
+      ws.on('error', (error: Error) => {
         logger.error('WebSocket error:', error);
         this.handleDisconnection(ws);
       });

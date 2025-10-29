@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.GeoLocation
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.asStateFlow
 import com.cpen321.squadup.data.remote.dto.SquadGoal
@@ -35,15 +36,7 @@ class GroupViewModel @Inject constructor(
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
-//    private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
-//    val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
 
-
-    //private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
-    //val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
-
-
-    //data class Midpoint(val lat: Double, val lng: Double)
     private val _midpoint = MutableStateFlow<SquadGoal?>(null)
     val midpoint: StateFlow<SquadGoal?> = _midpoint
     private val _isGroupLeft = MutableStateFlow(false)

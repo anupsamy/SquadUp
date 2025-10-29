@@ -21,6 +21,21 @@ data class SquadGoal(
     val location: GeoLocation
 )
 
+fun parseMidpointString(midpointStr: String?): SquadGoal? {
+    if (midpointStr.isNullOrBlank()) return null
+
+    val parts = midpointStr.trim().split(" ")
+    if (parts.size != 2) return null
+
+    val lat = parts[0].toDoubleOrNull()
+    val lng = parts[1].toDoubleOrNull()
+
+    return if (lat != null && lng != null) {
+        SquadGoal(GeoLocation(lat, lng))
+    } else null
+}
+
+
 data class AddressComponents(
     val streetNumber: String? = null,
     val route: String? = null,

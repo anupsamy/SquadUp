@@ -36,13 +36,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.data.remote.dto.parseMidpointString
 import com.cpen321.squadup.ui.components.ActivityMapView
+import com.cpen321.squadup.ui.components.LeaderGroupView
+import com.cpen321.squadup.ui.components.MemberGroupView
 import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.google.android.gms.maps.model.LatLng
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreen(
@@ -56,22 +58,23 @@ fun GroupDetailsScreen(
     val profileUiState by profileViewModel.uiState.collectAsState()
     val activityPickerViewModel: ActivityPickerViewModel = hiltViewModel()
 
-    val midpoint by groupViewModel.midpoint.collectAsState()
-    val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
+    val vmMidpoint by groupViewModel.midpoint.collectAsState()
+    val staticMidpoint = parseMidpointString(group.midpoint)
+    val midpoint = vmMidpoint ?: staticMidpoint
+
     val currentUserId = profileUiState.user?._id
+    val isLeader = group.groupLeaderId?.id == currentUserId
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
         activityPickerViewModel.loadActivities(group.joinCode)
-        //groupViewModel.getMidpoints(group.joinCode)
-        groupViewModel.resetMidpoint()
+//        groupViewModel.resetMidpoint()
     }
-
 
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
             navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true } // Clear the back stack
+                popUpTo(0) { inclusive = true }
             }
             groupViewModel.resetGroupDeletedState()
         }
@@ -80,18 +83,18 @@ fun GroupDetailsScreen(
     LaunchedEffect(isGroupLeft) {
         if (isGroupLeft) {
             navController.navigate("main") {
-                popUpTo(0) { inclusive = true } // Clear the back stack
+                popUpTo(0) { inclusive = true }
             }
             groupViewModel.resetGroupLeftState()
         }
     }
-        LaunchedEffect(group.groupMemberIds?.size, group.expectedPeople) {
+
+    LaunchedEffect(Unit) {
         val membersJoined = group.groupMemberIds?.size ?: 0
-        if (membersJoined == group.expectedPeople) {
+        if (membersJoined == group.expectedPeople.toInt()) {
             groupViewModel.getMidpoint(group.joinCode)
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -103,7 +106,6 @@ fun GroupDetailsScreen(
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             fontWeight = FontWeight.Bold
                         )
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -112,7 +114,6 @@ fun GroupDetailsScreen(
                                 text = group.meetingTime,
                                 style = MaterialTheme.typography.bodyMedium
                             )
-
                         }
                     }
                 },
@@ -132,59 +133,19 @@ fun GroupDetailsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    when {
-                        isCalculatingMidpoint -> {
-                            Text(
-                                text = "Getting midpoint...",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-                        }
-                        midpoint != null -> {
-                            val midpoint by groupViewModel.midpoint.collectAsState()
-
-                            val locations = midpoint?.location?.let { location ->
-                                val lat = location.lat
-                                val lng = location.lng
-                                if (lat != null && lng != null) listOf(LatLng(lat, lng)) else emptyList()
-                            } ?: emptyList()
-                            ActivityMapView(
-                                locations = locations,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight(0.6f)
-                            )
-                        }
-                        group.groupLeaderId?.id == currentUserId -> {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = "Waiting for members to join...",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Or you can calculate midpoint now",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Button(onClick = { groupViewModel.getMidpoint(group.joinCode) }) {
-                                    Text(text = "Find midpoint")
-                                }
-                            }
-                        }
-                        else -> {
-                            Text(
-                                text = "Waiting for members to join...",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-                        }
-                    }
+                // Conditional rendering: Member vs Leader view
+                if (isLeader) {
+                    LeaderGroupView(
+                        group = group,
+                        groupViewModel = groupViewModel,
+                        midpoint = midpoint
+                    )
+                } else {
+                    MemberGroupView(
+                        group = group,
+                        groupViewModel = groupViewModel,
+                        midpoint = midpoint
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -259,7 +220,7 @@ fun GroupDetailsScreen(
 
                 // See Details button
                 Button(
-                    onClick = { // Suppose you already have the group object
+                    onClick = {
                         navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}")
                     },
                     modifier = Modifier
@@ -273,30 +234,7 @@ fun GroupDetailsScreen(
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
                 }
-
             }
         }
     )
 }
-
-
-
-
-
-
-
-
-/*
-// Map section
-
-
-                // Activity picker section
-                ActivityPicker(
-                    viewModel = activityPickerViewModel,
-                    joinCode = group.joinCode,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
-
-*/

@@ -182,6 +182,68 @@ export class GroupModel {
         throw new Error('Failed to find group');
       }
     }
+
+    async leaveGroup(joinCode: string, userId: string): Promise<{ success: boolean; deleted: boolean; newLeader?: GroupUser }> {
+      try {
+        const group = await this.group.findOne({ joinCode });
+        
+        if (!group) {
+          throw new Error(`Group with joinCode '${joinCode}' not found`);
+        }
+
+        // Check if the user is the group leader
+        const isLeader = group.groupLeaderId.id === userId;
+        
+        // Remove user from group members
+        const updatedMembers = (group.groupMemberIds || []).filter(member => member.id !== userId);
+        
+        // If the user is the leader and there are other members, transfer leadership
+        if (isLeader && updatedMembers.length > 0) {
+          // Transfer leadership to the first member (next person who joined)
+          const newLeader = updatedMembers[0];
+          const remainingMembers = updatedMembers.slice(1);
+          
+          const updatedGroup = await this.group.findOneAndUpdate(
+            { joinCode },
+            {
+              groupLeaderId: newLeader,
+              groupMemberIds: remainingMembers
+            },
+            { new: true }
+          );
+          
+          return {
+            success: true,
+            deleted: false,
+            newLeader: newLeader
+          };
+        }
+        // If the user is the leader and there are no other members, delete the group
+        else if (isLeader && updatedMembers.length === 0) {
+          await this.group.findOneAndDelete({ joinCode });
+          return {
+            success: true,
+            deleted: true
+          };
+        }
+        // If the user is not the leader, just remove them from members
+        else {
+          const updatedGroup = await this.group.findOneAndUpdate(
+            { joinCode },
+            { groupMemberIds: updatedMembers },
+            { new: true }
+          );
+          
+          return {
+            success: true,
+            deleted: false
+          };
+        }
+      } catch (error) {
+        logger.error('Error leaving group:', error);
+        throw new Error('Failed to leave group');
+      }
+    }
   }
   
   export const groupModel = new GroupModel();

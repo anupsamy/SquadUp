@@ -33,5 +33,5 @@ data class GroupUser(
     val name: String,
     val email: String,
     val address: Address? = null,
-    transitType: TransitType ?= null
+    val transitType: TransitType ?= null
 )

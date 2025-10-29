@@ -282,7 +282,8 @@ private fun AppNavHost(
                 GroupDetailsScreen(
                     navController = navController,
                     group = it,
-                    profileViewModel = profileViewModel
+                    profileViewModel = profileViewModel,
+                    groupViewModel = groupViewModel
                 )
             }
         }

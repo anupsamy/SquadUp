@@ -164,7 +164,7 @@ fun CreateGroupScreen(
                                 name = currentUserId.name,
                                 email = currentUserId.email,
                                 address = currentUserId.address,
-                                transitType = current.transitType
+                                transitType = currentUserId.transitType
                             )
                             groupViewModel.createGroup(
                                 groupName = groupName,

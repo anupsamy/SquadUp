@@ -31,6 +31,7 @@ fun GroupListScreen(
     var searchQuery by remember { mutableStateOf("") }
     val profileUiState by profileViewModel.uiState.collectAsState()
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
+    val isGroupLeft by groupViewModel.isGroupLeft.collectAsState()
     val currentUserId = profileUiState.user?._id
 
     LaunchedEffect(Unit) {
@@ -45,6 +46,16 @@ fun GroupListScreen(
             groupViewModel.resetGroupDeletedState()
         }
     }
+
+    LaunchedEffect(isGroupLeft) {
+        if (isGroupLeft) {
+            navController.navigate("main") {
+                popUpTo(0) { inclusive = true } // Clear the back stack
+            }
+            groupViewModel.resetGroupLeftState()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

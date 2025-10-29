@@ -33,3 +33,8 @@ data class GroupUser(
     val name: String,
     val email: String
 )
+
+data class ActivityCoordinates (
+    val latitude: Double,
+    val longitude: Double
+)

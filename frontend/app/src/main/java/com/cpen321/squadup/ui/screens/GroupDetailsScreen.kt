@@ -28,6 +28,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.foundation.layout.*
+import com.cpen321.squadup.ui.components.ActivityMapView
+import com.google.android.gms.maps.model.LatLng
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreen(
@@ -44,6 +47,8 @@ fun GroupDetailsScreen(
         profileViewModel.loadProfile()
         // Load activities when screen opens
         activityPickerViewModel.loadActivities(group.joinCode)
+        //get midpoints if available
+        groupViewModel.getMidpoints(group.joinCode)
     }
 
     val currentUserId = profileUiState.user?._id
@@ -107,6 +112,15 @@ fun GroupDetailsScreen(
                 Button(onClick = { navController.navigateUp() }) {
                     Text(text = "Back to Groups")
                 }
+
+                ActivityMapView(
+                    locations = groupViewModel.midpoints.collectAsState().value,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .padding(16.dp)
+                )
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 

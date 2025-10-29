@@ -15,6 +15,7 @@ import javax.inject.Singleton
 
 import com.cpen321.squadup.data.remote.api.SelectActivityRequest
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.google.android.gms.maps.model.LatLng
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
@@ -183,6 +184,31 @@ class GroupRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error selecting activity", e)
             Result.failure(e)
+        }
+    }
+
+
+    //midpoints
+
+    override suspend fun getMidpoints(joinCode: String): Result<List<LatLng>> {
+        return try {
+            val response = groupInterface.getMidpoints(
+                "", // Auth header handled by interceptor
+                joinCode
+            )
+
+            val data = response.body()?.data
+            if (response.isSuccessful && data != null) {
+                // Convert the response data to LatLng objects
+                val latLngList = data
+                Result.success(latLngList.map { LatLng(it.latitude, it.longitude) })
+            } else {
+                Log.e(TAG, "Failed to fetch midpoints: ${response.message()}")
+                Result.success(emptyList())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching midpoints", e)
+            Result.success(emptyList())
         }
     }
 }

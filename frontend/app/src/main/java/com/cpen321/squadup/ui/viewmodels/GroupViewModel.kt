@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.asStateFlow
 
 data class GroupUiState(
@@ -32,6 +33,10 @@ class GroupViewModel @Inject constructor(
 
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
+
+    private val _midpoints = MutableStateFlow<List<LatLng>>(emptyList())
+    val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
+
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
@@ -71,6 +76,20 @@ class GroupViewModel @Inject constructor(
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to delete group"
                 Log.e(TAG, "Error deleting group: $error")
+            }
+        }
+    }
+
+    fun getMidpoints(joinCode: String) {
+        viewModelScope.launch {
+            val result = groupRepository.getMidpoints(joinCode)
+            if (result.isSuccess) {
+                val data = result.getOrNull() ?: emptyList()
+                Log.d(TAG, "midpoints retrieved successfully: $data")
+                _midpoints.value = data
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to get midpoints"
+                Log.e(TAG, "Error getting midpoints: $error")
             }
         }
     }

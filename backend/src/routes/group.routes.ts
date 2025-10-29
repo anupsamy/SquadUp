@@ -13,6 +13,11 @@ router.get(
     groupController.getActivities.bind(groupController)
 );
 
+router.get(
+    '/midpoints',
+    groupController.getMidpoints.bind(groupController)
+);
+
 router.post(
     '/activities/select',
     groupController.selectActivity.bind(groupController)

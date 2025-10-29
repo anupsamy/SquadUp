@@ -268,5 +268,47 @@ async selectActivity(req: Request, res: Response): Promise<void> {
   }
 }
 
+async getMidpoints(req: Request, res: Response): Promise<void> {
+  try {
+    const joinCode = req.query.joinCode;
+    
+    if (!joinCode || typeof joinCode !== 'string') {
+      res.status(400).json({
+        success: false,
+        message: 'Join code is required',
+      });
+      return;
+    }
+    
+    // Verify the group exists
+    const group = await groupModel.findByJoinCode(joinCode);
+    if (!group) {
+      res.status(404).json({
+        success: false,
+        message: 'Group not found',
+      });
+      return;
+    }
+    
+    // Return dummy midpoint data (3 locations in Vancouver area)
+    const midpoints = [
+      { latitude: 49.2827, longitude: -123.1207 },
+      { latitude: 49.2606, longitude: -123.2460 },
+      { latitude: 49.2488, longitude: -123.1163 }
+    ];
+    
+    res.status(200).json({
+      success: true,
+      data: midpoints,
+    });
+  } catch (error) {
+    logger.error('Error fetching midpoints:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch midpoints',
+    });
+  }
+}
+
 
 }

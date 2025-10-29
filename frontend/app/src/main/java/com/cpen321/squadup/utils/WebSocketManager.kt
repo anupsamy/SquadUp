@@ -2,6 +2,7 @@ package com.cpen321.squadup.utils
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import okhttp3.*
 import okio.ByteString
 import java.util.concurrent.TimeUnit
@@ -74,8 +75,19 @@ class WebSocketManager(private val url: String) {
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             isConnected = false
-            mainHandler.post { callback?.onConnectionStateChanged(false) }
+            val errorMessage = t.message ?: "Unknown error"
+            val responseCode = response?.code ?: -1
+            val responseMessage = response?.message ?: "No response"
+            
+            Log.e("WebSocket", "Connection failed to: $url")
+            Log.e("WebSocket", "Error: $errorMessage")
+            Log.e("WebSocket", "Response code: $responseCode, message: $responseMessage")
+            if (response != null) {
+                Log.e("WebSocket", "Response body: ${response.body?.string()}")
+            }
             t.printStackTrace()
+            
+            mainHandler.post { callback?.onConnectionStateChanged(false) }
             attemptReconnect()
         }
     }

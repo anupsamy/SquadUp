@@ -22,6 +22,10 @@ interface GroupRepository {
         updatedMembers: List<GroupUser>
     ): Result<Unit> //add exp members later
 
+    suspend fun leaveGroup(
+        joinCode: String, 
+        userId: String
+    ): Result<Unit>
     suspend fun getActivities(joinCode: String): Result<List<Activity>>
 
     suspend fun selectActivity(joinCode: String, placeId: String): Result<Unit>

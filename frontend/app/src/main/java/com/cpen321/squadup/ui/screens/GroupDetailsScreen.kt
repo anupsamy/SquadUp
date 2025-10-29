@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -47,6 +45,7 @@ fun GroupDetailsScreen(
     profileViewModel: ProfileViewModel
 ) {
     val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
+    val isGroupLeft by groupViewModel.isGroupLeft.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     val activityPickerViewModel: ActivityPickerViewModel = hiltViewModel()
 
@@ -67,6 +66,15 @@ fun GroupDetailsScreen(
         }
     }
 
+    LaunchedEffect(isGroupLeft) {
+        if (isGroupLeft) {
+            navController.navigate("main") {
+                popUpTo(0) { inclusive = true }
+            }
+            groupViewModel.resetGroupLeftState()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,7 +92,7 @@ fun GroupDetailsScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                // Group info section - ~1/3 of screen
+                // Group info section - compact
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -114,7 +122,28 @@ fun GroupDetailsScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
+                    // Display group members
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "• ${group.groupLeaderId?.name ?: "Unknown Leader"} (Leader)",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                    group.groupMemberIds?.forEach { member ->
+                        Text(
+                            text = "• ${member.name}",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
+
+                    // Check if current user is a member of the group (leader or regular member)
+                    val isGroupMember = currentUserId != null && (
+                        group.groupLeaderId?.id == currentUserId || 
+                        group.groupMemberIds?.any { it.id == currentUserId } == true
+                    )
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -130,6 +159,18 @@ fun GroupDetailsScreen(
                                 Text(text = "Delete", style = MaterialTheme.typography.bodySmall)
                             }
                         }
+                        if (isGroupMember) {
+                            Button(
+                                onClick = {
+                                    currentUserId?.let { userId ->
+                                        groupViewModel.leaveGroup(group.joinCode, userId)
+                                    }
+                                },
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text(text = "Leave", style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
                         Button(
                             onClick = { navController.navigateUp() },
                             modifier = Modifier.height(36.dp)
@@ -139,15 +180,15 @@ fun GroupDetailsScreen(
                     }
                 }
 
-                // Map section - ~1/3 of screen
+                // Map section
                 ActivityMapView(
                     locations = groupViewModel.midpoints.collectAsState().value,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .weight(1.5f)
                 )
 
-                // Activity picker section - ~1/3 of screen
+                // Activity picker section
                 ActivityPicker(
                     viewModel = activityPickerViewModel,
                     joinCode = group.joinCode,

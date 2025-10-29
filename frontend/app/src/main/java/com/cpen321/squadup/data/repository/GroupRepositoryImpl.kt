@@ -6,6 +6,7 @@ import com.cpen321.squadup.data.remote.api.ActivityInterface
 import com.cpen321.squadup.data.remote.api.GroupInterface
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
+import com.cpen321.squadup.data.remote.dto.LeaveGroupRequest
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
@@ -209,6 +210,29 @@ class GroupRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching midpoints", e)
             Result.success(emptyList())
+        }
+    }
+
+    override suspend fun leaveGroup(joinCode: String, userId: String): Result<Unit> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val request = LeaveGroupRequest(userId = userId)
+            Log.d(TAG, "GroupRepImpl leaveGroupRequest ${request}")
+            val response = groupInterface.leaveGroup(
+                authHeader = "Bearer $authToken",
+                joinCode = joinCode,
+                request = request
+            )
+            Log.d(TAG, "GroupRepImpl leaveGroupRequest response ${response}")
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to leave group.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

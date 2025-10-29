@@ -8,6 +8,7 @@ import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import com.google.android.gms.maps.model.LatLng
+import com.cpen321.squadup.data.remote.dto.LeaveGroupRequest
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -53,5 +54,12 @@ interface GroupInterface {
     suspend fun deleteGroup(
         @Header("Authorization") authHeader: String,
         @retrofit2.http.Path("joinCode") joinCode: String
+    ): Response<Unit>
+
+    @POST("group/leave/{joinCode}")
+    suspend fun leaveGroup(
+        @Header("Authorization") authHeader: String,
+        @retrofit2.http.Path("joinCode") joinCode: String,
+        @Body request: LeaveGroupRequest
     ): Response<Unit>
 }

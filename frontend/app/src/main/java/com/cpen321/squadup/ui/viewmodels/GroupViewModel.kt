@@ -38,6 +38,9 @@ class GroupViewModel @Inject constructor(
     val midpoints: StateFlow<List<LatLng>> = _midpoints.asStateFlow()
 
 
+    private val _isGroupLeft = MutableStateFlow(false)
+    val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
+
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
@@ -80,6 +83,20 @@ class GroupViewModel @Inject constructor(
         }
     }
 
+    fun leaveGroup(joinCode: String, userId: String) {
+        viewModelScope.launch {
+            val result = groupRepository.leaveGroup(joinCode, userId)
+            if (result.isSuccess) {
+                Log.d(TAG, "Left group successfully: $joinCode")
+                _isGroupLeft.value = true // Update the leave state
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to leave group"
+                Log.e(TAG, "Error leaving group: $error")
+                _uiState.value = _uiState.value.copy(errorMessage = error)
+            }
+        }
+    }
+
     fun getMidpoints(joinCode: String) {
         viewModelScope.launch {
             val result = groupRepository.getMidpoints(joinCode)
@@ -96,6 +113,10 @@ class GroupViewModel @Inject constructor(
 
     fun resetGroupDeletedState() {
         _isGroupDeleted.value = false
+    }
+
+    fun resetGroupLeftState() {
+        _isGroupLeft.value = false
     }
 
     fun clearMessages() {

@@ -311,4 +311,37 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
 }
 
 
+
+  async leaveGroup(
+    req: Request<{joinCode: string}, unknown, {userId: string}>, 
+    res: Response, 
+    next: NextFunction) {
+    try {
+      const {joinCode} = req.params;
+      const {userId} = req.body;
+
+      const result = await groupModel.leaveGroup(joinCode, userId);
+
+      if (result.deleted) {
+        res.status(200).json({
+          message: 'Group deleted successfully as no members remain',
+        });
+      } else {
+        res.status(200).json({
+          message: 'Left group successfully',
+          data: result.newLeader ? { newLeader: result.newLeader } : undefined,
+        });
+      }
+    } catch (error) {
+      logger.error('Failed to leave group:', error);
+
+      if (error instanceof Error) {
+        return res.status(500).json({
+          message: error.message || 'Failed to leave group',
+        });
+      }
+
+      next(error);
+    }
+  }
 }

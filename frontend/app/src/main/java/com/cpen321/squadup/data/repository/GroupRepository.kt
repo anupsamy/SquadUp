@@ -4,6 +4,7 @@ import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 
 interface GroupRepository {
     suspend fun getGroups(): Result<List<GroupDataDetailed>>

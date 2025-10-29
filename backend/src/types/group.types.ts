@@ -49,7 +49,7 @@ export const basicGroupSchema = z.object({
     email: z.string().min(1, "Email is required"),
     address: addressSchema.optional(),
     transitType: transitTypeSchema.optional()
-  })).default([]).optional(),
+  })).optional(),
   midpoint: z.string().default('').optional()
 
 });
@@ -76,7 +76,7 @@ export const updateGroupSchema = z.object({
     email: z.string().min(1, "Email is required"),
     address: addressSchema.optional(),
     transitType: transitTypeSchema.optional()
-  })).default([]).optional(),
+  })).optional(),
   midpoint: z.string().default('').optional()
 });
 

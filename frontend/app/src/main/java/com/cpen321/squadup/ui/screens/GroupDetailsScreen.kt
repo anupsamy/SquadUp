@@ -47,6 +47,13 @@ fun GroupDetailsScreen(
         }
     }
 
+    LaunchedEffect(group.groupMemberIds?.size, group.expectedPeople) {
+        val membersJoined = group.groupMemberIds?.size ?: 0
+        if (membersJoined == group.expectedPeople) {
+            groupViewModel.getMidpoint(group.joinCode)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

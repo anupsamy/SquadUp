@@ -217,7 +217,18 @@ export class GroupController {
         throw new Error("Group not found");
       }
 
-      // groupMemberIds is an array of ObjectIds or references
+      if (group.midpoint) {
+        const parts = group.midpoint.trim().split(" ");
+        res.status(200).json({
+          message: 'Get midpoint successfully!',
+          data: {
+            location: {
+              lat: parseFloat(parts[0]),
+              lng: parseFloat(parts[1]),
+            }
+        }});
+      }
+
       const locationInfo: LocationInfo[] = group.groupMemberIds
       .filter(member => member.address && member.transitType)
       .map(member => ({
@@ -238,6 +249,8 @@ export class GroupController {
       const lng = optimizedPoint.lng
 
       const midpoint = lat.toString() + ' ' + lng.toString();
+
+      // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
 
       res.status(200).json({

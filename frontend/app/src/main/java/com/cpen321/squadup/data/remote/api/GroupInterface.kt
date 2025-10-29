@@ -5,6 +5,7 @@ import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
+import com.cpen321.squadup.data.remote.dto.SquadGoal
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import com.cpen321.squadup.data.remote.dto.LeaveGroupRequest
 import okhttp3.MultipartBody
@@ -34,6 +35,12 @@ interface GroupInterface {
         @Header("Authorization") authHeader: String,
         @Body request: CreateGroupRequest
     ): Response<ApiResponse<GroupData>>
+
+    @GET("group/midpoint/{joinCode}")
+    suspend fun getMidpointByJoinCode(
+        @Header("Authorization") authHeader: String,
+        @retrofit2.http.Path("joinCode") joinCode: String
+    ): Response<ApiResponse<SquadGoal>>
 
     @POST("group/update")
     suspend fun joinGroup(

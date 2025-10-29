@@ -15,10 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import java.text.SimpleDateFormat
 import java.util.*
-import java.time.format.DateTimeFormatter
-import java.time.LocalDateTime
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Log
 import com.cpen321.squadup.data.remote.dto.GroupUser
@@ -60,7 +57,7 @@ fun CreateGroupScreen(
     var dateObject:Date
 
     Scaffold(
-        topBar = { 
+        topBar = {
             TopAppBar(
                 title = { Text("Create Group") },
                 navigationIcon = {
@@ -162,13 +159,15 @@ fun CreateGroupScreen(
                             val groupLeaderUser = GroupUser(
                                 id = currentUserId._id,
                                 name = currentUserId.name,
-                                email = currentUserId.email
+                                email = currentUserId.email,
+                                address = currentUserId.address,
+                                transitType = currentUserId.transitType
                             )
                             groupViewModel.createGroup(
                                 groupName = groupName,
                                 meetingTime = meetingDateTime,
                                 groupLeaderId = groupLeaderUser,
-                                expectedPeople = expectedPeople.toIntOrNull() ?: 0
+                                expectedPeople = expectedPeople.toIntOrNull() ?: 0,
                             )
                         } else {
                             Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()

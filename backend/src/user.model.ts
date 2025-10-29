@@ -22,7 +22,7 @@ const addressComponentsSchema = new Schema(
   { _id: false } // prevents automatic _id field
 );
 
-const addressSchema = new Schema(
+export const addressSchema = new Schema(
   {
     formatted: { type: String, required: true },
     placeId: { type: String },

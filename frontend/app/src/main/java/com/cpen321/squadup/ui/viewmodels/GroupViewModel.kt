@@ -2,16 +2,15 @@ package com.cpen321.squadup.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.cpen321.squadup.data.repository.GroupRepository
-import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 data class GroupUiState(
     val isCreatingGroup: Boolean = false,
@@ -33,13 +32,18 @@ class GroupViewModel @Inject constructor(
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
+    //data class Midpoint(val lat: Double, val lng: Double)
+    private val _midpoint = MutableStateFlow<SquadGoal?>(null)
+    val midpoint: StateFlow<SquadGoal?> = _midpoint
     private val _isGroupLeft = MutableStateFlow(false)
     val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
+    private val _isCalculatingMidpoint = MutableStateFlow(false)
+    val isCalculatingMidpoint: StateFlow<Boolean> = _isCalculatingMidpoint
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
-    
+
             val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople)
             if (result.isSuccess) {
                 val group = result.getOrNull()
@@ -78,6 +82,20 @@ class GroupViewModel @Inject constructor(
         }
     }
 
+    fun getMidpoint(joinCode: String) {
+        viewModelScope.launch {
+            _isCalculatingMidpoint.value = true
+            val result = groupRepository.getMidpointByJoinCode(joinCode)
+            if (result.isSuccess) {
+                _midpoint.value = result.getOrNull()
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
+                Log.e(TAG, "Error fetching midpoint: $error")
+            }
+            _isCalculatingMidpoint.value = false
+        }
+    }
+
     fun leaveGroup(joinCode: String, userId: String) {
         viewModelScope.launch {
             val result = groupRepository.leaveGroup(joinCode, userId)
@@ -98,6 +116,10 @@ class GroupViewModel @Inject constructor(
 
     fun resetGroupLeftState() {
         _isGroupLeft.value = false
+    }
+
+    fun resetMidpoint() {
+        _midpoint.value = null
     }
 
     fun clearMessages() {

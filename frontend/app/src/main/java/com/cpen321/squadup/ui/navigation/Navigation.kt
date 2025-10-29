@@ -12,11 +12,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cpen321.squadup.R
+import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.screens.AuthScreen
 import com.cpen321.squadup.ui.screens.LoadingScreen
 import com.cpen321.squadup.ui.screens.CreateGroupScreen
-import com.cpen321.squadup.ui.screens.GroupSuccessScreen
 import com.cpen321.squadup.ui.screens.GroupDetailsScreen
+import com.cpen321.squadup.ui.screens.GroupListScreen
+import com.cpen321.squadup.ui.screens.GroupSuccessScreen
 import com.cpen321.squadup.ui.screens.MainScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
 import com.cpen321.squadup.ui.screens.ProfileScreenActions
@@ -29,11 +31,6 @@ import com.cpen321.squadup.ui.viewmodels.NavigationViewModel
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import com.cpen321.squadup.ui.navigation.NavRoutes
-import com.cpen321.squadup.data.remote.dto.GroupData
-import com.cpen321.squadup.data.remote.dto.GroupsDataAll
-import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.GroupUser
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -45,6 +42,7 @@ object NavRoutes {
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
     const val GROUP_DETAILS = "group_details"
+    const val GROUP_LIST = "group_list"
     const val JOIN_GROUP = "join_group" 
 }
 
@@ -264,7 +262,7 @@ private fun AppNavHost(
             )
         }
 
-        composable("group_details/{joinCode}") { backStackEntry ->
+        composable("${NavRoutes.GROUP_DETAILS}/{joinCode}") { backStackEntry ->
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
             val group = mainViewModel.getGroupById(joinCode)
         
@@ -277,7 +275,20 @@ private fun AppNavHost(
                 )
             }
         }
-        
+
+        composable("${NavRoutes.GROUP_LIST}/{joinCode}") { backStackEntry ->
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val group = mainViewModel.getGroupById(joinCode)
+
+            group?.let {
+                GroupListScreen(
+                    navController = navController,
+                    group = group,
+                    groupViewModel = groupViewModel,
+                    profileViewModel = profileViewModel
+                )
+            }
+        }
 
         composable(NavRoutes.JOIN_GROUP) {
             JoinGroupScreen(

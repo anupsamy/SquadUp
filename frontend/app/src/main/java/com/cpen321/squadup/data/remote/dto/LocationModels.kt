@@ -1,7 +1,6 @@
 package com.cpen321.squadup.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
@@ -11,6 +10,15 @@ data class Address(
     val lat: Double? = null,
     val lng: Double? = null,
     val components: AddressComponents? = null
+)
+
+data class GeoLocation(
+    val lat: Double? = null,
+    val lng: Double? = null,
+)
+
+data class SquadGoal(
+    val location: GeoLocation
 )
 
 data class AddressComponents(

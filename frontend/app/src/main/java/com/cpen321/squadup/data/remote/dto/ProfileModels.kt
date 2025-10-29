@@ -2,8 +2,8 @@ package com.cpen321.squadup.data.remote.dto
 
 data class UpdateProfileRequest(
     val name: String? = null,
-    val bio: String? = null,
-    val hobbies: List<String>? = null,
+    val address: Address? = null,
+    val transitType: String? = null,
     val profilePicture: String? = null
 )
 
@@ -15,9 +15,9 @@ data class User(
     val _id: String,
     val email: String,
     val name: String,
-    val bio: String?,
+    val address: Address?,
+    val transitType: TransitType?,
     val profilePicture: String,
-    val hobbies: List<String> = emptyList(),
     val createdAt: String? = null,
     val updatedAt: String? = null
 )

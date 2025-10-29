@@ -3,6 +3,7 @@ package com.cpen321.squadup.ui.screens
 import Button
 import Icon
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +22,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -44,34 +48,43 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.cpen321.squadup.R
 import com.cpen321.squadup.data.remote.api.RetrofitClient
+import com.cpen321.squadup.data.remote.dto.Address
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.data.remote.dto.User
+import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.components.ImagePicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.ProfileUiState
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalSpacing
+import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 
 private data class ProfileFormState(
     val name: String = "",
-    val email: String = "",
-    val bio: String = "",
     val originalName: String = "",
-    val originalBio: String = ""
+    val email: String = "",
+    val transitType: TransitType? = null,
+    val originalTransitType: TransitType? = null,
+    val address: Address? = null,
+    val originalAddress: Address? = null
 ) {
     fun hasChanges(): Boolean {
         return (name.isNotBlank() && name != originalName) ||
-                (bio != originalBio && bio.isNotBlank())
+                (transitType != originalTransitType) ||
+                (address != originalAddress)
     }
 }
 
 private data class ManageProfileScreenActions(
     val onBackClick: () -> Unit,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onImagePickerDismiss: () -> Unit,
@@ -87,7 +100,8 @@ private data class ProfileFormData(
     val isLoadingPhoto: Boolean,
     val isSavingProfile: Boolean,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
@@ -97,7 +111,8 @@ private data class ProfileBodyData(
     val uiState: ProfileUiState,
     val formState: ProfileFormState,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
@@ -106,9 +121,11 @@ private data class ProfileBodyData(
 private data class ProfileFieldsData(
     val name: String,
     val email: String,
-    val bio: String,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit
+    val transitType: TransitType?,
+    val address: Address?,
+    val onTransitChange: (TransitType?) -> Unit,
+    val onAddressChange: (Address?) -> Unit
 )
 
 @Composable
@@ -139,10 +156,34 @@ fun ManageProfileScreen(
         uiState.user?.let { user ->
             formState = ProfileFormState(
                 name = user.name,
-                email = user.email,
-                bio = user.bio ?: "",
                 originalName = user.name,
-                originalBio = user.bio ?: ""
+                email = user.email,
+                address = user.address,
+                originalAddress = user.address,
+                transitType = user.transitType,
+                originalTransitType = user.transitType
+            )
+        }
+    }
+
+    LaunchedEffect(uiState.successMessage) {
+        if (uiState.successMessage != null) {
+            // Reload profile after successful save to get updated data
+            profileViewModel.loadProfile()
+        }
+    }
+
+    // Also update the existing LaunchedEffect(uiState.user) to handle null transit type:
+    LaunchedEffect(uiState.user) {
+        uiState.user?.let { user ->
+            formState = ProfileFormState(
+                name = user.name,
+                originalName = user.name,
+                email = user.email,
+                address = user.address,
+                originalAddress = user.address,
+                transitType = user.transitType, // This should now properly include the saved value
+                originalTransitType = user.transitType
             )
         }
     }
@@ -150,10 +191,15 @@ fun ManageProfileScreen(
     val actions = ManageProfileScreenActions(
         onBackClick = onBackClick,
         onNameChange = { formState = formState.copy(name = it) },
-        onBioChange = { formState = formState.copy(bio = it) },
+        onAddressChange = { newAddress: Address? ->
+            formState = formState.copy(address = newAddress)
+        },
+        onTransitChange = { newTransit: TransitType? ->
+            formState = formState.copy(transitType = newTransit)
+        },
         onEditPictureClick = { showImagePickerDialog = true },
         onSaveClick = {
-            profileViewModel.updateProfile(formState.name, formState.bio)
+            profileViewModel.updateProfile(formState.name, formState.address, formState.transitType)
         },
         onImagePickerDismiss = { showImagePickerDialog = false },
         onImageSelected = { uri ->
@@ -207,7 +253,8 @@ private fun ManageProfileContent(
                 uiState = uiState,
                 formState = formState,
                 onNameChange = actions.onNameChange,
-                onBioChange = actions.onBioChange,
+                onAddressChange = actions.onAddressChange,
+                onTransitChange = actions.onTransitChange,
                 onEditPictureClick = actions.onEditPictureClick,
                 onSaveClick = actions.onSaveClick,
                 onLoadingPhotoChange = actions.onLoadingPhotoChange
@@ -276,7 +323,8 @@ private fun ProfileBody(
                         isLoadingPhoto = data.uiState.isLoadingPhoto,
                         isSavingProfile = data.uiState.isSavingProfile,
                         onNameChange = data.onNameChange,
-                        onBioChange = data.onBioChange,
+                        onAddressChange = data.onAddressChange,
+                        onTransitChange = data.onTransitChange,
                         onEditPictureClick = data.onEditPictureClick,
                         onSaveClick = data.onSaveClick,
                         onLoadingPhotoChange = data.onLoadingPhotoChange
@@ -314,9 +362,11 @@ private fun ProfileForm(
             data = ProfileFieldsData(
                 name = data.formState.name,
                 email = data.user.email,
-                bio = data.formState.bio,
+                address = data.formState.address,
+                transitType = data.formState.transitType,
                 onNameChange = data.onNameChange,
-                onBioChange = data.onBioChange
+                onAddressChange = data.onAddressChange,
+                onTransitChange = data.onTransitChange
             )
         )
 
@@ -443,21 +493,72 @@ private fun ProfileFields(
             singleLine = true,
             enabled = false
         )
+        //address field
+        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+        AddressPicker(
+            viewModel = addressPickerViewModel,
+            initialValue = data.address,
+            onAddressSelected = { selected ->
+                data.onAddressChange(selected)
+            }
+        )
 
-        Row(Modifier.focusProperties { canFocus = true }) {
-            OutlinedTextField(
-                value = data.bio,
-                onValueChange = data.onBioChange,
-                label = { Text(stringResource(R.string.bio)) },
-                placeholder = { Text(stringResource(R.string.bio_placeholder)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                maxLines = 5,
-                readOnly = false
-            )
+        //transitType field
+
+        TransitTypeDropdown(
+            selectedType = data.transitType,
+            onTypeSelected = data.onTransitChange
+        )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TransitTypeDropdown(
+    selectedType: TransitType?,
+    onTypeSelected: (TransitType) -> Unit
+) {
+    val transitOptions = TransitType.entries.toList()
+    var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedType) {
+        Log.d("TransitTypeDropdown", "Selected type changed to: $selectedType (name: ${selectedType?.name})")
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = selectedType?.name?.replaceFirstChar { it.uppercase() } ?: "",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.transit_type)) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            transitOptions.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.name.replaceFirstChar { it.uppercase() }) },
+                    onClick = {
+                        onTypeSelected(option)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }
+
+
 
 @Composable
 private fun SaveButton(

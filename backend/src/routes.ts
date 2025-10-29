@@ -6,7 +6,8 @@ import hobbiesRoutes from './routes/hobbies.routes';
 import mediaRoutes from './routes/media.routes';
 import usersRoutes from './routes/user.routes';
 import testRoutes from './routes/test.routes';
-import newsRoutes from './routes/news.routes'
+import newsRoutes from './routes/news.routes';
+import groupRoutes from './routes/group.routes'
 
 const router = Router();
 
@@ -21,5 +22,7 @@ router.use('/media', authenticateToken, mediaRoutes);
 router.use('/news', newsRoutes);
 
 router.use('/test', testRoutes);
+
+router.use('/group', authenticateToken, groupRoutes);
 
 export default router;

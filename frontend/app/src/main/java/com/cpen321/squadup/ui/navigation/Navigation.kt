@@ -14,26 +14,38 @@ import androidx.navigation.compose.rememberNavController
 import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.screens.AuthScreen
 import com.cpen321.squadup.ui.screens.LoadingScreen
+import com.cpen321.squadup.ui.screens.CreateGroupScreen
+import com.cpen321.squadup.ui.screens.GroupSuccessScreen
+import com.cpen321.squadup.ui.screens.GroupDetailsScreen
 import com.cpen321.squadup.ui.screens.MainScreen
-import com.cpen321.squadup.ui.screens.ManageHobbiesScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
 import com.cpen321.squadup.ui.screens.ProfileScreenActions
 import com.cpen321.squadup.ui.screens.ProfileCompletionScreen
 import com.cpen321.squadup.ui.screens.ProfileScreen
+import com.cpen321.squadup.ui.screens.JoinGroupScreen
 import com.cpen321.squadup.ui.viewmodels.AuthViewModel
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.NavigationViewModel
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.ui.navigation.NavRoutes
+import com.cpen321.squadup.data.remote.dto.GroupData
+import com.cpen321.squadup.data.remote.dto.GroupsDataAll
+import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.data.remote.dto.GroupUser
 
 object NavRoutes {
     const val LOADING = "loading"
     const val AUTH = "auth"
     const val MAIN = "main"
     const val PROFILE = "profile"
+    const val CREATE_GROUP = "group"
     const val MANAGE_PROFILE = "manage_profile"
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
+    const val GROUP_DETAILS = "group_details"
+    const val JOIN_GROUP = "join_group" 
 }
 
 @Composable
@@ -49,6 +61,7 @@ fun AppNavigation(
     val profileViewModel: ProfileViewModel = hiltViewModel()
     val mainViewModel: MainViewModel = hiltViewModel()
     val newsViewModel: NewsViewModel = hiltViewModel()
+    val groupViewModel: GroupViewModel = hiltViewModel()
 
     // Handle navigation events from NavigationStateManager
     LaunchedEffect(navigationEvent) {
@@ -57,7 +70,8 @@ fun AppNavigation(
             navController,
             navigationStateManager,
             authViewModel,
-            mainViewModel
+            mainViewModel,
+            groupViewModel
         )
     }
 
@@ -67,7 +81,8 @@ fun AppNavigation(
         profileViewModel = profileViewModel,
         mainViewModel = mainViewModel,
         navigationStateManager = navigationStateManager,
-        newsViewModel = newsViewModel
+        newsViewModel = newsViewModel,
+        groupViewModel = groupViewModel
     )
 }
 
@@ -76,7 +91,8 @@ private fun handleNavigationEvent(
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
     authViewModel: AuthViewModel,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    groupViewModel: GroupViewModel
 ) {
     when (navigationEvent) {
         is NavigationEvent.NavigateToAuth -> {
@@ -91,6 +107,11 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.AUTH) {
                 popUpTo(0) { inclusive = true }
             }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToCreateGroup -> {
+            navController.navigate(NavRoutes.CREATE_GROUP)
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -148,26 +169,22 @@ private fun handleNavigationEvent(
 }
 @Composable
 private fun MainScreenWithHobbies(
+    navController: NavHostController, 
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
     profileViewModel: ProfileViewModel,
     onProfileClick: () -> Unit
 ) {
+    val selectedHobbies = emptyList<String>()
     val uiState by profileViewModel.uiState.collectAsState()
-    val selectedHobbies = uiState.selectedHobbies.toList()
+    //val selectedHobbies = uiState.selectedHobbies?.toList() ?: emptyList()
 
-    LaunchedEffect(Unit) {
-        profileViewModel.uiState.collect { profileState ->
-            if (profileState.selectedHobbies.isEmpty()) {
-                newsViewModel.clearData()
-            }
-        }
-    }
     MainScreen(
         mainViewModel = mainViewModel,
         newsViewModel = newsViewModel,
         selectedHobbies = selectedHobbies,
-        onProfileClick = onProfileClick
+        onProfileClick = onProfileClick,
+        navController = navController
     )
 }
 @Composable
@@ -177,7 +194,8 @@ private fun AppNavHost(
     profileViewModel: ProfileViewModel,
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
-    navigationStateManager: NavigationStateManager
+    navigationStateManager: NavigationStateManager,
+    groupViewModel: GroupViewModel
 ) {
     NavHost(
         navController = navController,
@@ -204,6 +222,7 @@ private fun AppNavHost(
 
         composable(NavRoutes.MAIN) {
             MainScreenWithHobbies(
+                navController = navController,
                 mainViewModel = mainViewModel,
                 newsViewModel = newsViewModel,
                 profileViewModel = profileViewModel,
@@ -218,7 +237,6 @@ private fun AppNavHost(
                 actions = ProfileScreenActions(
                     onBackClick = { navigationStateManager.navigateBack() },
                     onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
-                    onManageHobbiesClick = { navigationStateManager.navigateToManageHobbies() },
                     onAccountDeleted = { navigationStateManager.handleAccountDeletion() }
                 )
             )
@@ -231,11 +249,44 @@ private fun AppNavHost(
             )
         }
 
-        composable(NavRoutes.MANAGE_HOBBIES) {
-            ManageHobbiesScreen(
-                profileViewModel = profileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() }
+        composable(NavRoutes.CREATE_GROUP) {
+            CreateGroupScreen(navController = navController)
+        }
+
+        composable("group_success/{groupName}/{joinCode}") { backStackEntry ->
+            val groupName = backStackEntry.arguments?.getString("groupName") ?: ""
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+        
+            GroupSuccessScreen(
+                navController = navController,
+                groupName = groupName,
+                joinCode = joinCode
             )
         }
+
+        composable("group_details/{joinCode}") { backStackEntry ->
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val group = mainViewModel.getGroupById(joinCode)
+        
+            group?.let {
+                GroupDetailsScreen(
+                    navController = navController,
+                    group = group,
+                    groupViewModel = groupViewModel,
+                    profileViewModel = profileViewModel
+                )
+            }
+        }
+        
+
+        composable(NavRoutes.JOIN_GROUP) {
+            JoinGroupScreen(
+                navController = navController, 
+                mainViewModel = mainViewModel, 
+                profileViewModel = profileViewModel,
+
+            )
+        }   
+
     }
 }

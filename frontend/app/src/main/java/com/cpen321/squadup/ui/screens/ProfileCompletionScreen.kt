@@ -14,6 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -33,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.cpen321.squadup.R
+import com.cpen321.squadup.data.remote.dto.Address
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.ProfileUiState
@@ -41,16 +47,19 @@ import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 
 private data class ProfileCompletionFormState(
-    val bioText: String = "",
-    val hasSavedBio: Boolean = false
+    val address: Address? = null,
+    val transitType: TransitType? = null,
+    val hasSavedProfile: Boolean = false
 ) {
-    fun canSave(): Boolean = bioText.isNotBlank()
+    //fun canSave(): Boolean = address != null && transitType != null
+    fun canSave(): Boolean = transitType != null
 }
 
 private data class ProfileCompletionScreenData(
     val formState: ProfileCompletionFormState,
     val isSavingProfile: Boolean,
-    val onBioChange: (String) -> Unit,
+//    val onAddressChange: (Address?) -> Unit,
+    val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit
 )
@@ -59,7 +68,8 @@ private data class ProfileCompletionScreenContentData(
     val uiState: ProfileUiState,
     val formState: ProfileCompletionFormState,
     val snackBarHostState: SnackbarHostState,
-    val onBioChange: (String) -> Unit,
+//    val onAddressChange: (Address?) -> Unit,
+    val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onErrorMessageShown: () -> Unit
@@ -71,9 +81,15 @@ fun ProfileCompletionScreen(
     onProfileCompleted: () -> Unit,
     onProfileCompletedWithMessage: (String) -> Unit = { onProfileCompleted() }
 ) {
-    val uiState by profileViewModel.uiState.collectAsState()
+    val user = profileViewModel.uiState.collectAsState().value.user
+    val uiState = profileViewModel.uiState.collectAsState().value
+    if (user != null) {
+        Text(text = "Welcome, ${user.name}")
+    } else {
+        Text(text = "Loading user data...")
+    }
     val snackBarHostState = remember { SnackbarHostState() }
-    val successfulBioUpdateMessage = stringResource(R.string.successful_bio_update)
+    val successfulUpdateMessage = stringResource(R.string.successful_profile_update)
 
     // Form state
     var formState by remember {
@@ -88,8 +104,8 @@ fun ProfileCompletionScreen(
     }
 
     LaunchedEffect(uiState.user) {
-        uiState.user?.let { user ->
-            if (user.bio != null && user.bio.isNotBlank() && !formState.hasSavedBio) {
+        user?.let { user ->
+            if ( user.transitType != null && !formState.hasSavedProfile) {
                 onProfileCompleted()
             }
         }
@@ -100,16 +116,21 @@ fun ProfileCompletionScreen(
             uiState = uiState,
             formState = formState,
             snackBarHostState = snackBarHostState,
-            onBioChange = { formState = formState.copy(bioText = it) },
+//            onAddressChange = { newAddress: Address? ->
+//                formState = formState.copy(address = newAddress)
+//            },
+
+            onTransitTypeChange = { formState = formState.copy(transitType = it) },
             onSkipClick = onProfileCompleted,
             onSaveClick = {
-                if (formState.bioText.isNotBlank()) {
-                    formState = formState.copy(hasSavedBio = true)
+                if (formState.canSave()) {
+                    formState = formState.copy(hasSavedProfile = true)
                     profileViewModel.updateProfile(
                         name = uiState.user?.name ?: "",
-                        bio = formState.bioText,
+                        address = formState.address,
+                        transitType = formState.transitType,
                         onSuccess = {
-                            onProfileCompletedWithMessage(successfulBioUpdateMessage)
+                            onProfileCompletedWithMessage(successfulUpdateMessage)
                         }
                     )
                 }
@@ -143,7 +164,8 @@ private fun ProfileCompletionContent(
             data = ProfileCompletionScreenData(
                 formState = data.formState,
                 isSavingProfile = data.uiState.isSavingProfile,
-                onBioChange = data.onBioChange,
+//                onAddressChange = data.onAddressChange,
+                onTransitTypeChange = data.onTransitTypeChange,
                 onSkipClick = data.onSkipClick,
                 onSaveClick = data.onSaveClick
             )
@@ -171,10 +193,22 @@ private fun ProfileCompletionBody(
 
         Spacer(modifier = Modifier.height(spacing.extraLarge2))
 
-        BioInputField(
-            bioText = data.formState.bioText,
+//        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+//        AddressPicker(
+//            viewModel = addressPickerViewModel,
+//            initialValue = data.formState.address,
+//            onAddressSelected = { address ->
+//                // Save to your form state or call backend
+//                data.onAddressChange
+//            }
+//        )
+
+//        Spacer(modifier = Modifier.height(spacing.medium))
+
+        TransitTypeInputField(
+            transitType = data.formState.transitType,
             isEnabled = !data.isSavingProfile,
-            onBioChange = data.onBioChange
+            onTransitTypeChange = data.onTransitTypeChange
         )
 
         Spacer(modifier = Modifier.height(spacing.extraLarge))
@@ -202,7 +236,7 @@ private fun ProfileCompletionHeader(
 
         Spacer(modifier = Modifier.height(spacing.medium))
 
-        BioDescription()
+        ProfileDescription()
     }
 }
 
@@ -221,39 +255,88 @@ private fun WelcomeTitle(
 }
 
 @Composable
-private fun BioDescription(
+private fun ProfileDescription(
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = stringResource(R.string.bio_description),
+        text = stringResource(R.string.profile_description),
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
     )
 }
+//legacy just basic text box replaced with AddressPicker.kt
+//
+//@Composable
+//private fun AddressInputField(
+//    addressText: String,
+//    isEnabled: Boolean,
+//    onAddressChange: (String) -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//    val spacing = LocalSpacing.current
+//
+//    OutlinedTextField(
+//        value = addressText,
+//        onValueChange = onAddressChange,
+//        label = { Text(stringResource(R.string.address)) },
+//        placeholder = { Text(stringResource(R.string.address_placeholder)) },
+//        modifier = modifier.fillMaxWidth(),
+//        shape = RoundedCornerShape(spacing.medium),
+//        enabled = isEnabled,
+//        singleLine = true
+//    )
+//}
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BioInputField(
-    bioText: String,
+private fun TransitTypeInputField(
+    transitType: TransitType?,
     isEnabled: Boolean,
-    onBioChange: (String) -> Unit,
+    onTransitTypeChange: (TransitType?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalSpacing.current
+    val transitOptions = TransitType.entries.toList() // Use enum
+    var expanded by remember { mutableStateOf(false) }
 
-    OutlinedTextField(
-        value = bioText,
-        onValueChange = onBioChange,
-        label = { Text(stringResource(R.string.bio)) },
-        placeholder = { Text(stringResource(R.string.bio_placeholder)) },
-        modifier = modifier.fillMaxWidth(),
-        minLines = 3,
-        maxLines = 5,
-        shape = RoundedCornerShape(spacing.medium),
-        enabled = isEnabled
-    )
+    ExposedDropdownMenuBox(
+        expanded = expanded && isEnabled,
+        onExpandedChange = { if (isEnabled) expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = transitType?.name?.replaceFirstChar { it.uppercase() } ?: "",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.transit_type)) },
+            placeholder = { Text(stringResource(R.string.transit_type_placeholder)) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            enabled = isEnabled
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded && isEnabled,
+            onDismissRequest = { expanded = false }
+        ) {
+            transitOptions.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.name.replaceFirstChar { it.uppercase() }) },
+                    onClick = {
+                        onTransitTypeChange(option) // pass enum, not string
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
 }
+
 
 @Composable
 private fun ActionButtons(

@@ -14,3 +14,5 @@ down:
 
 # Build and start in one step
 dev: build up
+
+rebuild: down dev

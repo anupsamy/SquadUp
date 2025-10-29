@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -22,6 +24,10 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
+
+        val localProperties = Properties()
+        localProperties.load(FileInputStream(rootProject.file("local.properties")))
+        buildConfigField("String", "GOOGLE_PLACES_API_KEY", "\"${localProperties.getProperty("GOOGLE_PLACES_API_KEY")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -47,10 +53,11 @@ android {
             // Local dev endpoints
             buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
             buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
+            buildConfigField("String", "NEWS_API_KEY", "\"e614e65892e045deb1d4ad50f2449ef0\"")
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
-                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
+                "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\""
             )
         }
 
@@ -98,6 +105,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
     
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -108,6 +116,7 @@ dependencies {
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.compose.foundation)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
     
@@ -140,6 +149,10 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    implementation(libs.places) // maps places api
+    implementation(libs.maps.compose)// map view with compose
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

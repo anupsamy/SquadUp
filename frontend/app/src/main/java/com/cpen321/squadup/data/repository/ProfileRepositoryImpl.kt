@@ -57,46 +57,46 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun updateProfile(name: String, address: Address?, transitType: TransitType?): Result<User> {
         return try {
-            Log.d(TAG, "=== CRLF Detection Debug ===")
-            Log.d(TAG, "name contains \\r: ${name.contains("\r")}")
-            Log.d(TAG, "name contains \\n: ${name.contains("\n")}")
-            Log.d(TAG, "name value: '$name'")
-
-            address?.let {
-                Log.d(TAG, "formatted contains \\r: ${it.formatted.contains("\r")}")
-                Log.d(TAG, "formatted contains \\n: ${it.formatted.contains("\n")}")
-                Log.d(TAG, "formatted value: '${it.formatted}'")
-
-                Log.d(TAG, "placeId contains \\r: ${it.placeId?.contains("\r")}")
-                Log.d(TAG, "placeId contains \\n: ${it.placeId?.contains("\n")}")
-                Log.d(TAG, "placeId value: '${it.placeId}'")
-
-                it.components?.let { comp ->
-                    Log.d(TAG, "streetNumber contains \\r: ${comp.streetNumber?.contains("\r")}")
-                    Log.d(TAG, "streetNumber contains \\n: ${comp.streetNumber?.contains("\n")}")
-                    Log.d(TAG, "streetNumber value: '${comp.streetNumber}'")
-
-                    Log.d(TAG, "route contains \\r: ${comp.route?.contains("\r")}")
-                    Log.d(TAG, "route contains \\n: ${comp.route?.contains("\n")}")
-                    Log.d(TAG, "route value: '${comp.route}'")
-
-                    Log.d(TAG, "city contains \\r: ${comp.city?.contains("\r")}")
-                    Log.d(TAG, "city contains \\n: ${comp.city?.contains("\n")}")
-                    Log.d(TAG, "city value: '${comp.city}'")
-
-                    Log.d(TAG, "province contains \\r: ${comp.province?.contains("\r")}")
-                    Log.d(TAG, "province contains \\n: ${comp.province?.contains("\n")}")
-                    Log.d(TAG, "province value: '${comp.province}'")
-
-                    Log.d(TAG, "country contains \\r: ${comp.country?.contains("\r")}")
-                    Log.d(TAG, "country contains \\n: ${comp.country?.contains("\n")}")
-                    Log.d(TAG, "country value: '${comp.country}'")
-
-                    Log.d(TAG, "postalCode contains \\r: ${comp.postalCode?.contains("\r")}")
-                    Log.d(TAG, "postalCode contains \\n: ${comp.postalCode?.contains("\n")}")
-                    Log.d(TAG, "postalCode value: '${comp.postalCode}'")
-                } ?: Log.d(TAG, "components is null")
-            } ?: Log.d(TAG, "address is null")
+//            Log.d(TAG, "=== CRLF Detection Debug ===")
+//            Log.d(TAG, "name contains \\r: ${name.contains("\r")}")
+//            Log.d(TAG, "name contains \\n: ${name.contains("\n")}")
+//            Log.d(TAG, "name value: '$name'")
+//
+//            address?.let {
+//                Log.d(TAG, "formatted contains \\r: ${it.formatted.contains("\r")}")
+//                Log.d(TAG, "formatted contains \\n: ${it.formatted.contains("\n")}")
+//                Log.d(TAG, "formatted value: '${it.formatted}'")
+//
+//                Log.d(TAG, "placeId contains \\r: ${it.placeId?.contains("\r")}")
+//                Log.d(TAG, "placeId contains \\n: ${it.placeId?.contains("\n")}")
+//                Log.d(TAG, "placeId value: '${it.placeId}'")
+//
+//                it.components?.let { comp ->
+//                    Log.d(TAG, "streetNumber contains \\r: ${comp.streetNumber?.contains("\r")}")
+//                    Log.d(TAG, "streetNumber contains \\n: ${comp.streetNumber?.contains("\n")}")
+//                    Log.d(TAG, "streetNumber value: '${comp.streetNumber}'")
+//
+//                    Log.d(TAG, "route contains \\r: ${comp.route?.contains("\r")}")
+//                    Log.d(TAG, "route contains \\n: ${comp.route?.contains("\n")}")
+//                    Log.d(TAG, "route value: '${comp.route}'")
+//
+//                    Log.d(TAG, "city contains \\r: ${comp.city?.contains("\r")}")
+//                    Log.d(TAG, "city contains \\n: ${comp.city?.contains("\n")}")
+//                    Log.d(TAG, "city value: '${comp.city}'")
+//
+//                    Log.d(TAG, "province contains \\r: ${comp.province?.contains("\r")}")
+//                    Log.d(TAG, "province contains \\n: ${comp.province?.contains("\n")}")
+//                    Log.d(TAG, "province value: '${comp.province}'")
+//
+//                    Log.d(TAG, "country contains \\r: ${comp.country?.contains("\r")}")
+//                    Log.d(TAG, "country contains \\n: ${comp.country?.contains("\n")}")
+//                    Log.d(TAG, "country value: '${comp.country}'")
+//
+//                    Log.d(TAG, "postalCode contains \\r: ${comp.postalCode?.contains("\r")}")
+//                    Log.d(TAG, "postalCode contains \\n: ${comp.postalCode?.contains("\n")}")
+//                    Log.d(TAG, "postalCode value: '${comp.postalCode}'")
+//                } ?: Log.d(TAG, "components is null")
+//            } ?: Log.d(TAG, "address is null")
             fun String.sanitizeCRLF() = this
                 .replace("\r\n", " ")
                 .replace("\n", " ")

@@ -26,7 +26,7 @@ fun JoinGroupScreen(
     var joinCode by remember { mutableStateOf("") }
     var joinGroupMessage by remember { mutableStateOf<String?>(null) }
     val profileUiState by profileViewModel.uiState.collectAsState()
-    
+
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
     }
@@ -64,11 +64,13 @@ fun JoinGroupScreen(
                 onClick = {
                     // Handle join group logic here
                     if (joinCode.length == 6) {
-                        
+
                         val currentUser = GroupUser(
                             id = profileUiState!!.user!!._id,
                             name = profileUiState!!.user!!.name,
-                            email = profileUiState!!.user!!.email
+                            email = profileUiState!!.user!!.email,
+                            address = profileUiState!!.user!!.address,
+                            transitType = profileUiState!!.user!!.transitType
                         )
                         val joinCodeString: String = joinCode
                         mainViewModel.joinGroup(

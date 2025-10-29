@@ -1,5 +1,5 @@
 import { Client } from "@googlemaps/google-maps-services-js";
-import type { UserLocation } from "../types/location.types";
+import type { LocationInfo, GeoLocation } from "../types/location.types";
 import { format } from "path";
 
 export class LocationService {
@@ -9,14 +9,14 @@ export class LocationService {
     this.mapsClient = new Client({});
   }
 
-  async getTravelTime(origin: UserLocation, destination: UserLocation, transitType: string): Promise<number> {
+  async getTravelTime(origin: GeoLocation, destination: GeoLocation): Promise<number> {
     try {
       const response = await this.mapsClient.distancematrix({
         params: {
           origins: [`${origin.lat},${origin.lng}`],
           destinations: [`${destination.lat},${destination.lng}`],
           key: process.env.MAPS_API_KEY!,
-          mode: transitType as any,
+          mode: origin.transitType as any,
         },
       });
 
@@ -33,7 +33,7 @@ export class LocationService {
   }
 
   // set to private
-  getGeographicMidpoint(coords: UserLocation[]): UserLocation {
+  getGeographicMidpoint(coords: GeoLocation[]): GeoLocation {
     const DEG_TO_RAD = Math.PI / 180;
     const RAD_TO_DEG = 180 / Math.PI;
 
@@ -60,7 +60,7 @@ export class LocationService {
   }
 
   async getTopNearbyPlaces(
-  location: UserLocation,
+  location: GeoLocation,
   type: string = "restaurant",
   radius: number = 1000,
   maxResults: number = 5
@@ -99,26 +99,31 @@ export class LocationService {
 
   // set to private
   async findOptimalMeetingPoint(
-  users: UserLocation[],
-  transitType: string,
+  locationInfo: LocationInfo[],
   maxIterations = 20,
   epsilon = 1e-5
-): Promise<UserLocation> {
-  let midpoint = this.getGeographicMidpoint(users);
+): Promise<GeoLocation> {
+  let geoLocation: GeoLocation[] = locationInfo
+  .filter(loc => loc.address.lat && loc.address.lng)
+  .map(loc => ({
+        lat: loc.address.lat!,
+        lng: loc.address.lng!,
+      }));
+  let midpoint = this.getGeographicMidpoint(geoLocation);
 
   for (let i = 0; i < maxIterations; i++) {
     const travelTimes = await Promise.all(
-      users.map(u => this.getTravelTime(u, midpoint, transitType))
+      geoLocation.map(u => this.getTravelTime(u, midpoint))
     );
 
     let totalWeight = 0;
     let newLat = 0, newLng = 0;
 
-    for (let j = 0; j < users.length; j++) {
+    for (let j = 0; j < geoLocation.length; j++) {
       const weight = 1 / (travelTimes[j] + 1e-6);
       totalWeight += weight;
-      newLat += users[j].lat * weight;
-      newLng += users[j].lng * weight;
+      newLat += geoLocation[j].lat * weight;
+      newLng += geoLocation[j].lng * weight;
     }
 
     const updatedMidpoint = { lat: newLat / totalWeight, lng: newLng / totalWeight };
@@ -134,44 +139,44 @@ export class LocationService {
   return midpoint;
   }
 
-  async findMultipleMeetingPoints(
-  users: UserLocation[],
-  transitType: string,
-  k: number = 3,
-  maxIterations: number = 20,
-  epsilon: number = 1e-5
-): Promise<UserLocation[]> {
+//   async findMultipleMeetingPoints(
+//   users: UserLocation[],
+//   transitType: string,
+//   k: number = 3,
+//   maxIterations: number = 20,
+//   epsilon: number = 1e-5
+// ): Promise<UserLocation[]> {
 
-  if (users.length <= k) return users.map(u => ({ lat: u.lat, lng: u.lng }));
-  let centroids: UserLocation[] = users.slice(0, k).map(u => ({ lat: u.lat, lng: u.lng }));
+//   if (users.length <= k) return users.map(u => ({ lat: u.lat, lng: u.lng }));
+//   let centroids: UserLocation[] = users.slice(0, k).map(u => ({ lat: u.lat, lng: u.lng }));
 
-  for (let iter = 0; iter < maxIterations; iter++) {
-    const clusters: UserLocation[][] = Array.from({ length: k }, () => []);
+//   for (let iter = 0; iter < maxIterations; iter++) {
+//     const clusters: UserLocation[][] = Array.from({ length: k }, () => []);
 
-    for (const user of users) {
-      const times = await Promise.all(centroids.map(c => this.getTravelTime(user, c, transitType)));
-      const nearestIndex = times.indexOf(Math.min(...times));
-      clusters[nearestIndex].push(user);
-    }
+//     for (const user of users) {
+//       const times = await Promise.all(centroids.map(c => this.getTravelTime(user, c, transitType)));
+//       const nearestIndex = times.indexOf(Math.min(...times));
+//       clusters[nearestIndex].push(user);
+//     }
 
-    let converged = true;
-    for (let i = 0; i < k; i++) {
-      if (clusters[i].length === 0) continue;
+//     let converged = true;
+//     for (let i = 0; i < k; i++) {
+//       if (clusters[i].length === 0) continue;
 
-      let newCentroid = await this.findOptimalMeetingPoint(clusters[i], transitType, 10, epsilon);
-      const delta = Math.sqrt(
-        (newCentroid.lat - centroids[i].lat) ** 2 + (newCentroid.lng - centroids[i].lng) ** 2
-      );
+//       let newCentroid = await this.findOptimalMeetingPoint(clusters[i], transitType, 10, epsilon);
+//       const delta = Math.sqrt(
+//         (newCentroid.lat - centroids[i].lat) ** 2 + (newCentroid.lng - centroids[i].lng) ** 2
+//       );
 
-      if (delta > epsilon) converged = false;
-      centroids[i] = newCentroid;
-    }
+//       if (delta > epsilon) converged = false;
+//       centroids[i] = newCentroid;
+//     }
 
-    if (converged) break;
-  }
+//     if (converged) break;
+//   }
 
-  return centroids;
-}
+//   return centroids;
+// }
 
 }
 

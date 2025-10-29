@@ -60,7 +60,7 @@ fun CreateGroupScreen(
     var dateObject:Date
 
     Scaffold(
-        topBar = { 
+        topBar = {
             TopAppBar(
                 title = { Text("Create Group") },
                 navigationIcon = {
@@ -162,13 +162,15 @@ fun CreateGroupScreen(
                             val groupLeaderUser = GroupUser(
                                 id = currentUserId._id,
                                 name = currentUserId.name,
-                                email = currentUserId.email
+                                email = currentUserId.email,
+                                address = currentUserId.address,
+                                transitType = current.transitType
                             )
                             groupViewModel.createGroup(
                                 groupName = groupName,
                                 meetingTime = meetingDateTime,
                                 groupLeaderId = groupLeaderUser,
-                                expectedPeople = expectedPeople.toIntOrNull() ?: 0
+                                expectedPeople = expectedPeople.toIntOrNull() ?: 0,
                             )
                         } else {
                             Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()

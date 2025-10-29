@@ -3,6 +3,9 @@ import z from 'zod';
 import { HOBBIES } from '../hobbies';
 import { UserModel, userModel } from '../user.model';
 import { GoogleUserInfo } from '../types/user.types';
+import {Address} from './address.types';
+import {TransitType } from './transit.types';
+
 
 // Group model
 // ------------------------------------------------------------
@@ -101,6 +104,8 @@ export type GroupUser = {
   id: string;
   name: string;
   email: string;
+  address?: Address,
+  transitType?: TransitType
 }
 
 

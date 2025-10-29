@@ -4,8 +4,10 @@ import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
-import { UserModel } from '../user.model';
+import { userModel } from '../user.model';
 import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup } from '../types/group.types';
+import { locationService } from '../services/location.service';
+import { LocationInfo } from '../types/location.types';
 
 export class GroupController {
   async createGroup(
@@ -23,7 +25,7 @@ export class GroupController {
         groupName,
         groupLeaderId: groupLeaderId,
         expectedPeople,
-        groupMemberIds: [],
+        groupMemberIds: [groupLeaderId],
         meetingTime: meetingTime, // Default to current time for now
       });
       console.error('GroupController newGroup:', newGroup);
@@ -70,17 +72,17 @@ export class GroupController {
   ) {
     try {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
-  
+
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
       console.error('GroupController getGroupByJoinCode:', group);
-  
+
       if (!group) {
         return res.status(404).json({
           message: `Group with joinCode '${joinCode}' not found`,
         });
       }
-  
+
       res.status(200).json({
         message: 'Group fetched successfully',
         data: {
@@ -147,8 +149,8 @@ export class GroupController {
       console.error('GroupController updateByJoincode joinCode:', joinCode);
       console.error('GroupController updateByJoincode groupMembers:', groupMemberIds);
       console.error('GroupController updateByJoincode expectedPeople:', expectedPeople);
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, 
-        {joinCode, expectedPeople, 
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
+        {joinCode, expectedPeople,
         groupMemberIds: groupMemberIds || []});
 
       if (!updatedGroup) {
@@ -175,8 +177,8 @@ export class GroupController {
   }
 
   async deleteGroupByJoinCode(
-    req: Request<{joinCode: string}>, 
-    res: Response, 
+    req: Request<{joinCode: string}>,
+    res: Response,
     next: NextFunction) {
     try {
       const {joinCode} = req.params;
@@ -200,4 +202,51 @@ export class GroupController {
       next(error);
     }
   }
+
+  async getMidpointByJoinCode(
+    req: Request<{ joinCode: string }>, // Define the route parameter type
+    res: Response<GetGroupResponse>,
+    next: NextFunction
+  ) {
+    try {
+      const { joinCode } = req.params; // Extract the joinCode from the route parameters
+
+      // Query the database for the group with the given joinCode
+      const group = await groupModel.findByJoinCode(joinCode);
+
+      if (!group) {
+        throw new Error("Group not found");
+      }
+
+      // groupMemberIds is an array of ObjectIds or references
+      const locationInfo: LocationInfo[] = group.groupMemberIds
+      .filter(member => member.address && member.transitType)
+      .map(member => ({
+        address: member.address!,
+        transitType: member.transitType!,
+      }));
+
+      //const midpoint = await locationService.findOptimalMeetingPoint();
+      console.error('GroupController getGroupByJoinCode:', group);
+
+      if (!group) {
+        return res.status(404).json({
+          message: `Group with joinCode '${joinCode}' not found`,
+        });
+      }
+
+      res.status(200).json({
+        message: 'Group fetched successfully',
+        data: {
+          group: {
+            ...group.toObject(),
+            groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
+          },
+      }});
+    } catch (error) {
+      logger.error('Failed to fetch group by joinCode:', error);
+      next(error);
+    }
+  }
+
 }

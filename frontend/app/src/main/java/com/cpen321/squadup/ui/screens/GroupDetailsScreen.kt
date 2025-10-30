@@ -1,18 +1,14 @@
 package com.cpen321.squadup.ui.screens
 
-import androidx.compose.foundation.background
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -25,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,23 +36,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.parseMidpointString
-import com.cpen321.squadup.ui.components.ActivityMapView
 import com.cpen321.squadup.ui.components.LeaderGroupView
 import com.cpen321.squadup.ui.components.MemberGroupView
 import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.DisposableEffect
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.utils.WebSocketManager
-import android.util.Log
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.foundation.background
-import androidx.compose.ui.platform.LocalClipboardManager
-import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.google.firebase.messaging.FirebaseMessaging
+
 
 fun unsubscribeFromGroupTopic(joinCode: String) {
     FirebaseMessaging.getInstance()
@@ -68,9 +57,6 @@ fun unsubscribeFromGroupTopic(joinCode: String) {
             }
         }
 }
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.flow.compose
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

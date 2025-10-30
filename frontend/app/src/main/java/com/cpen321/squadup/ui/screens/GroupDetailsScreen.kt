@@ -73,14 +73,33 @@ fun GroupDetailsScreen(
 
     val vmMidpoint by groupViewModel.midpoint.collectAsState()
     val staticMidpoint = parseMidpointString(group.midpoint)
-    val midpoint = vmMidpoint ?: staticMidpoint //take from static unless updated from v,
+    //val midpoint = vmMidpoint ?: staticMidpoint //take from static unless updated from v,
 
     val vmSelectedActivity by activityPickerViewModel.selectedActivity.collectAsState()
     val staticSelectedActivity = group.selectedActivity
-    val selectedActivity = vmSelectedActivity ?: staticSelectedActivity
+    //val selectedActivity = vmSelectedActivity ?: staticSelectedActivity
 
     val currentUserId = profileUiState.user?._id
     val isLeader = group.groupLeaderId?.id == currentUserId
+
+    LaunchedEffect(group) {
+        // Set the initial midpoint in the ViewModel from the static group data
+        groupViewModel.setInitialMidpoint(parseMidpointString(group.midpoint))
+
+        // Set the initial selected activity in the ViewModel
+        activityPickerViewModel.setInitialSelectedActivity(group.selectedActivity)
+    }
+
+    // Now, rely *only* on the ViewModel's state for the UI
+    val midpoint by groupViewModel.midpoint.collectAsState()
+    val selectedActivity by activityPickerViewModel.selectedActivity.collectAsState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            groupViewModel.resetMidpoint()
+            activityPickerViewModel.clearActivities()
+        }
+    }
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()

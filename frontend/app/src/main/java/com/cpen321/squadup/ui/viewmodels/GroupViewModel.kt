@@ -116,6 +116,15 @@ class GroupViewModel @Inject constructor(
         }
     }
 
+
+    fun setInitialMidpoint(initialMidpoint: SquadGoal?) {
+        // Only set the initial value if the current state is null,
+        // to avoid overwriting a freshly calculated midpoint.
+        if (_midpoint.value == null && initialMidpoint != null) {
+            _midpoint.value = initialMidpoint
+        }
+    }
+
 //    fun getMidpoints(joinCode: String) {
 //        viewModelScope.launch {
 //            val result = groupRepository.getMidpoints(joinCode)

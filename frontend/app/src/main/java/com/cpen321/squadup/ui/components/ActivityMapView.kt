@@ -29,17 +29,29 @@ fun ActivityMapView(
             .filter { it.latitude != 0.0 && it.longitude != 0.0 } // avoid invalid coords
     }
 
-    // Move camera to fit all markers once map is ready
     LaunchedEffect(allPoints) {
-        if (allPoints.isNotEmpty()) {
+        if (allPoints.isEmpty()) {
+            return@LaunchedEffect
+        }
+
+        // Case 1: There is only one point. Center on it and set a default zoom.
+        // This correctly handles the "midpoint only" scenario.
+        if (allPoints.size == 1) {
+            val singlePoint = allPoints.first()
+            cameraPositionState.animate(
+                update = CameraUpdateFactory.newLatLngZoom(singlePoint, 14f), // 14f is a good default zoom
+                durationMs = 800
+            )
+        }
+        // Case 2: There are multiple points. Build bounds to fit them all.
+        else {
             val boundsBuilder = LatLngBounds.builder()
             allPoints.forEach { boundsBuilder.include(it) }
             val bounds = boundsBuilder.build()
-            val padding = 150 // pixels — adjust to taste
-            // Move after map is fully ready
+            val padding = 150 // pixels to prevent markers from being on the edge
             cameraPositionState.animate(
                 update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
-                durationMs = 1000
+                durationMs = 800
             )
         }
     }
@@ -47,24 +59,22 @@ fun ActivityMapView(
     GoogleMap(
         modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
-        onMapLoaded = {
-            if (allPoints.isNotEmpty()) {
-                if (allPoints.size == 1) {
-                    // ✅ Single marker: center and zoom out manually
-                    val singlePoint = allPoints.first()
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(singlePoint, 14f) // smaller number = zoomed out
-                    )
-                } else {
-                    // ✅ Multiple markers: fit bounds normally
-                    val boundsBuilder = LatLngBounds.builder()
-                    allPoints.forEach { point -> boundsBuilder.include(point) }
-                    val bounds = boundsBuilder.build()
-                    val padding = 150
-                    cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
-                }
-            }
-        }
+//        onMapLoaded = {
+//            if (allPoints.isNotEmpty()) {
+//                if (allPoints.size == 1) {
+//                    val singlePoint = allPoints.first()
+//                    cameraPositionState.move(
+//                        CameraUpdateFactory.newLatLngZoom(singlePoint, 14f) // smaller number = zoomed out
+//                    )
+//                } else {
+//                    val boundsBuilder = LatLngBounds.builder()
+//                    allPoints.forEach { point -> boundsBuilder.include(point) }
+//                    val bounds = boundsBuilder.build()
+//                    val padding = 150
+//                    cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+//                }
+//            }
+//        }
     ) {
         // Location markers (red)
         locations.forEach { location ->

@@ -65,6 +65,12 @@ class ActivityPickerViewModel @Inject constructor(
         }
     }
 
+    fun clearActivities() {
+        _activities.value = emptyList()
+        _selectedActivity.value = null
+        _selectedActivityId.value = null
+    }
+
     private fun getDefaultActivities(): List<Activity> = listOf(
         Activity(
             name = "using defaults",

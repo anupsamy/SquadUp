@@ -42,6 +42,7 @@ jobs:
             JWT_SECRET=${{secrets.JWT_SECRET}}
             NEWS_API_KEY=${{secrets.NEWS_API_KEY}}
             FIREBASE_SERVICE_ACCOUNT_KEY=${{secrets.FIREBASE_SERVICE_ACCOUNT_KEY}}
+            MAPS_API_KEY=${{secrets.MAPS_API_KEY}}
             EOF
             
             #give .env perms

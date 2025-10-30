@@ -124,8 +124,7 @@ fun GroupDetailsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -135,13 +134,15 @@ fun GroupDetailsScreen(
                         group = group,
                         groupViewModel = groupViewModel,
                         midpoint = midpoint,
-                        activityPickerViewModel = activityPickerViewModel
+                        activityPickerViewModel = activityPickerViewModel,
+                        modifier = Modifier.weight(1f)
                     )
                 } else {
                     MemberGroupView(
                         group = group,
                         groupViewModel = groupViewModel,
-                        midpoint = midpoint
+                        midpoint = midpoint,
+                        modifier = Modifier.weight(1f)
                     )
                 }
 

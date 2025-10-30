@@ -25,6 +25,7 @@ loggingInterceptor = "5.1.0"
 mapsCompose = "4.4.1"
 mapsComposeVersion = "4.3.3"
 material = "1.12.0"
+materialIconsExtended = "1.6.8"
 navigationCompose = "2.9.3"
 places = "5.0.0"
 playServicesAuth = "21.4.0"
@@ -40,6 +41,7 @@ foundationLayout = "1.9.4"
 android-maps-utils = { module = "com.google.android:android-maps-utils", version.ref = "androidMapsUtils" }
 android-maps-utils-v380 = { module = "com.google.android:android-maps-utils", version.ref = "androidMapsUtilsVersion" }
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityCompose" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }

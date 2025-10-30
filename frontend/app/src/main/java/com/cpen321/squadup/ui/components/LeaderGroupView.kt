@@ -109,7 +109,7 @@ fun LeaderGroupView(
                 joinCode = group.joinCode,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
+                    .weight(1f)
             )
         }
 

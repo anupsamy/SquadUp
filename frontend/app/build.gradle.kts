@@ -54,7 +54,6 @@ android {
             // Local dev endpoints
             buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
             buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
-            buildConfigField("String", "NEWS_API_KEY", "\"e614e65892e045deb1d4ad50f2449ef0\"")
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
@@ -106,7 +105,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)

@@ -13,9 +13,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
+import com.cpen321.squadup.utils.WebSocketManager
+import android.util.Log
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -38,6 +41,26 @@ fun GroupDetailsScreen(
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
         groupViewModel.resetMidpoint()
+    }
+
+    // Subscribe to WebSocket notifications when viewing a group
+    LaunchedEffect(group.joinCode, currentUserId) {
+        currentUserId?.let { userId ->
+            Log.d("GroupDetails", "Subscribing to group ${group.joinCode} for user $userId")
+            // Wait a bit for WebSocket to be connected
+            kotlinx.coroutines.delay(500)
+            WebSocketManager.subscribeToGroup(userId, group.joinCode)
+        }
+    }
+    
+    // Unsubscribe when leaving the screen
+    DisposableEffect(group.joinCode, currentUserId) {
+        onDispose {
+            currentUserId?.let { userId ->
+                Log.d("GroupDetails", "Unsubscribing from group ${group.joinCode} for user $userId")
+                WebSocketManager.unsubscribeFromGroup(userId, group.joinCode)
+            }
+        }
     }
 
     LaunchedEffect(isGroupDeleted) {

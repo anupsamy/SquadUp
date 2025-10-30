@@ -66,7 +66,9 @@ fun GroupListScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp()} ) {
+                    IconButton(onClick = {
+                        navController.navigate("${NavRoutes.GROUP_DETAILS}/${group.joinCode}")
+                    },) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },

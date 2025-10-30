@@ -213,7 +213,7 @@ fun GroupDetailsScreen(
 
                 // See Details button
                 Button(
-                    onClick = { // Suppose you already have the group object
+                    onClick = {
                         navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}")
                     },
                     modifier = Modifier

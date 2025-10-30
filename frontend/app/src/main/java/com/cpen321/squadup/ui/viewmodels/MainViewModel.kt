@@ -141,4 +141,25 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    fun checkGroupExists(
+    joinCode: String,
+    onSuccess: (GroupDataDetailed) -> Unit,
+    onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = groupRepository.getGroupByJoinCode(joinCode)
+            if (result.isSuccess) {
+                val group = result.getOrNull()
+                if (group != null) {
+                    onSuccess(group)
+                } else {
+                    onError("Group not found")
+                }
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to check group"
+                onError(error)
+            }
+        }
+    }
 }

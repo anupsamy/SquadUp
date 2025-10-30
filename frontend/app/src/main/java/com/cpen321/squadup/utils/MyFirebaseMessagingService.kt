@@ -1,5 +1,6 @@
 package com.cpen321.squadup.utils
 
+import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -40,32 +41,25 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             return // Don't display notification
         }
 
-        // Handle data payload (quick tasks)
-        if (remoteMessage.data.isNotEmpty()) {
-            Log.d(TAG, "Message data payload: ${remoteMessage.data}")
-            handleNow()
+        // If app is in foreground, suppress showing a system notification.
+        if (isAppInForeground()) {
+            Log.d(TAG, "App in foreground; suppressing FCM notification UI")
+            // Still allow any lightweight data processing if needed
+            if (remoteMessage.data.isNotEmpty()) {
+                Log.d(TAG, "Message data payload (foreground): ${remoteMessage.data}")
+                handleNow()
+            }
+            return
         }
 
-        // Handle notification payload
+        // App is background: show system notification if provided
+        if (remoteMessage.data.isNotEmpty()) {
+            Log.d(TAG, "Message data payload (background): ${remoteMessage.data}")
+        }
         remoteMessage.notification?.let {
             Log.d(TAG, "Message Notification Body: ${it.body}")
             sendNotification(it.title ?: "Notification", it.body ?: "")
         }
-
-        // Optional: simple notification for fallback
-        val channelId = "default"
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Default Channel", NotificationManager.IMPORTANCE_HIGH)
-            manager.createNotificationChannel(channel)
-        }
-
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle(remoteMessage.notification?.title ?: "Notification")
-            .setContentText(remoteMessage.notification?.body ?: "")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .build()
-        manager.notify(0, notification)
     }
 
     private fun handleNow() {
@@ -104,6 +98,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         notificationManager.notify(0, notificationBuilder.build())
+    }
+
+    private fun isAppInForeground(): Boolean {
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val appProcesses = activityManager.runningAppProcesses ?: return false
+        val myPackage = packageName
+        for (appProcess in appProcesses) {
+            if (appProcess.processName == myPackage &&
+                appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+            ) {
+                return true
+            }
+        }
+        return false
     }
 }
 

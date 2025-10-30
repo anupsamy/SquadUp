@@ -111,16 +111,6 @@ export class WebSocketService {
     this.groupSubscriptions.get(joinCode)!.add(userId);
 
     logger.info(`User ${userId} subscribed to group ${joinCode}`);
-    
-    this.sendMessage(ws, {
-      type: 'group_update',
-      groupId: '',
-      joinCode,
-      userId,
-      userName: '',
-      message: `Subscribed to group ${joinCode}`,
-      timestamp: new Date().toISOString()
-    });
   }
 
   private unsubscribeFromGroup(ws: WebSocket, userId: string, joinCode: string) {

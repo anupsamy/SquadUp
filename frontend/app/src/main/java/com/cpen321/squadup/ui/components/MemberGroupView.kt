@@ -60,8 +60,10 @@ fun MemberGroupView(
                     val lat = midpoint.location.lat
                     val lng = midpoint.location.lng
 
-                    val userLoc = if (user?.address?.lat != null && user.address.lng != null) {
-                        LatLng(user.address.lat, user.address.lng)
+                    val groupMemberInfo = group.groupMemberIds?.find { it.id == user?._id }
+
+                    val userLoc = if (groupMemberInfo?.address?.lat != null && groupMemberInfo.address.lng != null) {
+                        LatLng(groupMemberInfo.address.lat, groupMemberInfo.address.lng)
                     } else {
                         null
                     }

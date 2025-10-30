@@ -51,56 +51,70 @@ fun ActivityPicker(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+    if (activities.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(16.dp)
+            Text(
+                text = "No activities found within the radius. Try a group with a new activity type",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    } else {
+
+        Box(modifier = modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                items(sortedActivities) { activity ->
-                    ActivityCard(
-                        name = activity.name,
-                        address = activity.address,
-                        rating = activity.rating,
-                        userRatingsTotal = activity.userRatingsTotal,
-                        priceLevel = activity.priceLevel,
-                        type = activity.type,
-                        isSelected = activity.placeId == selectedActivityId,
-                        onClick = { viewModel.selectActivity(activity.placeId) }
-                    )
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp)
+                ) {
+                    items(sortedActivities) { activity ->
+                        ActivityCard(
+                            name = activity.name,
+                            address = activity.address,
+                            rating = activity.rating,
+                            userRatingsTotal = activity.userRatingsTotal,
+                            priceLevel = activity.priceLevel,
+                            type = activity.type,
+                            isSelected = activity.placeId == selectedActivityId,
+                            onClick = { viewModel.selectActivity(activity.placeId) }
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        viewModel.confirmSelection(joinCode)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "Activity selected successfully! Group members have been notified.",
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .scale(if (isPressed) 0.95f else 1f),
+                    enabled = selectedActivityId != null,
+                    interactionSource = interactionSource
+                ) {
+                    Text("Select Activity")
                 }
             }
 
-            Button(
-                onClick = {
-                    viewModel.confirmSelection(joinCode)
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = "Activity selected successfully! Group members have been notified.",
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                },
+            SnackbarHost(
+                hostState = snackbarHostState,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .scale(if (isPressed) 0.95f else 1f),
-                enabled = selectedActivityId != null,
-                interactionSource = interactionSource
-            ) {
-                Text("Select Activity")
-            }
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 80.dp) // Position above the button
+            )
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 80.dp) // Position above the button
-        )
     }
 }
 @Composable

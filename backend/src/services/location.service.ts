@@ -122,6 +122,7 @@ async getActivityList(
   .map(loc => ({
         lat: loc.address.lat!,
         lng: loc.address.lng!,
+        transitType: loc.transitType
       }));
   let midpoint = this.getGeographicMidpoint(geoLocation);
 
@@ -134,11 +135,16 @@ async getActivityList(
     let newLat = 0, newLng = 0;
 
     for (let j = 0; j < geoLocation.length; j++) {
-      const weight = 1 / (travelTimes[j] + 1e-6);
+      //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
+      const weight = travelTimes[j];
       totalWeight += weight;
       newLat += geoLocation[j].lat * weight;
       newLng += geoLocation[j].lng * weight;
     }
+    if (totalWeight === 0) {
+          // Fallback to a simple geographic midpoint if weights are zero
+          return this.getGeographicMidpoint(geoLocation);
+      }
 
     const updatedMidpoint = { lat: newLat / totalWeight, lng: newLng / totalWeight };
 

@@ -12,11 +12,6 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.cpen321.squadup.MainActivity
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import kotlinx.coroutines.runBlocking
-import androidx.lifecycle.ViewModelProvider
-import com.cpen321.squadup.data.remote.dto.User
-import androidx.lifecycle.ProcessLifecycleOwner
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -113,13 +108,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 }
 
 fun getCurrentUserId(context: Context): String? {
-    // Safest cross-app way: store user id in shared preferences on profile load, then retrieve here
-    // For this demo, let's try via ProfileViewModel, but this may need to be refactored in your real app for proper background access.
-    // You may want to implement a singleton (object) or SharedPreference for this.
-    return try {
-        val profileViewModel = ViewModelProvider(ProcessLifecycleOwner.get()).get(ProfileViewModel::class.java)
-        profileViewModel.uiState.value.user?._id
-    } catch (e: Exception) {
-        null
-    }
+    val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    return prefs.getString("user_id", null)
 }

@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
@@ -44,8 +43,6 @@ fun GroupDetailsScreen(
         groupViewModel.resetMidpoint()
     }
 
-    val currentUserId = profileUiState.user?._id
-    
     // Subscribe to WebSocket notifications when viewing a group
     LaunchedEffect(group.joinCode, currentUserId) {
         currentUserId?.let { userId ->

@@ -20,6 +20,8 @@ import com.cpen321.squadup.data.remote.dto.TransitType
 import androidx.compose.ui.res.stringResource
 import com.cpen321.squadup.R
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.ui.components.AddressPicker
+import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +35,7 @@ fun JoinGroupScreen(
     var groupExists by remember { mutableStateOf(false) }
     var groupMeetingTime by remember { mutableStateOf<String?>(null) }
     var groupName by remember { mutableStateOf<String?>(null) }
-    var address by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf<Address?>(null) }
     var transitType by remember { mutableStateOf<TransitType?>(null) }
     val profileUiState by profileViewModel.uiState.collectAsState()
 
@@ -45,7 +47,7 @@ fun JoinGroupScreen(
         profileViewModel.loadProfile()
     }
 
-     Scaffold(
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Join Group") },
@@ -129,12 +131,13 @@ fun JoinGroupScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Address Input
-                TextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    label = { Text("Enter Address") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+                AddressPicker(
+                    viewModel = addressPickerViewModel,
+                    initialValue = null, //TODO get default from profile
+                    onAddressSelected = { selectedAddressObject ->
+                        address = selectedAddressObject
+                    }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -153,7 +156,7 @@ fun JoinGroupScreen(
                             id = profileUiState.user!!._id,
                             name = profileUiState.user!!.name,
                             email = profileUiState.user!!.email,
-                            address = Address(formatted = address),
+                            address = address!!,
                             transitType = transitType
                         )
                         mainViewModel.joinGroup(
@@ -169,7 +172,7 @@ fun JoinGroupScreen(
                             }
                         )
                     },
-                    enabled = address.isNotBlank() && transitType != null
+                    enabled = address != null && transitType != null
                 ) {
                     Text("Join Group")
                 }

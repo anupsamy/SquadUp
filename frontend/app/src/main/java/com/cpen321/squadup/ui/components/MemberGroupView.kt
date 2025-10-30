@@ -59,6 +59,7 @@ fun MemberGroupView(
                         val locations = listOf(LatLng(lat, lng))
                         ActivityMapView(
                             locations = locations,
+                            activities = emptyList(),
                             modifier = Modifier.fillMaxSize()
                         )
                     }

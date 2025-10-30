@@ -24,6 +24,7 @@ fun LeaderGroupView(
     modifier: Modifier = Modifier
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
+    val activities by activityPickerViewModel.activities.collectAsState()
 
     Column(
         modifier = modifier
@@ -58,6 +59,7 @@ fun LeaderGroupView(
 
                     ActivityMapView(
                         locations = locations,
+                        activities = activities,
                         modifier = Modifier.fillMaxSize()
                     )
                 }

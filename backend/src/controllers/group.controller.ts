@@ -273,8 +273,8 @@ export class GroupController {
     }
   }
 
-  async getMidpointByJoinCode(
-    req: Request<{ joinCode: string }>, // Define the route parameter type
+  async getMidpointByJoinCode( //TODO: decide whether to incorporate activities here
+    req: Request<{ joinCode: string }>, // Define the route parameter type 
     res: Response<getLocationResponse>,
     next: NextFunction
   ) {
@@ -384,7 +384,7 @@ async getActivities(req: Request, res: Response): Promise<void> {
       lng: Number(parts[1]),
     };
 
-    const activities = await locationService.getActivityList(location);
+    const activities = await locationService.getActivityList(location, group.activityType);
 
     res.status(200).json({
       message: 'Fetched activities successfully',

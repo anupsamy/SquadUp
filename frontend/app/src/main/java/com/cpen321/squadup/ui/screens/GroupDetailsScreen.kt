@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -81,6 +82,13 @@ fun GroupDetailsScreen(
 
     val currentUserId = profileUiState.user?._id
     val isLeader = group.groupLeaderId?.id == currentUserId
+
+    fun hardRefresh(navController: NavController, joinCode: String) {
+        navController.navigate(NavRoutes.MAIN) {
+            popUpTo(NavRoutes.MAIN) { inclusive = false }
+        }
+        navController.navigate("${NavRoutes.GROUP_DETAILS}/$joinCode")
+    }
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
@@ -162,6 +170,11 @@ fun GroupDetailsScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(NavRoutes.MAIN) }){
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {hardRefresh(navController, group.joinCode) }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
             )

@@ -7,16 +7,13 @@ import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import com.cpen321.squadup.data.remote.dto.LeaveGroupRequest
 import com.cpen321.squadup.data.remote.dto.GroupData
-import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.utils.JsonUtils.parseErrorMessage
 import javax.inject.Inject
 import javax.inject.Singleton
 
-import com.cpen321.squadup.data.remote.api.RetrofitClient
-import com.cpen321.squadup.data.remote.dto.ApiResponse
-import retrofit2.Response
+import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
@@ -65,16 +62,16 @@ class GroupRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createGroup(
-        groupName: String, 
-        meetingTime: String, 
-        groupLeaderId: GroupUser, 
+        groupName: String,
+        meetingTime: String,
+        groupLeaderId: GroupUser,
         expectedPeople: Number
         ): Result<GroupData> {
         return try {
             val request = CreateGroupRequest(
-                groupName = groupName, 
-                meetingTime = meetingTime, 
-                groupLeaderId = groupLeaderId, 
+                groupName = groupName,
+                meetingTime = meetingTime,
+                groupLeaderId = groupLeaderId,
                 expectedPeople = expectedPeople
             )
             val response = groupInterface.createGroup("", request)
@@ -125,8 +122,8 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val request = UpdateGroupRequest(
-                joinCode = joinCode, 
-                expectedPeople = expectedPeople, 
+                joinCode = joinCode,
+                expectedPeople = expectedPeople,
                 groupMemberIds = updatedMembers
             )
             Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
@@ -140,6 +137,23 @@ class GroupRepositoryImpl @Inject constructor(
             } else {
                 val errorBodyString = response.errorBody()?.string()
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getMidpointByJoinCode(joinCode: String): Result<SquadGoal> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val response = groupInterface.getMidpointByJoinCode("Bearer $authToken", joinCode)
+            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data!!.location}")
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch group by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {

@@ -27,13 +27,16 @@ data class GroupDataDetailed(
     val groupName: String,
     val meetingTime: String,
     val joinCode: String,
-    val groupLeaderId: GroupUser?,
+    val groupLeaderId: GroupUser? = null,
     val expectedPeople: Number,
-    val groupMemberIds: List<GroupUser>?
+    val groupMemberIds: List<GroupUser>? = null,
+    val midpoint: String? = null
 )
 
 data class GroupUser(
     val id: String,
     val name: String,
-    val email: String
+    val email: String,
+    val address: Address? = null,
+    val transitType: TransitType ?= null
 )

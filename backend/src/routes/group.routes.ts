@@ -30,6 +30,12 @@ router.delete(
     groupController.deleteGroupByJoinCode.bind(groupController) // Bind the controller method
 );
 
+router.get(
+    '/midpoint/:joinCode',
+    groupController.getMidpointByJoinCode.bind(groupController)
+);
+
+
 router.post(
     '/leave/:joinCode', // Define the route parameter
     groupController.leaveGroup.bind(groupController) // Bind the controller method

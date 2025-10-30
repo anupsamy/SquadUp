@@ -107,7 +107,7 @@ fun GroupDetailsScreen(
             WebSocketManager.subscribeToGroup(userId, group.joinCode)
         }
     }
-    
+
     // Unsubscribe when leaving the screen (WebSocket ONLY)
     DisposableEffect(group.joinCode, currentUserId) {
         onDispose {

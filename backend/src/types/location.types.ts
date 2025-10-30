@@ -32,9 +32,11 @@ export interface GeoLocation {
 export type getLocationResponse = {
   message: string;
   data?: {
-    location: {
-      lat: number;
-      lng: number;
+    midpoint: {
+      location: {
+        lat: number;
+        lng: number;
+      }
     };
     activities?: Activity[];
   };

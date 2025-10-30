@@ -290,9 +290,11 @@ export class GroupController {
         res.status(200).json({
           message: 'Get midpoint successfully!',
           data: {
-            location: {
-              lat: parseFloat(parts[0]),
-              lng: parseFloat(parts[1]),
+            midpoint: {
+              location: {
+                lat: parseFloat(parts[0]),
+                lng: parseFloat(parts[1]),
+              }
             }
         }});
       }
@@ -326,11 +328,13 @@ export class GroupController {
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
-          location: {
-            lat: lat,
-            lng: lng,
+          midpoint: {
+            location: {
+              lat: lat,
+              lng: lng,
+            }
           },
-          activities: activityList,
+          activities: activityList
         }});
     } catch (error) {
       logger.error('Failed to get midpoint joinCode:', error);
@@ -338,8 +342,8 @@ export class GroupController {
     }
   }
 
-async updateMidpointByJoinCode( //TODO: decide whether to incorporate activities here
-    req: Request<{ joinCode: string }>, // Define the route parameter type
+async updateMidpointByJoinCode(
+    req: Request<{ joinCode: string }>,
     res: Response<getLocationResponse>,
     next: NextFunction
   ) {
@@ -382,9 +386,11 @@ async updateMidpointByJoinCode( //TODO: decide whether to incorporate activities
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
-          location: {
-            lat: lat,
-            lng: lng,
+          midpoint: {
+            location: {
+              lat: lat,
+              lng: lng,
+            }
           },
           activities: activityList,
         }});

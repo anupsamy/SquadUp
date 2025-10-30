@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -68,7 +70,6 @@ fun GroupDetailsScreen(
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
         activityPickerViewModel.loadActivities(group.joinCode)
-//        groupViewModel.resetMidpoint()
     }
 
     LaunchedEffect(isGroupDeleted) {
@@ -103,18 +104,12 @@ fun GroupDetailsScreen(
                     Column {
                         Text(
                             text = group.groupName,
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = group.meetingTime,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+                        Text(
+                            text = group.meetingTime,
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 },
                 navigationIcon = {
@@ -129,11 +124,12 @@ fun GroupDetailsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                // Conditional rendering: Member vs Leader view
+                // Condensed map + group section
                 if (isLeader) {
                     LeaderGroupView(
                         group = group,
@@ -149,9 +145,9 @@ fun GroupDetailsScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Join code + copy button
+                // Compact join code section
                 val clipboardManager = LocalClipboardManager.current
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -161,79 +157,62 @@ fun GroupDetailsScreen(
                     Column {
                         Text(
                             text = "Join Code",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                         )
                         Text(
                             text = group.joinCode,
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
-                    OutlinedButton(onClick = {
-                        clipboardManager.setText(
-                            AnnotatedString(group.joinCode ?: "")
+                    OutlinedButton(
+                        onClick = { clipboardManager.setText(AnnotatedString(group.joinCode ?: "")) },
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text("Copy", fontSize = 12.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Members + Hosted by condensed
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            "Members",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                         )
-                    }) {
-                        Text("Copy")
+                        Text(
+                            "${group.groupMemberIds?.size ?: 0}/${group.expectedPeople}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            "Host",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                        Text(
+                            group.groupLeaderId?.name ?: "Unknown",
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Member status
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Members",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = "${group.groupMemberIds?.size ?: 0}/${group.expectedPeople} members",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Hosted by
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Hosted By",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = group.groupLeaderId?.name ?: "Unknown Leader",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // See Details button
+                // Compact See Details button
                 Button(
                     onClick = {
                         navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}")
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 16.dp)
+                        .height(40.dp)
                 ) {
-                    Text(
-                        text = "See Group Details",
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
+                    Text("See Details", fontSize = 14.sp)
                 }
             }
         }

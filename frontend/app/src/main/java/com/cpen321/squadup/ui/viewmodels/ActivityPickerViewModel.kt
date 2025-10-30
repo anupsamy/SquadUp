@@ -55,7 +55,7 @@ class ActivityPickerViewModel @Inject constructor(
 
     private fun getDefaultActivities(): List<Activity> = listOf(
         Activity(
-            name = "Sushi Palace",
+            name = "using defaults",
             placeId = "ChIJN1t_tDeuEmsRUsoyG83frY58",
             address = "5678 Oak St, Vancouver",
             rating = 4.7,
@@ -64,32 +64,6 @@ class ActivityPickerViewModel @Inject constructor(
             type = "restaurant",
             latitude = 49.2627,
             longitude = -123.1407,
-            businessStatus = "OPERATIONAL",
-            isOpenNow = true
-        ),
-        Activity(
-            name = "Pizza Garden",
-            placeId = "ChIJN1t_tDeuEmsRUsoyG83frY47",
-            address = "1234 Main St, Vancouver",
-            rating = 4.3,
-            userRatingsTotal = 256,
-            priceLevel = 2,
-            type = "restaurant",
-            latitude = 49.2827,
-            longitude = -123.1207,
-            businessStatus = "OPERATIONAL",
-            isOpenNow = true
-        ),
-        Activity(
-            name = "Brew Bros Coffee",
-            placeId = "ChIJN1t_tDeuEmsRUsoyG83frY59",
-            address = "9010 Broadway, Vancouver",
-            rating = 4.5,
-            userRatingsTotal = 318,
-            priceLevel = 1,
-            type = "cafe",
-            latitude = 49.275,
-            longitude = -123.13,
             businessStatus = "OPERATIONAL",
             isOpenNow = true
         )

@@ -33,7 +33,7 @@ fun LeaderGroupView(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp)
+                .height(250.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
@@ -100,48 +100,18 @@ fun LeaderGroupView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Members and Hosted By in same row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-        ) {
-            // Members
-            Column {
-                Text(
-                    text = "Members",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = "${group.groupMemberIds?.size ?: 0}/${group.expectedPeople}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            // Hosted By
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "Hosted By",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = group.groupLeaderId?.name ?: "Unknown",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+//        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//            Text(text = "" + midpoint + isCalculatingMidpoint)
+//        }
+        if (midpoint != null && !isCalculatingMidpoint) {
+            ActivityPicker(
+                viewModel = activityPickerViewModel,
+                joinCode = group.joinCode,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Activity Picker
-        ActivityPicker(
-            viewModel = activityPickerViewModel,
-            joinCode = group.joinCode,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        )
     }
 }

@@ -18,9 +18,11 @@ import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import java.util.*
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Log
+import androidx.compose.foundation.clickable
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import com.cpen321.squadup.data.remote.dto.ActivityType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +45,8 @@ fun CreateGroupScreen(
     var meetingDate by remember { mutableStateOf("") }
     var meetingTime by remember { mutableStateOf("") }
     var expectedPeople by remember { mutableStateOf("") }
+    var selectedActivity by remember { mutableStateOf<ActivityType?>(null) }
+    var expanded by remember { mutableStateOf(false) }
 
     // State for the combined date-time string
     var meetingDateTime by remember { mutableStateOf("") }
@@ -152,6 +156,41 @@ fun CreateGroupScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextField(
+                        value = selectedActivity?.displayName ?: "Select Activity Type",
+                        onValueChange = {}, // Required but we don’t allow typing
+                        readOnly = true,   // Prevent keyboard input
+                        label = { Text("Activity Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .menuAnchor() // Important! Anchors the dropdown properly
+                            .fillMaxWidth()
+                            .clickable { expanded = true } // Allow clicking to expand
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        ActivityType.values().forEach { type ->
+                            DropdownMenuItem(
+                                text = { Text(type.displayName) },
+                                onClick = {
+                                    selectedActivity = type
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Create Group Button
                 Button(
                     onClick = {
@@ -168,6 +207,7 @@ fun CreateGroupScreen(
                                 meetingTime = meetingDateTime,
                                 groupLeaderId = groupLeaderUser,
                                 expectedPeople = expectedPeople.toIntOrNull() ?: 0,
+                                activityType = selectedActivity?.storedValue ?: ""
                             )
                         } else {
                             Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()

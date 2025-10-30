@@ -35,6 +35,7 @@ firebaseMessaging = "25.0.1"
 material3 = "1.4.0"
 foundation = "1.9.3"
 foundationLayout = "1.9.4"
+foundationVersion = "1.9.4"
 
 [libraries]
 android-maps-utils = { module = "com.google.android:android-maps-utils", version.ref = "androidMapsUtils" }
@@ -80,6 +81,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

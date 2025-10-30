@@ -16,7 +16,8 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const {groupName, meetingTime, groupLeaderId, expectedPeople} = req.body;
+      const {groupName, meetingTime, groupLeaderId, expectedPeople, activityType} = req.body;
+      console.log(activityType);
       const joinCode = Math.random().toString(36).slice(2, 8);
 
       // Use the GroupModel to create the group
@@ -26,7 +27,8 @@ export class GroupController {
         groupLeaderId: groupLeaderId,
         expectedPeople,
         groupMemberIds: [groupLeaderId],
-        meetingTime: meetingTime,  // Default to current time for now
+        meetingTime: meetingTime,  // Default to current time for now,
+        activityType: activityType
       });
       console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
@@ -270,7 +272,7 @@ export class GroupController {
   async getActivities(req: Request, res: Response): Promise<void> {
   try {
     const { joinCode } = req.query;
-    
+
     if (!joinCode || typeof joinCode !== 'string') {
       res.status(400).json({
         success: false,
@@ -278,9 +280,9 @@ export class GroupController {
       });
       return;
     }
-    
+
     const activities = await groupModel.getActivities(joinCode);
-    
+
     res.status(200).json({
       success: true,
       data: activities,
@@ -297,7 +299,7 @@ export class GroupController {
 async selectActivity(req: Request, res: Response): Promise<void> {
   try {
     const { joinCode, placeId } = req.body;
-    
+
     if (!joinCode || !placeId) {
       res.status(400).json({
         success: false,
@@ -305,11 +307,11 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // First get the activities to find the one matching placeId
     const activities = await groupModel.getActivities(joinCode);
     const selectedActivity = activities.find(activity => activity.placeId === placeId);
-    
+
     if (!selectedActivity) {
       res.status(404).json({
         success: false,
@@ -317,10 +319,10 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // Update the group with the selected activity
     const updatedGroup = await groupModel.updateSelectedActivity(joinCode, selectedActivity);
-    
+
     res.status(200).json({
       success: true,
       data: updatedGroup,
@@ -337,7 +339,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 async getMidpoints(req: Request, res: Response): Promise<void> {
   try {
     const joinCode = req.query.joinCode;
-    
+
     if (!joinCode || typeof joinCode !== 'string') {
       res.status(400).json({
         success: false,
@@ -345,7 +347,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // Verify the group exists
     const group = await groupModel.findByJoinCode(joinCode);
     if (!group) {
@@ -355,14 +357,14 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // Return dummy midpoint data (3 locations in Vancouver area)
     const midpoints = [
       { latitude: 49.2827, longitude: -123.1207 },
       { latitude: 49.2606, longitude: -123.2460 },
       { latitude: 49.2488, longitude: -123.1163 }
     ];
-    
+
     res.status(200).json({
       success: true,
       data: midpoints,

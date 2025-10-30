@@ -18,6 +18,7 @@ export interface IGroup extends Document {
     expectedPeople: number;
     groupMemberIds: GroupUser[]; //Change to object of users later maybe,
     midpoint: string,
+    activityType: string,
     selectedActivity?: Activity;
     createdAt: Date;
   }
@@ -50,7 +51,8 @@ export const basicGroupSchema = z.object({
     address: addressSchema.optional(),
     transitType: transitTypeSchema.optional()
   })).optional(),
-  midpoint: z.string().default('').optional()
+  midpoint: z.string().default('').optional(),
+  activityType: z.string().min(1, 'Activity type is required')
 
 });
 
@@ -65,6 +67,7 @@ export const createGroupSchema = z.object({
     transitType: transitTypeSchema.optional()
   }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
+  activityType: z.string().min(1, 'Activity type is required')
 });
 
 export const updateGroupSchema = z.object({
@@ -77,7 +80,8 @@ export const updateGroupSchema = z.object({
     address: addressSchema.optional(),
     transitType: transitTypeSchema.optional()
   })).optional(),
-  midpoint: z.string().default('').optional()
+  midpoint: z.string().default("").optional(),
+  activityType: z.string().optional()
 });
 
 //Activity model
@@ -168,6 +172,7 @@ export type BasicGroupInfo = {
     groupLeaderId: GroupUser;
     expectedPeople: number;
     groupMemberIds?: GroupUser[];
+    activityType: string
 };
 
 export type CreateGroupInfo = {
@@ -175,6 +180,7 @@ export type CreateGroupInfo = {
   meetingTime: string;
   groupLeaderId: GroupUser;
   expectedPeople: number;
+  activityType: string;
 };
 
 export type UpdateInfo = {

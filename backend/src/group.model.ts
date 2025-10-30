@@ -87,9 +87,13 @@ const groupSchema = new Schema<IGroup>(
     selectedActivity: {
       type: activitySchema,
       required: false,
-    }
-
     },
+    activityType: {
+      type: String,
+      required: true,
+      trim: true
+    }
+  },
     {
       timestamps: true,
     }
@@ -108,7 +112,6 @@ export class GroupModel {
         console.error('GroupModel BasicGroupInfo:', groupInfo);
         const validatedData = basicGroupSchema.parse(groupInfo);
         console.error('GroupModel ValidatedData:', validatedData);
-
 
         return await this.group.create(validatedData);
       } catch (error) {
@@ -222,17 +225,17 @@ export class GroupModel {
     ): Promise<IGroup | null> {
       try {
         const validatedActivity = activityZodSchema.parse(activity);
-        
+
         const updatedGroup = await this.group.findOneAndUpdate(
           { joinCode },
           { selectedActivity: validatedActivity },
           { new: true }
         );
-        
+
         if (!updatedGroup) {
           throw new Error(`Group with joinCode '${joinCode}' not found`);
         }
-        
+
         return updatedGroup;
       } catch (error) {
         if (error instanceof z.ZodError) {
@@ -251,7 +254,7 @@ export class GroupModel {
         if (!group) {
           throw new Error(`Group with joinCode '${joinCode}' not found`);
         }
-        
+
         // Return hardcoded dummy data
         return this.getDefaultActivities();
       } catch (error) {
@@ -309,23 +312,23 @@ export class GroupModel {
     async leaveGroup(joinCode: string, userId: string): Promise<{ success: boolean; deleted: boolean; newLeader?: GroupUser }> {
       try {
         const group = await this.group.findOne({ joinCode });
-        
+
         if (!group) {
           throw new Error(`Group with joinCode '${joinCode}' not found`);
         }
 
         // Check if the user is the group leader
         const isLeader = group.groupLeaderId.id === userId;
-        
+
         // Remove user from group members
         const updatedMembers = (group.groupMemberIds || []).filter(member => member.id !== userId);
-        
+
         // If the user is the leader and there are other members, transfer leadership
         if (isLeader && updatedMembers.length > 0) {
           // Transfer leadership to the first member (next person who joined)
           const newLeader = updatedMembers[0];
           const remainingMembers = updatedMembers.slice(1);
-          
+
           const updatedGroup = await this.group.findOneAndUpdate(
             { joinCode },
             {
@@ -334,7 +337,7 @@ export class GroupModel {
             },
             { new: true }
           );
-          
+
           return {
             success: true,
             deleted: false,
@@ -356,7 +359,7 @@ export class GroupModel {
             { groupMemberIds: updatedMembers },
             { new: true }
           );
-          
+
           return {
             success: true,
             deleted: false

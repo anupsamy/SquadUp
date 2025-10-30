@@ -29,8 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import android.app.TimePickerDialog
 import android.app.DatePickerDialog
 import android.widget.Toast
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import java.util.*
 
 
@@ -47,17 +45,11 @@ fun MemberSettingsScreen(
     val currentUserId = profileUiState.user?._id
     val context = LocalContext.current
 
-    val groupSpecificUser = remember(group, currentUserId) {
-        group.groupMemberIds?.find { it.id == currentUserId }
-    }
+    // Form state
+    var address by remember { mutableStateOf<Address?>(currentUser?.address) }
+    var transitType by remember { mutableStateOf<TransitType?>(currentUser?.transitType) }
 
-    var address by remember(groupSpecificUser) {
-        mutableStateOf(groupSpecificUser?.address)
-    }
-    var transitType by remember(groupSpecificUser) {
-        mutableStateOf(groupSpecificUser?.transitType)
-    }
-
+    // Leader-only fields
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
     var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
 
@@ -198,5 +190,3 @@ fun MemberSettingsScreen(
         }
     )
 }
-
-

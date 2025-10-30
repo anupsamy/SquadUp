@@ -33,7 +33,7 @@ fun JoinGroupScreen(
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val profileUiState by profileViewModel.uiState.collectAsState()
-    var useDefaultSettings by remember { mutableStateOf(true) }
+    var useDefaultSettings by remember { mutableStateOf(false) }
     var joinCode by remember { mutableStateOf("") }
     var joinGroupMessage by remember { mutableStateOf<String?>(null) }
     var groupExists by remember { mutableStateOf(false) }

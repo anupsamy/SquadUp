@@ -149,10 +149,7 @@ export class GroupController {
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds} = req.body;
-      console.error('GroupController updateByJoincode joinCode:', joinCode);
-      console.error('GroupController updateByJoincode groupMembers:', groupMemberIds);
-      console.error('GroupController updateByJoincode expectedPeople:', expectedPeople);
-      
+
       // Get the current group to compare member changes
       const currentGroup = await groupModel.findByJoinCode(joinCode);
       if (!currentGroup) {
@@ -161,8 +158,8 @@ export class GroupController {
         });
       }
 
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, 
-        {joinCode, expectedPeople, 
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
+        {joinCode, expectedPeople,
         groupMemberIds: groupMemberIds || []});
 
       if (!updatedGroup) {
@@ -176,18 +173,18 @@ export class GroupController {
       if (wsService) {
         const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
         const newMemberIds = (groupMemberIds || []).map(member => member.id);
-        
+
         // Find new members (users who joined)
-        const joinedMembers = (groupMemberIds || []).filter(member => 
+        const joinedMembers = (groupMemberIds || []).filter(member =>
           !currentMemberIds.includes(member.id)
         );
-        
+
         // Send notifications for each new member
         joinedMembers.forEach(member => {
           wsService.notifyGroupJoin(
-            joinCode, 
-            member.id, 
-            member.name, 
+            joinCode,
+            member.id,
+            member.name,
             updatedGroup.groupName
           );
           // FCM topic notification (clients subscribe to topic == joinCode)
@@ -274,7 +271,7 @@ export class GroupController {
   }
 
   async getMidpointByJoinCode( //TODO: decide whether to incorporate activities here
-    req: Request<{ joinCode: string }>, // Define the route parameter type 
+    req: Request<{ joinCode: string }>, // Define the route parameter type
     res: Response<getLocationResponse>,
     next: NextFunction
   ) {
@@ -332,7 +329,7 @@ export class GroupController {
           location: {
             lat: lat,
             lng: lng,
-          }, 
+          },
           activities: activityList,
         }});
     } catch (error) {
@@ -340,6 +337,62 @@ export class GroupController {
       next(error);
     }
   }
+
+async updateMidpointByJoinCode( //TODO: decide whether to incorporate activities here
+    req: Request<{ joinCode: string }>, // Define the route parameter type
+    res: Response<getLocationResponse>,
+    next: NextFunction
+  ) {
+    try {
+      const { joinCode } = req.params; // Extract the joinCode from the route parameters
+
+      // Query the database for the group with the given joinCode
+      const group = await groupModel.findByJoinCode(joinCode);
+
+      if (!group) {
+        throw new Error("Group not found");
+      }
+
+      const locationInfo: LocationInfo[] = group.groupMemberIds
+      .filter(member => member.address && member.transitType)
+      .map(member => ({
+        address: member.address!,
+        transitType: member.transitType!,
+      }));
+
+      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
+      //const activityList = await locationService.getActivityList(optimizedPoint);
+      const activityList: Activity[] = [];
+
+      if (!group) {
+        return res.status(404).json({
+          message: `Group with joinCode '${joinCode}' not found`,
+        });
+      }
+
+      const lat = optimizedPoint.lat;
+      const lng = optimizedPoint.lng
+
+      const midpoint = lat.toString() + ' ' + lng.toString();
+
+      // Need error handler
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
+
+      console.log("Activities List: " , activityList);
+      res.status(200).json({
+        message: 'Get midpoint successfully!',
+        data: {
+          location: {
+            lat: lat,
+            lng: lng,
+          },
+          activities: activityList,
+        }});
+    } catch (error) {
+      logger.error('Failed to get midpoint joinCode:', error);
+      next(error);
+    }
+}
 
 async getActivities(req: Request, res: Response): Promise<void> {
   try {
@@ -407,7 +460,7 @@ async getActivities(req: Request, res: Response): Promise<void> {
 async selectActivity(req: Request, res: Response): Promise<void> {
   try {
     const { joinCode, activity } = req.body;
-    
+
     if (!joinCode || !activity) {
       res.status(400).json({
         message: 'Join code and activity are required',
@@ -428,7 +481,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // Verify the group exists
     const group = await groupModel.findByJoinCode(joinCode);
     if (!group) {
@@ -443,7 +496,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
     // Update the group with the selected activity
     const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
-    
+
     res.status(200).json({
       message: 'Activity selected successfully',
       data: updatedGroup,
@@ -531,9 +584,9 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       const wsService = getWebSocketService();
       if (wsService && leavingUser) {
         wsService.notifyGroupLeave(
-          joinCode, 
-          leavingUser.id, 
-          leavingUser.name, 
+          joinCode,
+          leavingUser.id,
+          leavingUser.name,
           currentGroup.groupName
         );
         // FCM topic notification (clients subscribe to topic == joinCode)
@@ -549,7 +602,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
             { deleted: true }
           );
         }
-        
+
         res.status(200).json({
           message: 'Group deleted successfully as no members remain',
         });
@@ -562,7 +615,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
             { newLeader: result.newLeader }
           );
         }
-        
+
         res.status(200).json({
           message: 'Left group successfully',
           data: result.newLeader ? { newLeader: result.newLeader } : undefined,
@@ -583,8 +636,8 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
 
   // Test endpoint for WebSocket notifications
   async testWebSocketNotification(
-    req: Request<{joinCode: string}>, 
-    res: Response, 
+    req: Request<{joinCode: string}>,
+    res: Response,
     next: NextFunction) {
     try {
       const {joinCode} = req.params;

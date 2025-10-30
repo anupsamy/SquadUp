@@ -22,12 +22,14 @@ import com.cpen321.squadup.R
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JoinGroupScreen(
     navController: NavController,
     mainViewModel: MainViewModel,
+    groupViewMode: GroupViewModel,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     var joinCode by remember { mutableStateOf("") }
@@ -164,6 +166,7 @@ fun JoinGroupScreen(
                             currentUser = currentUser,
                             onSuccess = { message ->
                                 joinGroupMessage = message
+                                groupViewMode.updateMidpoint(joinCode)
                                 mainViewModel.fetchGroups() // Refresh groups after joining
                                 navController.popBackStack() // Navigate back after joining
                             },

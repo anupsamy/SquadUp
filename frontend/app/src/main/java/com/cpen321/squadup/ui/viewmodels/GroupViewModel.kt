@@ -42,8 +42,6 @@ class GroupViewModel @Inject constructor(
     val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
     private val _isCalculatingMidpoint = MutableStateFlow(false)
     val isCalculatingMidpoint: StateFlow<Boolean> = _isCalculatingMidpoint
-    private val _MemberUpdated = MutableStateFlow(false)
-    val MemberUpdated: StateFlow<Boolean> = _MemberUpdated
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String) {
         viewModelScope.launch {
@@ -102,6 +100,21 @@ class GroupViewModel @Inject constructor(
         }
     }
 
+    fun updateMidpoint(joinCode: String) {
+        viewModelScope.launch {
+            _isCalculatingMidpoint.value = true
+            val result = groupRepository.updateMidpointByJoinCode(joinCode)
+            if (result.isSuccess) {
+                _midpoint.value = result.getOrNull()?.midpoint
+                Log.e(TAG, "Updated midpoint!")
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
+                Log.e(TAG, "Error fetching midpoint: $error")
+            }
+            _isCalculatingMidpoint.value = false
+        }
+    }
+
     fun leaveGroup(joinCode: String, userId: String) {
         viewModelScope.launch {
             val result = groupRepository.leaveGroup(joinCode, userId)
@@ -115,20 +128,6 @@ class GroupViewModel @Inject constructor(
             }
         }
     }
-
-//    fun getMidpoints(joinCode: String) {
-//        viewModelScope.launch {
-//            val result = groupRepository.getMidpoints(joinCode)
-//            if (result.isSuccess) {
-//                val data = result.getOrNull() ?: emptyList()
-//                Log.d(TAG, "midpoints retrieved successfully: $data")
-//                _midpoints.value = data
-//            } else {
-//                val error = result.exceptionOrNull()?.message ?: "Failed to get midpoints"
-//                Log.e(TAG, "Error getting midpoints: $error")
-//            }
-//        }
-//    }
 
     fun updateMember(
         joinCode: String,
@@ -148,6 +147,7 @@ class GroupViewModel @Inject constructor(
                         meetingTime = meetingTime
                     )
                     if (joinResult.isSuccess) {
+                        updateMidpoint(joinCode)
                         onSuccess("Successfully updated!")
                     } else {
                         val error = joinResult.exceptionOrNull()?.message ?: "Failed to update"

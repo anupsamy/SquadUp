@@ -23,7 +23,6 @@ router.post(
     groupController.selectActivity.bind(groupController)
 );
 
-
 router.get(
     '/:joinCode', // Define the route parameter
     groupController.getGroupByJoinCode.bind(groupController) // Bind the controller method
@@ -55,6 +54,11 @@ router.delete(
 router.get(
     '/midpoint/:joinCode',
     groupController.getMidpointByJoinCode.bind(groupController)
+);
+
+router.post(
+    '/midpoint/:joinCode',
+    groupController.updateMidpointByJoinCode.bind(groupController)
 );
 
 router.post(

@@ -46,8 +46,14 @@ fun MemberSettingsScreen(
     val context = LocalContext.current
 
     // Form state
-    var address by remember { mutableStateOf<Address?>(currentUser?.address) }
-    var transitType by remember { mutableStateOf<TransitType?>(currentUser?.transitType) }
+    var address by remember {
+        mutableStateOf(
+            group.groupMemberIds?.find { it.id == currentUserId }?.address
+        )
+    }
+    var transitType by remember { mutableStateOf(
+        group.groupMemberIds?.find { it.id == currentUserId }?.transitType
+    ) }
 
     // Leader-only fields
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }

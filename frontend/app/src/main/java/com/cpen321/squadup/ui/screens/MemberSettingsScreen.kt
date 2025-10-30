@@ -65,7 +65,9 @@ fun MemberSettingsScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = {
+                        navController.navigate("${NavRoutes.GROUP_DETAILS}/${group.joinCode}")
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -152,12 +154,7 @@ fun MemberSettingsScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = if (meetingTime.isEmpty())
-                                "Select Meeting Date & Time"
-                            else
-                                "Meeting: $meetingTime"
-                        )
+                        Text( text = "Update Meeting Date & Time" )
                     }
 
                     OutlinedTextField(

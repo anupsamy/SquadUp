@@ -190,5 +190,3 @@ fun MemberSettingsScreen(
         }
     )
 }
-
-

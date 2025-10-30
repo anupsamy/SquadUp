@@ -9,11 +9,16 @@ import {
   createGroupSchema,
   IGroup,
   updateGroupSchema,
+  activitySchema,
+  activityZodSchema,
   GroupUser,
+  Activity,
 } from './types/group.types';
 import {addressSchema, userModel, UserModel} from './user.model';
 import {GoogleUserInfo} from './types/user.types';
 import logger from './utils/logger.util';
+
+
 
 const groupSchema = new Schema<IGroup>(
     {
@@ -78,12 +83,22 @@ const groupSchema = new Schema<IGroup>(
         type: String,
         required: false,
         trim: true
-      }
+      },
+    selectedActivity: {
+      type: activitySchema,
+      required: false,
     },
+    activityType: {
+      type: String,
+      required: true,
+      trim: true
+    }
+  },
     {
       timestamps: true,
     }
 );
+
 
 export class GroupModel {
     private group: mongoose.Model<IGroup>;
@@ -97,7 +112,6 @@ export class GroupModel {
         console.error('GroupModel BasicGroupInfo:', groupInfo);
         const validatedData = basicGroupSchema.parse(groupInfo);
         console.error('GroupModel ValidatedData:', validatedData);
-
 
         return await this.group.create(validatedData);
       } catch (error) {
@@ -205,26 +219,117 @@ export class GroupModel {
       }
     }
 
+    async updateSelectedActivity(
+      joinCode: string,
+      activity: Activity
+    ): Promise<IGroup | null> {
+      try {
+        const validatedActivity = activityZodSchema.parse(activity);
+
+        const updatedGroup = await this.group.findOneAndUpdate(
+          { joinCode },
+          { selectedActivity: validatedActivity },
+          { new: true }
+        );
+
+        if (!updatedGroup) {
+          throw new Error(`Group with joinCode '${joinCode}' not found`);
+        }
+
+        return updatedGroup;
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          logger.error('Validation error for activity:', error.issues);
+          throw new Error('Invalid activity data');
+        }
+        logger.error('Error updating selected activity:', error);
+        throw new Error('Failed to update selected activity');
+      }
+    }
+
+    //TODO REMOVE
+    async getActivities(joinCode: string): Promise<Activity[]> {
+      try {
+        // Verify the group exists (optional but good practice)
+        const group = await this.group.findOne({ joinCode });
+        if (!group) {
+          throw new Error(`Group with joinCode '${joinCode}' not found`);
+        }
+
+        // Return hardcoded dummy data
+        return this.getDefaultActivities();
+      } catch (error) {
+        logger.error('Error getting activities:', error);
+        throw new Error('Failed to get activities');
+      }
+    }
+
+    //TODO REMOVE
+    private getDefaultActivities(): Activity[] {
+      return [
+        {
+          name: "Sushi Palace one",
+          placeId: "ChIJN1t_tDeuEmsRUsoyG83frY58",
+          address: "5678 Oak St, Vancouver",
+          rating: 4.7,
+          userRatingsTotal: 512,
+          priceLevel: 3,
+          type: "restaurant",
+          latitude: 49.2627,
+          longitude: -123.1407,
+          businessStatus: "OPERATIONAL",
+          isOpenNow: true
+        },
+        {
+          name: "Pizza Garden two",
+          placeId: "ChIJN1t_tDeuEmsRUsoyG83frY47",
+          address: "1234 Main St, Vancouver",
+          rating: 4.3,
+          userRatingsTotal: 256,
+          priceLevel: 2,
+          type: "restaurant",
+          latitude: 49.2827,
+          longitude: -123.1207,
+          businessStatus: "OPERATIONAL",
+          isOpenNow: true
+        },
+        {
+          name: "Brew Bros Coffee three",
+          placeId: "ChIJN1t_tDeuEmsRUsoyG83frY59",
+          address: "9010 Broadway, Vancouver",
+          rating: 4.5,
+          userRatingsTotal: 318,
+          priceLevel: 1,
+          type: "cafe",
+          latitude: 49.275,
+          longitude: -123.13,
+          businessStatus: "OPERATIONAL",
+          isOpenNow: true
+        }
+      ];
+    }
+
+
     async leaveGroup(joinCode: string, userId: string): Promise<{ success: boolean; deleted: boolean; newLeader?: GroupUser }> {
       try {
         const group = await this.group.findOne({ joinCode });
-        
+
         if (!group) {
           throw new Error(`Group with joinCode '${joinCode}' not found`);
         }
 
         // Check if the user is the group leader
         const isLeader = group.groupLeaderId.id === userId;
-        
+
         // Remove user from group members
         const updatedMembers = (group.groupMemberIds || []).filter(member => member.id !== userId);
-        
+
         // If the user is the leader and there are other members, transfer leadership
         if (isLeader && updatedMembers.length > 0) {
           // Transfer leadership to the first member (next person who joined)
           const newLeader = updatedMembers[0];
           const remainingMembers = updatedMembers.slice(1);
-          
+
           const updatedGroup = await this.group.findOneAndUpdate(
             { joinCode },
             {
@@ -233,7 +338,7 @@ export class GroupModel {
             },
             { new: true }
           );
-          
+
           return {
             success: true,
             deleted: false,
@@ -255,7 +360,7 @@ export class GroupModel {
             { groupMemberIds: updatedMembers },
             { new: true }
           );
-          
+
           return {
             success: true,
             deleted: false

@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.GeoLocation
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.asStateFlow
 import com.cpen321.squadup.data.remote.dto.SquadGoal
 
 data class GroupUiState(
@@ -32,7 +36,6 @@ class GroupViewModel @Inject constructor(
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
-    //data class Midpoint(val lat: Double, val lng: Double)
     private val _midpoint = MutableStateFlow<SquadGoal?>(null)
     val midpoint: StateFlow<SquadGoal?> = _midpoint
     private val _isGroupLeft = MutableStateFlow(false)
@@ -42,11 +45,11 @@ class GroupViewModel @Inject constructor(
     private val _MemberUpdated = MutableStateFlow(false)
     val MemberUpdated: StateFlow<Boolean> = _MemberUpdated
 
-    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
+    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
 
-            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople)
+            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople, activityType)
             if (result.isSuccess) {
                 val group = result.getOrNull()
                 Log.d(TAG, "GroupViewModel createGroup: ${group}")
@@ -58,7 +61,8 @@ class GroupViewModel @Inject constructor(
                         "groupName" to (group?.group?.groupName ?: ""),
                         "groupLeaderId" to (group?.group?.groupLeaderId ?: ""),
                         "meetingTime" to (group?.group?.meetingTime ?: ""),
-                        "expectedPeople" to (group?.group?.expectedPeople ?: "")
+                        "expectedPeople" to (group?.group?.expectedPeople ?: ""),
+                        "activityType" to (group?.group?.activityType ?: ""),
                     )
                 )
             } else {
@@ -89,7 +93,7 @@ class GroupViewModel @Inject constructor(
             _isCalculatingMidpoint.value = true
             val result = groupRepository.getMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
-                _midpoint.value = result.getOrNull()
+                _midpoint.value = result.getOrNull()?.midpoint
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
                 Log.e(TAG, "Error fetching midpoint: $error")
@@ -111,6 +115,20 @@ class GroupViewModel @Inject constructor(
             }
         }
     }
+
+//    fun getMidpoints(joinCode: String) {
+//        viewModelScope.launch {
+//            val result = groupRepository.getMidpoints(joinCode)
+//            if (result.isSuccess) {
+//                val data = result.getOrNull() ?: emptyList()
+//                Log.d(TAG, "midpoints retrieved successfully: $data")
+//                _midpoints.value = data
+//            } else {
+//                val error = result.exceptionOrNull()?.message ?: "Failed to get midpoints"
+//                Log.e(TAG, "Error getting midpoints: $error")
+//            }
+//        }
+//    }
 
     fun updateMember(
         joinCode: String,

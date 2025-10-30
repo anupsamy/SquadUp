@@ -5,10 +5,10 @@ import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
 import { userModel } from '../user.model';
-import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity } from '../types/group.types';
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
-import { getLocationResponse, LocationInfo } from '../types/location.types';
+import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
 import { sendGroupJoinFCM, sendGroupLeaveFCM } from '../services/fcm.service';
 
 export class GroupController {
@@ -18,7 +18,8 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const {groupName, meetingTime, groupLeaderId, expectedPeople} = req.body;
+      const {groupName, meetingTime, groupLeaderId, expectedPeople, activityType} = req.body;
+      console.log(activityType);
       const joinCode = Math.random().toString(36).slice(2, 8);
 
       // Use the GroupModel to create the group
@@ -28,7 +29,8 @@ export class GroupController {
         groupLeaderId: groupLeaderId,
         expectedPeople,
         groupMemberIds: [groupLeaderId],
-        meetingTime: meetingTime,  // Default to current time for now
+        meetingTime: meetingTime,  // Default to current time for now,
+        activityType: activityType
       });
       console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
@@ -271,8 +273,8 @@ export class GroupController {
     }
   }
 
-  async getMidpointByJoinCode(
-    req: Request<{ joinCode: string }>, // Define the route parameter type
+  async getMidpointByJoinCode( //TODO: decide whether to incorporate activities here
+    req: Request<{ joinCode: string }>, // Define the route parameter type 
     res: Response<getLocationResponse>,
     next: NextFunction
   ) {
@@ -306,7 +308,8 @@ export class GroupController {
       }));
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
-      const activityList = await locationService.getActivityList(optimizedPoint);
+      //const activityList = await locationService.getActivityList(optimizedPoint);
+      const activityList: Activity[] = [];
 
       if (!group) {
         return res.status(404).json({
@@ -322,19 +325,185 @@ export class GroupController {
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
 
+      console.log("Activities List: " , activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
           location: {
             lat: lat,
             lng: lng,
-          }
-      }});
+          }, 
+          activities: activityList,
+        }});
     } catch (error) {
       logger.error('Failed to get midpoint joinCode:', error);
       next(error);
     }
   }
+
+async getActivities(req: Request, res: Response): Promise<void> {
+  try {
+    const { joinCode } = req.query;
+
+
+    if (!joinCode || typeof joinCode !== 'string') {
+      res.status(400).json({
+        message: 'Join code is required',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+
+    const group = await groupModel.findByJoinCode(joinCode);
+
+    if (!group) {
+      res.status(404).json({
+        message: 'Group not found',
+        data: null,
+        error: 'NotFound',
+        details: null,
+      });
+      return;
+    }
+
+    if (!group.midpoint) {
+      res.status(404).json({
+        message: 'No midpoint available for this group',
+        data: null,
+        error: 'NoMidpoint',
+        details: null,
+      });
+      return;
+    }
+
+    const parts = group.midpoint.trim().split(' ');
+    const location: GeoLocation = {
+      lat: Number(parts[0]),
+      lng: Number(parts[1]),
+    };
+
+    const activities = await locationService.getActivityList(location, group.activityType);
+
+    res.status(200).json({
+      message: 'Fetched activities successfully',
+      data: activities ,
+      error: null,
+      details: null,
+    });
+  } catch (error) {
+    logger.error('Error fetching activities:', error);
+    res.status(500).json({
+      message: 'Failed to fetch activities',
+      data: null,
+      error: error instanceof Error ? error.message : 'UnknownError',
+      details: null,
+    });
+  }
+}
+
+// controller/activityController.ts
+async selectActivity(req: Request, res: Response): Promise<void> {
+  try {
+    const { joinCode, activity } = req.body;
+    
+    if (!joinCode || !activity) {
+      res.status(400).json({
+        message: 'Join code and activity are required',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+
+    // Validate required activity fields
+    if (!activity.placeId || !activity.name) {
+      res.status(400).json({
+        message: 'Activity must have placeId and name',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+    
+    // Verify the group exists
+    const group = await groupModel.findByJoinCode(joinCode);
+    if (!group) {
+      res.status(404).json({
+        message: 'Group not found',
+        data: null,
+        error: 'NotFound',
+        details: null,
+      });
+      return;
+    }
+
+    // Update the group with the selected activity
+    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
+    
+    res.status(200).json({
+      message: 'Activity selected successfully',
+      data: updatedGroup,
+      error: null,
+      details: null,
+    });
+  } catch (error) {
+    logger.error('Error selecting activity:', error);
+    res.status(500).json({
+      message: 'Failed to select activity',
+      data: null,
+      error: error instanceof Error ? error.message : 'UnknownError',
+      details: null,
+    });
+  }
+}
+
+async getMidpoints(req: Request, res: Response): Promise<void> {
+  try {
+    const joinCode = req.query.joinCode;
+
+    if (!joinCode || typeof joinCode !== 'string') {
+      res.status(400).json({
+        success: false,
+        message: 'Join code is required',
+      });
+      return;
+    }
+
+    // Verify the group exists
+    const group = await groupModel.findByJoinCode(joinCode);
+    if (!group) {
+      res.status(404).json({
+        success: false,
+        message: 'Group not found',
+      });
+      return;
+    }
+
+    // Return dummy midpoint data (3 locations in Vancouver area)
+    const midpoints = [
+      { latitude: 49.2827, longitude: -123.1207 },
+      { latitude: 49.2606, longitude: -123.2460 },
+      { latitude: 49.2488, longitude: -123.1163 }
+    ];
+
+    res.status(200).json({
+      success: true,
+      data: midpoints,
+    });
+  } catch (error) {
+    logger.error('Error fetching midpoints:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch midpoints',
+    });
+  }
+}
+
+
 
   async leaveGroup(
     req: Request<{joinCode: string}, unknown, {userId: string}>,

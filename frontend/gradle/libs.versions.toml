@@ -1,10 +1,13 @@
 [versions]
 agp = "8.12.2"
+androidMapsUtils = "3.8.2"
+androidMapsUtilsVersion = "3.8.0"
 coilCompose = "2.7.0"
 converterGson = "3.0.0"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 datastorePreferences = "1.1.7"
+googleAndroidMapsUtils = "3.19.0"
 googleid = "1.1.1"
 hilt = "2.56.2"
 kotlin = "2.1.0"
@@ -20,7 +23,9 @@ activityCompose = "1.10.1"
 composeBom = "2025.08.01"
 loggingInterceptor = "5.1.0"
 mapsCompose = "4.4.1"
+mapsComposeVersion = "4.3.3"
 material = "1.12.0"
+materialIconsExtended = "1.6.8"
 navigationCompose = "2.9.3"
 places = "5.0.0"
 playServicesAuth = "21.4.0"
@@ -30,15 +35,21 @@ googleGmsGoogleServices = "4.4.4"
 firebaseMessaging = "25.0.1"
 material3 = "1.4.0"
 foundation = "1.9.3"
+foundationLayout = "1.9.4"
+foundationVersion = "1.9.4"
 
 [libraries]
+android-maps-utils = { module = "com.google.android:android-maps-utils", version.ref = "androidMapsUtils" }
+android-maps-utils-v380 = { module = "com.google.android:android-maps-utils", version.ref = "androidMapsUtilsVersion" }
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityCompose" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+google-android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "googleAndroidMapsUtils" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
@@ -62,6 +73,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+maps-compose-v433 = { module = "com.google.maps.android:maps-compose", version.ref = "mapsComposeVersion" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
@@ -70,6 +82,8 @@ secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.se
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

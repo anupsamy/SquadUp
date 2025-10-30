@@ -21,6 +21,26 @@ data class SquadGoal(
     val location: GeoLocation
 )
 
+data class MidpointActivitiesResponse (
+    val midpoint: SquadGoal,
+    val activities: List<Activity>
+)
+
+fun parseMidpointString(midpointStr: String?): SquadGoal? {
+    if (midpointStr.isNullOrBlank()) return null
+
+    val parts = midpointStr.trim().split(" ")
+    if (parts.size != 2) return null
+
+    val lat = parts[0].toDoubleOrNull()
+    val lng = parts[1].toDoubleOrNull()
+
+    return if (lat != null && lng != null) {
+        SquadGoal(GeoLocation(lat, lng))
+    } else null
+}
+
+
 data class AddressComponents(
     val streetNumber: String? = null,
     val route: String? = null,
@@ -37,3 +57,31 @@ enum class TransitType {
     @SerializedName("bicycling") BICYCLING,
     @SerializedName("transit") TRANSIT
 }
+
+data class Activity(
+    val name: String,
+    val placeId: String,
+    val address: String,
+    val rating: Double,
+    val userRatingsTotal: Int,
+    val priceLevel: Int,
+    val type: String,
+    val latitude: Double,
+    val longitude: Double,
+    val businessStatus: String,
+    val isOpenNow: Boolean
+)
+
+enum class ActivityType(val storedValue: String, val displayName: String) {
+    RESTAURANT("restaurant", "RESTAURANT"),
+    CAFE("cafe", "CAFE"),
+    BAR("bar", "BAR"),
+    PARK("park", "PARK"),
+    GYM("gym", "GYM"),
+    BOWLING_ALLEY("bowling_alley", "BOWLING ALLEY"),
+    MOVIE_THEATER("movie_theater", "MOVIE THEATER"),
+    NIGHT_CLUB("night_club", "NIGHT CLUB"),
+    AMUSEMENT_PARK("amusement_park", "AMUSEMENT PARK"),
+    MUSEUM("museum", "MUSEUM")
+}
+

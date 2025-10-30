@@ -1,5 +1,10 @@
 {
   "dependencies": {
     "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/googlemaps": "^3.43.3",
+    "@types/node": "^24.9.2"
   }
 }

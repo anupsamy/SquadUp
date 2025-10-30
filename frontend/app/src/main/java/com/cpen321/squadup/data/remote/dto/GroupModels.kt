@@ -4,7 +4,8 @@ data class CreateGroupRequest(
     val groupName: String? = null,
     val meetingTime: String? = null,
     val groupLeaderId: GroupUser? = null,
-    val expectedPeople: Number? = null
+    val expectedPeople: Number? = null,
+    val activityType: String? = null
 )
 
 data class UpdateGroupRequest(
@@ -24,6 +25,7 @@ data class GroupsDataAll(
 data class GroupData(
     val group: GroupDataDetailed
 )
+
 data class GroupDataDetailed(
     val groupName: String,
     val meetingTime: String,
@@ -31,7 +33,9 @@ data class GroupDataDetailed(
     val groupLeaderId: GroupUser? = null,
     val expectedPeople: Number,
     val groupMemberIds: List<GroupUser>? = null,
-    val midpoint: String? = null
+    val midpoint: String? = null,
+    val selectedActivity: Activity? = null,
+    val activityType: String ?= null
 )
 
 data class GroupUser(
@@ -40,4 +44,9 @@ data class GroupUser(
     val email: String,
     val address: Address? = null,
     val transitType: TransitType ?= null
+)
+
+data class ActivityCoordinates (
+    val latitude: Double,
+    val longitude: Double
 )

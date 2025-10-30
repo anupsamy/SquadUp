@@ -29,6 +29,7 @@ android {
         localProperties.load(FileInputStream(rootProject.file("local.properties")))
         buildConfigField("String", "GOOGLE_PLACES_API_KEY", "\"${localProperties.getProperty("GOOGLE_PLACES_API_KEY")}\"")
 
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties.getProperty("GOOGLE_PLACES_API_KEY")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -53,7 +54,6 @@ android {
             // Local dev endpoints
             buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
             buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
-            buildConfigField("String", "NEWS_API_KEY", "\"e614e65892e045deb1d4ad50f2449ef0\"")
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
@@ -105,7 +105,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -117,6 +117,8 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.foundation)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
 
@@ -152,6 +154,10 @@ dependencies {
 
     implementation(libs.places) // maps places api
     implementation(libs.maps.compose)// map view with compose
+
+    //map component
+    implementation(libs.maps.compose.v433)
+    implementation(libs.google.android.maps.utils)
 
 
     testImplementation(libs.junit)

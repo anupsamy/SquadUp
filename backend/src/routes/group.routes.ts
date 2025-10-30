@@ -9,6 +9,22 @@ const groupController = new GroupController();
 router.get('/info', groupController.getAllGroups.bind(groupController));
 
 router.get(
+    '/activities',
+    groupController.getActivities.bind(groupController)
+);
+
+router.get(
+    '/midpoints',
+    groupController.getMidpoints.bind(groupController)
+);
+
+router.post(
+    '/activities/select',
+    groupController.selectActivity.bind(groupController)
+);
+
+
+router.get(
     '/:joinCode', // Define the route parameter
     groupController.getGroupByJoinCode.bind(groupController) // Bind the controller method
 );

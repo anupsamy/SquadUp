@@ -169,7 +169,7 @@ private fun handleNavigationEvent(
 }
 @Composable
 private fun MainScreenWithHobbies(
-    navController: NavHostController, 
+    navController: NavHostController,
     mainViewModel: MainViewModel,
     newsViewModel: NewsViewModel,
     profileViewModel: ProfileViewModel,
@@ -257,7 +257,7 @@ private fun AppNavHost(
         composable("group_success/{groupName}/{joinCode}") { backStackEntry ->
             val groupName = backStackEntry.arguments?.getString("groupName") ?: ""
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-        
+
             GroupSuccessScreen(
                 navController = navController,
                 groupName = groupName,
@@ -268,7 +268,7 @@ private fun AppNavHost(
         composable("${NavRoutes.GROUP_DETAILS}/{joinCode}") { backStackEntry ->
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
             val group = mainViewModel.getGroupById(joinCode)
-        
+
             group?.let {
                 GroupDetailsScreen(
                     navController = navController,
@@ -313,7 +313,7 @@ private fun AppNavHost(
                 mainViewModel = mainViewModel,
                 profileViewModel = profileViewModel,
 
-            )
+                )
         }
 
     }

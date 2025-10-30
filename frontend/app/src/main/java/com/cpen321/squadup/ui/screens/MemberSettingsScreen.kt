@@ -47,21 +47,10 @@ fun MemberSettingsScreen(
     val currentUserId = profileUiState.user?._id
     val context = LocalContext.current
 
-//    // Form state
-//    var address by remember { mutableStateOf<Address?>(currentUser?.address) }
-//    var transitType by remember { mutableStateOf<TransitType?>(currentUser?.transitType) }
-//
-//    // Leader-only fields
-//    var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
-//    var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
-
-    // 1. Find the user's specific data within this group
     val groupSpecificUser = remember(group, currentUserId) {
         group.groupMemberIds?.find { it.id == currentUserId }
     }
 
-    // 2. Initialize the form state using the group-specific data first,
-    //    then fall back to the global profile if needed.
     var address by remember(groupSpecificUser) {
         mutableStateOf(groupSpecificUser?.address)
     }
@@ -69,9 +58,6 @@ fun MemberSettingsScreen(
         mutableStateOf(groupSpecificUser?.transitType)
     }
 
-    // --- END OF FIX ---
-
-    // Leader-only fields (this part is fine)
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
     var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
 

@@ -331,43 +331,60 @@ async getActivities(req: Request, res: Response): Promise<void> {
   }
 }
 
-
+// controller/activityController.ts
 async selectActivity(req: Request, res: Response): Promise<void> {
   try {
-    const { joinCode, placeId } = req.body;
+    const { joinCode, activity } = req.body;
     
-    if (!joinCode || !placeId) {
+    if (!joinCode || !activity) {
       res.status(400).json({
-        success: false,
-        message: 'Join code and place ID are required',
+        message: 'Join code and activity are required',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+
+    // Validate required activity fields
+    if (!activity.placeId || !activity.name) {
+      res.status(400).json({
+        message: 'Activity must have placeId and name',
+        data: null,
+        error: 'ValidationError',
+        details: null,
       });
       return;
     }
     
-    // First get the activities to find the one matching placeId
-    const activities = await groupModel.getActivities(joinCode);
-    const selectedActivity = activities.find(activity => activity.placeId === placeId);
-    
-    if (!selectedActivity) {
+    // Verify the group exists
+    const group = await groupModel.findByJoinCode(joinCode);
+    if (!group) {
       res.status(404).json({
-        success: false,
-        message: 'Activity not found',
+        message: 'Group not found',
+        data: null,
+        error: 'NotFound',
+        details: null,
       });
       return;
     }
     
     // Update the group with the selected activity
-    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, selectedActivity);
+    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
     
     res.status(200).json({
-      success: true,
+      message: 'Activity selected successfully',
       data: updatedGroup,
+      error: null,
+      details: null,
     });
   } catch (error) {
     logger.error('Error selecting activity:', error);
     res.status(500).json({
-      success: false,
       message: 'Failed to select activity',
+      data: null,
+      error: error instanceof Error ? error.message : 'UnknownError',
+      details: null,
     });
   }
 }

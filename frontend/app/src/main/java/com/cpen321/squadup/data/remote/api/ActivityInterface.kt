@@ -25,6 +25,5 @@ interface ActivityInterface {
 
 data class SelectActivityRequest(
     val joinCode: String,
-    val placeId: String
+    val activity: Activity
 )
-

@@ -186,9 +186,9 @@ class GroupRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun selectActivity(joinCode: String, placeId: String): Result<Unit> {
+    override suspend fun selectActivity(joinCode: String, activity: Activity): Result<Unit> {
         return try {
-            val request = SelectActivityRequest(joinCode, placeId)
+            val request = SelectActivityRequest(joinCode, activity)
             val response = activityInterface.selectActivity(
                 "", // Auth header handled by interceptor
                 request

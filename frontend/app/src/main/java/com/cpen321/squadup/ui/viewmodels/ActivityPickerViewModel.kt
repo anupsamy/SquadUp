@@ -42,8 +42,9 @@ class ActivityPickerViewModel @Inject constructor(
 
     fun confirmSelection(joinCode: String) {
         val placeId = _selectedActivityId.value ?: return
+        val selectedActivity = _activities.value.find { it.placeId == placeId } ?: return
         viewModelScope.launch {
-            groupRepository.selectActivity(joinCode, placeId)
+            groupRepository.selectActivity(joinCode, selectedActivity)
                 .onSuccess {
                     // Handle success - maybe clear selection or show confirmation
                 }

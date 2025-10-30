@@ -80,7 +80,7 @@ fun GroupDetailsScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }){
+                    IconButton(onClick = { navController.navigate(NavRoutes.MAIN) }){
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }

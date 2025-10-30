@@ -14,7 +14,10 @@ import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.data.remote.dto.GroupData
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
+import com.cpen321.squadup.utils.WebSocketManager
+import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +35,26 @@ fun GroupDetailsScreen(
         profileViewModel.loadProfile()
     }
     val currentUserId = profileUiState.user?._id
+    
+    // Subscribe to WebSocket notifications when viewing a group
+    LaunchedEffect(group.joinCode, currentUserId) {
+        currentUserId?.let { userId ->
+            Log.d("GroupDetails", "Subscribing to group ${group.joinCode} for user $userId")
+            // Wait a bit for WebSocket to be connected
+            kotlinx.coroutines.delay(500)
+            WebSocketManager.subscribeToGroup(userId, group.joinCode)
+        }
+    }
+    
+    // Unsubscribe when leaving the screen
+    DisposableEffect(group.joinCode, currentUserId) {
+        onDispose {
+            currentUserId?.let { userId ->
+                Log.d("GroupDetails", "Unsubscribing from group ${group.joinCode} for user $userId")
+                WebSocketManager.unsubscribeFromGroup(userId, group.joinCode)
+            }
+        }
+    }
 
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {

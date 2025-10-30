@@ -9,12 +9,55 @@ import java.util.concurrent.TimeUnit
 
 class WebSocketManager(private val url: String) {
 
+    companion object {
+        @Volatile
+        private var instance: WebSocketManager? = null
+        
+        fun getInstance(): WebSocketManager? = instance
+        
+        fun subscribeToGroup(userId: String, joinCode: String) {
+            instance?.let { ws ->
+                if (ws.isConnected()) {
+                    val subscribeMessage = """
+                        {
+                            "type": "subscribe",
+                            "userId": "$userId",
+                            "joinCode": "$joinCode"
+                        }
+                    """.trimIndent()
+                    ws.sendMessage(subscribeMessage)
+                    Log.d("WebSocket", "Subscribed to group $joinCode for user $userId")
+                }
+            }
+        }
+        
+        fun unsubscribeFromGroup(userId: String, joinCode: String) {
+            instance?.let { ws ->
+                if (ws.isConnected()) {
+                    val unsubscribeMessage = """
+                        {
+                            "type": "unsubscribe",
+                            "userId": "$userId",
+                            "joinCode": "$joinCode"
+                        }
+                    """.trimIndent()
+                    ws.sendMessage(unsubscribeMessage)
+                    Log.d("WebSocket", "Unsubscribed from group $joinCode for user $userId")
+                }
+            }
+        }
+    }
+
     interface WebSocketListenerCallback {
         fun onMessageReceived(message: String)
         fun onConnectionStateChanged(isConnected: Boolean)
     }
 
     private var callback: WebSocketListenerCallback? = null
+    
+    init {
+        instance = this
+    }
     private val client = OkHttpClient.Builder()
         .pingInterval(30, TimeUnit.SECONDS)
         .build()

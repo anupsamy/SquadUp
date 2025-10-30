@@ -1,8 +1,10 @@
 const WebSocket = require('ws');
 
-// Configuration - Replace with your actual AWS server details
-const AWS_SERVER_URL = 'ws://your-aws-server-url:your-port/ws'; // Replace with actual URL
+// Configuration - AWS server details
+const AWS_SERVER_URL = 'ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws';
+const AWS_API_URL = 'http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/api';
 const TEST_GROUP_CODE = 'test123';
+const TEST_USER_ID = 'test-user-123';
 
 console.log('🔌 WebSocket Test Client for AWS Backend');
 console.log(`Connecting to: ${AWS_SERVER_URL}`);
@@ -76,14 +78,18 @@ process.on('SIGINT', () => {
 });
 
 console.log('💡 Instructions:');
-console.log('1. Replace AWS_SERVER_URL with your actual AWS server WebSocket URL');
-console.log('2. Deploy your updated backend code to AWS');
-console.log('3. Run this script: node aws-websocket-test.js');
-console.log('4. Test notifications using your AWS API endpoints');
+console.log('1. Make sure your backend is deployed to AWS');
+console.log('2. Run this script: node aws-websocket-test.js');
+console.log('3. In another terminal, test notifications using curl commands (see below)');
 console.log('');
-console.log('Example AWS API test commands:');
-console.log(`curl -X POST https://your-aws-server/api/groups/test-notification/${TEST_GROUP_CODE} \\`);
+console.log('📝 Test Commands (run in another terminal while this script is running):');
+console.log('');
+console.log('Test 1: Send a group_update notification');
+console.log(`curl -X POST ${AWS_API_URL}/test/websocket-notification/${TEST_GROUP_CODE} \\`);
 console.log('  -H "Content-Type: application/json" \\');
 console.log('  -d \'{"message": "Test notification from AWS", "type": "test"}\'');
+console.log('');
+console.log('Test 2: Test with a different join code (make sure to subscribe to it first)');
+console.log('You can modify TEST_GROUP_CODE in this script and reconnect');
 console.log('');
 console.log('Press Ctrl+C to exit');

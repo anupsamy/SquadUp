@@ -36,6 +36,12 @@ router.post( //have seperate endpoint for updating?
 );
 
 router.post( //have seperate endpoint for updating?
+    '/join',
+    validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
+    groupController.joinGroupByJoinCode.bind(groupController)
+);
+
+router.post(
     '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
     groupController.updateGroupByJoinCode.bind(groupController)

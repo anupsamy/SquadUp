@@ -21,8 +21,14 @@ interface GroupRepository {
     suspend fun joinGroup(
         joinCode: String,
         expectedPeople: Number,
-        updatedMembers: List<GroupUser>
+        updatedMembers: List<GroupUser>,
     ): Result<Unit> //add exp members later
+    suspend fun updateGroup(
+        joinCode: String,
+        expectedPeople: Number?,
+        updatedMembers: List<GroupUser>?,
+        meetingTime: String?
+    ): Result<Unit>
     suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>
 
     suspend fun leaveGroup(

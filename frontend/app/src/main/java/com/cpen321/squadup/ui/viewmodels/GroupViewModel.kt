@@ -42,6 +42,8 @@ class GroupViewModel @Inject constructor(
     val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
     private val _isCalculatingMidpoint = MutableStateFlow(false)
     val isCalculatingMidpoint: StateFlow<Boolean> = _isCalculatingMidpoint
+    private val _MemberUpdated = MutableStateFlow(false)
+    val MemberUpdated: StateFlow<Boolean> = _MemberUpdated
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
         viewModelScope.launch {
@@ -126,6 +128,36 @@ class GroupViewModel @Inject constructor(
 //            }
 //        }
 //    }
+
+    fun updateMember(
+        joinCode: String,
+        expectedPeople: Number,
+        updatedMembers: List<GroupUser>,
+        meetingTime: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val fetchResult = groupRepository.getGroupByJoinCode(joinCode)
+            if (fetchResult.isSuccess) {
+                    val joinResult = groupRepository.updateGroup(
+                        joinCode = joinCode,
+                        expectedPeople = expectedPeople,
+                        updatedMembers = updatedMembers,
+                        meetingTime = meetingTime
+                    )
+                    if (joinResult.isSuccess) {
+                        onSuccess("Successfully updated!")
+                    } else {
+                        val error = joinResult.exceptionOrNull()?.message ?: "Failed to update"
+                        onError(error)
+                    }
+            } else {
+                val error = fetchResult.exceptionOrNull()?.message ?: "Failed to update member settings"
+                onError(error)
+            }
+        }
+    }
 
     fun resetGroupDeletedState() {
         _isGroupDeleted.value = false

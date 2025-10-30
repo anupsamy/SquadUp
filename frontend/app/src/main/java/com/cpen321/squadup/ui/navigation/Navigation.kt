@@ -25,6 +25,7 @@ import com.cpen321.squadup.ui.screens.ProfileScreenActions
 import com.cpen321.squadup.ui.screens.ProfileCompletionScreen
 import com.cpen321.squadup.ui.screens.ProfileScreen
 import com.cpen321.squadup.ui.screens.JoinGroupScreen
+import com.cpen321.squadup.ui.screens.MemberSettingsScreen
 import com.cpen321.squadup.ui.viewmodels.AuthViewModel
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.NavigationViewModel
@@ -43,7 +44,8 @@ object NavRoutes {
     const val PROFILE_COMPLETION = "profile_completion"
     const val GROUP_DETAILS = "group_details"
     const val GROUP_LIST = "group_list"
-    const val JOIN_GROUP = "join_group" 
+    const val JOIN_GROUP = "join_group"
+    const val MEMBER_SETTINGS = "member_settings"
 }
 
 @Composable
@@ -235,7 +237,8 @@ private fun AppNavHost(
                 actions = ProfileScreenActions(
                     onBackClick = { navigationStateManager.navigateBack() },
                     onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
-                    onAccountDeleted = { navigationStateManager.handleAccountDeletion() }
+                    onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
+                    onAccountLogOut = { navigationStateManager.handleAccountLogOut() }
                 )
             )
         }
@@ -290,14 +293,28 @@ private fun AppNavHost(
             }
         }
 
+        composable("${NavRoutes.MEMBER_SETTINGS}/{joinCode}") { backStackEntry ->
+            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+            val group = mainViewModel.getGroupById(joinCode)
+
+            group?.let {
+                MemberSettingsScreen(
+                    navController = navController,
+                    group = group,
+                    groupViewModel = groupViewModel,
+                    profileViewModel = profileViewModel
+                )
+            }
+        }
+
         composable(NavRoutes.JOIN_GROUP) {
             JoinGroupScreen(
-                navController = navController, 
-                mainViewModel = mainViewModel, 
+                navController = navController,
+                mainViewModel = mainViewModel,
                 profileViewModel = profileViewModel,
 
             )
-        }   
+        }
 
     }
 }

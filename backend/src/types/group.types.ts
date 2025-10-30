@@ -77,6 +77,7 @@ export const updateGroupSchema = z.object({
     address: addressSchema.optional(),
     transitType: transitTypeSchema.optional()
   })).optional(),
+  meetingTime: z.string().optional(),
   midpoint: z.string().default('').optional()
 });
 

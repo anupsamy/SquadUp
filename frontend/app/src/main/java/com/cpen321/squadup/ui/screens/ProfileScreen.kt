@@ -47,7 +47,8 @@ private data class ProfileDialogState(
 data class ProfileScreenActions(
     val onBackClick: () -> Unit,
     val onManageProfileClick: () -> Unit,
-    val onAccountDeleted: () -> Unit
+    val onAccountDeleted: () -> Unit,
+    val onAccountLogOut: () -> Unit
 )
 
 private data class ProfileScreenCallbacks(
@@ -102,8 +103,8 @@ fun ProfileScreen(
             onSuccessMessageShown = profileViewModel::clearSuccessMessage,
             onErrorMessageShown = profileViewModel::clearError,
             onLogoutClick = {
-                authViewModel.handleLogout() // you’ll implement this in your AuthViewModel
-                actions.onAccountDeleted() // or navigate back to login
+                authViewModel.handleLogout()
+                actions.onAccountLogOut()
             },
         )
     )

@@ -9,6 +9,7 @@ import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsR
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { getLocationResponse, LocationInfo } from '../types/location.types';
+import { sendGroupJoinFCM, sendGroupLeaveFCM } from '../services/fcm.service';
 
 export class GroupController {
   async createGroup(
@@ -187,6 +188,8 @@ export class GroupController {
             member.name, 
             updatedGroup.groupName
           );
+          // FCM topic notification (clients subscribe to topic == joinCode)
+          void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
         });
       }
 
@@ -330,6 +333,8 @@ export class GroupController {
           leavingUser.name, 
           currentGroup.groupName
         );
+        // FCM topic notification (clients subscribe to topic == joinCode)
+        void sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id);
       }
 
       if (result.deleted) {

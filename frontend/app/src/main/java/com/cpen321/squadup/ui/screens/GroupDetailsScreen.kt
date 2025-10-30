@@ -23,6 +23,19 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.LocalClipboardManager
 import com.cpen321.squadup.ui.navigation.NavRoutes
+import com.google.firebase.messaging.FirebaseMessaging
+
+fun unsubscribeFromGroupTopic(joinCode: String) {
+    FirebaseMessaging.getInstance()
+        .unsubscribeFromTopic(joinCode)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("FCM", "Unsubscribed from FCM group topic $joinCode")
+            } else {
+                Log.e("FCM", "Failed to unsubscribe from FCM group topic $joinCode", task.exception)
+            }
+        }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,11 +66,11 @@ fun GroupDetailsScreen(
         }
     }
     
-    // Unsubscribe when leaving the screen
+    // Unsubscribe when leaving the screen (WebSocket ONLY)
     DisposableEffect(group.joinCode, currentUserId) {
         onDispose {
             currentUserId?.let { userId ->
-                Log.d("GroupDetails", "Unsubscribing from group ${group.joinCode} for user $userId")
+                Log.d("GroupDetails", "Unsubscribing from group ${group.joinCode} for user $userId (WebSocket only)")
                 WebSocketManager.unsubscribeFromGroup(userId, group.joinCode)
             }
         }
@@ -65,6 +78,7 @@ fun GroupDetailsScreen(
 
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
+            unsubscribeFromGroupTopic(group.joinCode)
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true } // Clear the back stack
             }

@@ -28,6 +28,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.scale
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 @Composable
 fun ActivityPicker(
     viewModel: ActivityPickerViewModel,
@@ -38,42 +45,59 @@ fun ActivityPicker(
     val selectedActivityId by viewModel.selectedActivityId.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(16.dp)
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            items(activities) { activity ->
-                ActivityCard(
-                    name = activity.name,
-                    address = activity.address,
-                    rating = activity.rating,
-                    userRatingsTotal = activity.userRatingsTotal,
-                    priceLevel = activity.priceLevel,
-                    type = activity.type,
-                    isSelected = activity.placeId == selectedActivityId,
-                    onClick = { viewModel.selectActivity(activity.placeId) }
-                )
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
+            ) {
+                items(activities) { activity ->
+                    ActivityCard(
+                        name = activity.name,
+                        address = activity.address,
+                        rating = activity.rating,
+                        userRatingsTotal = activity.userRatingsTotal,
+                        priceLevel = activity.priceLevel,
+                        type = activity.type,
+                        isSelected = activity.placeId == selectedActivityId,
+                        onClick = { viewModel.selectActivity(activity.placeId) }
+                    )
+                }
+            }
+
+            Button(
+                onClick = {
+                    viewModel.confirmSelection(joinCode)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Activity selected successfully! Group members have been notified.",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .scale(if (isPressed) 0.95f else 1f),
+                enabled = selectedActivityId != null,
+                interactionSource = interactionSource
+            ) {
+                Text("Select Activity")
             }
         }
 
-        Button(
-            onClick = {
-                viewModel.confirmSelection(joinCode)
-            },
+        SnackbarHost(
+            hostState = snackbarHostState,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .scale(if (isPressed) 0.95f else 1f),
-            enabled = selectedActivityId != null,
-            interactionSource = interactionSource
-        ) {
-            Text("Select Activity")
-        }
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp) // Position above the button
+        )
     }
 }
 @Composable

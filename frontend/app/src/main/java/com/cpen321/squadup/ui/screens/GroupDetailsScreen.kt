@@ -138,7 +138,8 @@ fun GroupDetailsScreen(
                     LeaderGroupView(
                         group = group,
                         groupViewModel = groupViewModel,
-                        midpoint = midpoint
+                        midpoint = midpoint,
+                        activityPickerViewModel = activityPickerViewModel
                     )
                 } else {
                     MemberGroupView(

@@ -10,9 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.cpen321.squadup.data.remote.dto.GeoLocation
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.google.android.gms.maps.model.LatLng
 
@@ -20,7 +19,8 @@ import com.google.android.gms.maps.model.LatLng
 fun LeaderGroupView(
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
-    midpoint: SquadGoal?,
+    activityPickerViewModel: ActivityPickerViewModel,
+    midpoint: com.cpen321.squadup.data.remote.dto.SquadGoal?,
     modifier: Modifier = Modifier
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
@@ -28,13 +28,12 @@ fun LeaderGroupView(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
     ) {
         // Map/Status Box
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
+                .height(300.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
@@ -51,20 +50,16 @@ fun LeaderGroupView(
 
                 // State 2: Midpoint exists, show map
                 midpoint != null -> {
-                    val locations = midpoint.let { midpoint ->
-                        val lat = midpoint.location.lat
-                        val lng = midpoint.location.lng
+                    val locations = midpoint.location?.let { location ->
+                        val lat = location.lat
+                        val lng = location.lng
                         if (lat != null && lng != null) listOf(LatLng(lat, lng)) else emptyList()
-                    }
+                    } ?: emptyList()
 
                     ActivityMapView(
                         locations = locations,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.6f)
+                        modifier = Modifier.fillMaxSize()
                     )
-
-                    // TODO: Add recalculate button when midpoint exists
                 }
 
                 // State 3: Waiting, show calculate button
@@ -90,9 +85,63 @@ fun LeaderGroupView(
             }
         }
 
+        // Recalculate button - only shown when midpoint exists
+        if (midpoint != null && !isCalculatingMidpoint) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { groupViewModel.getMidpoint(group.joinCode) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(text = "Recalculate Midpoint")
+            }
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // TODO: Add activity picker below map
-        // TODO: Show selected activity details when available
+        // Members and Hosted By in same row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            // Members
+            Column {
+                Text(
+                    text = "Members",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    text = "${group.groupMemberIds?.size ?: 0}/${group.expectedPeople}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            // Hosted By
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "Hosted By",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    text = group.groupLeaderId?.name ?: "Unknown",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Activity Picker
+        ActivityPicker(
+            viewModel = activityPickerViewModel,
+            joinCode = group.joinCode,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        )
     }
 }

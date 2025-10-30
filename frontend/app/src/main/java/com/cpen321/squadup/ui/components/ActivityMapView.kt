@@ -16,7 +16,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun ActivityMapView(
+fun LeaderActivityMapView(
     locations: List<LatLng>,
     activities: List<Activity>,
     modifier: Modifier = Modifier
@@ -83,6 +83,109 @@ fun ActivityMapView(
                 snippet = activity.address,
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
             )
+        }
+    }
+}
+@Composable
+fun MemberActivityMapView(
+    midpoint: LatLng?,
+    userLocation: LatLng?,
+    selectedActivity: Activity?,
+    modifier: Modifier = Modifier
+) {
+    val cameraPositionState = rememberCameraPositionState()
+
+    // Build list of valid coordinates
+    val allPoints = remember(midpoint, userLocation, selectedActivity) {
+        buildList {
+            midpoint?.let {
+                if (it.latitude != 0.0 && it.longitude != 0.0) add(it)
+            }
+            userLocation?.let {
+                if (it.latitude != 0.0 && it.longitude != 0.0) add(it)
+            }
+            selectedActivity?.let { activity ->
+                if (activity.latitude != 0.0 && activity.longitude != 0.0) {
+                    add(LatLng(activity.latitude, activity.longitude))
+                }
+            }
+        }
+    }
+
+    // Move camera to fit all markers once map is ready
+    LaunchedEffect(allPoints) {
+        if (allPoints.isNotEmpty()) {
+            if (allPoints.size == 1) {
+                val singlePoint = allPoints.first()
+                cameraPositionState.animate(
+                    update = CameraUpdateFactory.newLatLngZoom(singlePoint, 14f),
+                    durationMs = 1000
+                )
+            } else {
+                val boundsBuilder = LatLngBounds.builder()
+                allPoints.forEach { boundsBuilder.include(it) }
+                val bounds = boundsBuilder.build()
+                val padding = 150
+                cameraPositionState.animate(
+                    update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
+                    durationMs = 1000
+                )
+            }
+        }
+    }
+
+    GoogleMap(
+        modifier = modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        onMapLoaded = {
+            if (allPoints.isNotEmpty()) {
+                if (allPoints.size == 1) {
+                    val singlePoint = allPoints.first()
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(singlePoint, 14f)
+                    )
+                } else {
+                    val boundsBuilder = LatLngBounds.builder()
+                    allPoints.forEach { point -> boundsBuilder.include(point) }
+                    val bounds = boundsBuilder.build()
+                    val padding = 150
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+                }
+            }
+        }
+    ) {
+        // Midpoint marker (red)
+        midpoint?.let { point ->
+            if (point.latitude != 0.0 && point.longitude != 0.0) {
+                Marker(
+                    state = MarkerState(position = point),
+                    title = "Group Midpoint",
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                )
+            }
+        }
+
+        // User location marker (green)
+        userLocation?.let { point ->
+            if (point.latitude != 0.0 && point.longitude != 0.0) {
+                Marker(
+                    state = MarkerState(position = point),
+                    title = "Your Location",
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                )
+            }
+        }
+
+        // Selected activity marker (blue)
+        selectedActivity?.let { activity ->
+            if (activity.latitude != 0.0 && activity.longitude != 0.0) {
+                Marker(
+                    state = MarkerState(position = LatLng(activity.latitude, activity.longitude)),
+                    title = activity.name,
+                    snippet = activity.address,
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                )
+            }
         }
     }
 }

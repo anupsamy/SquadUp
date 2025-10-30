@@ -200,6 +200,7 @@ fun GroupDetailsScreen(
                     )
                 } else {
                     MemberGroupView(
+                        user = profileUiState.user,
                         group = group,
                         groupViewModel = groupViewModel,
                         midpoint = midpoint,

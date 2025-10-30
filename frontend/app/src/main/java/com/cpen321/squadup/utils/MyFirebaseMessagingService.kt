@@ -29,6 +29,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, "From: ${remoteMessage.from}")
 
+        // ---> Added: Log full FCM message for debugging
+        Log.d("FCM", "Received FCM: ${remoteMessage.data} | ${remoteMessage.notification}")
+        // <---
+
+        val actingUserId = remoteMessage.data["actingUserId"]
+        val currentUserId = getCurrentUserId(this)
+        if (actingUserId != null && currentUserId != null && actingUserId == currentUserId) {
+            Log.d(TAG, "Suppressing self-notification: actingUserId = $actingUserId (current user)")
+            return // Don't display notification
+        }
+
         // Handle data payload (quick tasks)
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
@@ -94,4 +105,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         notificationManager.notify(0, notificationBuilder.build())
     }
+}
+
+fun getCurrentUserId(context: Context): String? {
+    val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    return prefs.getString("user_id", null)
 }

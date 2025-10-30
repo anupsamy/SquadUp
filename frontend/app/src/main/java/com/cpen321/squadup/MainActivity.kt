@@ -69,10 +69,15 @@ class MainActivity : ComponentActivity() {
         }
 
         // Initialize WebSocketManager
-        // For local testing, use: ws://10.0.2.2:8080 (Android emulator)
-        // For physical device, use your computer's IP: ws://192.168.1.xxx:8080
-        // For online testing: wss://echo.websocket.org/
-        wsManager = WebSocketManager("ws://10.0.2.2:8080")
+        // For local testing, use: ws://10.0.2.2:3000/ws (Android emulator)
+        // For AWS staging, use: ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws
+        val wsUrl = if (BuildConfig.FLAVOR == "staging") {
+            "ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws"
+        } else {
+            "ws://10.0.2.2:3000/ws" // Local development
+        }
+        Log.d("WebSocket", "Connecting to: $wsUrl")
+        wsManager = WebSocketManager(wsUrl)
 
         // Set listener callback to handle incoming messages
         wsManager.setListener(object : WebSocketManager.WebSocketListenerCallback {
@@ -88,6 +93,12 @@ class MainActivity : ComponentActivity() {
 
             override fun onConnectionStateChanged(isConnected: Boolean) {
                 Log.d("WebSocket", "Connection state changed: $isConnected")
+                if (!isConnected) {
+                    Log.e("WebSocket", "WebSocket connection failed. Check:")
+                    Log.e("WebSocket", "1. AWS server is running")
+                    Log.e("WebSocket", "2. Security groups allow port 3000")
+                    Log.e("WebSocket", "3. WebSocket service is active on server")
+                }
                 chatViewModel.onConnectionStateChanged(isConnected)
             }
         })

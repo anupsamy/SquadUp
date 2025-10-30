@@ -3,6 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
+       - fcm
        - prod
     paths:
       - 'backend/**'
@@ -40,6 +41,7 @@ jobs:
             GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID}}
             JWT_SECRET=${{secrets.JWT_SECRET}}
             NEWS_API_KEY=${{secrets.NEWS_API_KEY}}
+            FIREBASE_SERVICE_ACCOUNT_KEY=${{secrets.FIREBASE_SERVICE_ACCOUNT_KEY}}
             EOF
             
             #give .env perms

@@ -52,6 +52,8 @@ import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
+import com.cpen321.squadup.utils.WebSocketManager
+import com.google.firebase.messaging.FirebaseMessaging
 
 
 @Composable
@@ -82,6 +84,16 @@ fun MainScreen(
     val filteredGroups = uiState.groups.filter { group ->
         Log.d("MainScreen", "filteredGroups: ${group}")
     group.groupLeaderId?.id == currentUserId || group.groupMemberIds?.any { it.id == currentUserId } == true
+    }
+
+    // Keep WebSocket subscriptions in sync with groups the user belongs to
+    LaunchedEffect(currentUserId, filteredGroups) {
+        val userId = currentUserId ?: return@LaunchedEffect
+        // Subscribe to all current groups (WebSocket + FCM topic)
+        filteredGroups.forEach { group ->
+            WebSocketManager.subscribeToGroup(userId, group.joinCode)
+            subscribeToGroupTopic(group.joinCode) // <-- FCM topic subscription
+        }
     }
 
     Scaffold(
@@ -366,4 +378,16 @@ private fun WelcomeMessage(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
     )
+}
+
+fun subscribeToGroupTopic(joinCode: String) {
+    FirebaseMessaging.getInstance()
+        .subscribeToTopic(joinCode)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("FCM", "Subscribed to FCM group topic $joinCode")
+            } else {
+                Log.e("FCM", "Failed to subscribe to FCM group topic $joinCode", task.exception)
+            }
+        }
 }

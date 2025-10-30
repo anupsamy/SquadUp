@@ -36,15 +36,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.cpen321.squadup.R
 import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.TransitType
+import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.viewmodels.ProfileUiState
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
+import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 
 private data class ProfileCompletionFormState(
     val address: Address? = null,
@@ -58,7 +61,7 @@ private data class ProfileCompletionFormState(
 private data class ProfileCompletionScreenData(
     val formState: ProfileCompletionFormState,
     val isSavingProfile: Boolean,
-//    val onAddressChange: (Address?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit
@@ -68,7 +71,7 @@ private data class ProfileCompletionScreenContentData(
     val uiState: ProfileUiState,
     val formState: ProfileCompletionFormState,
     val snackBarHostState: SnackbarHostState,
-//    val onAddressChange: (Address?) -> Unit,
+    val onAddressChange: (Address?) -> Unit,
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit,
@@ -116,9 +119,9 @@ fun ProfileCompletionScreen(
             uiState = uiState,
             formState = formState,
             snackBarHostState = snackBarHostState,
-//            onAddressChange = { newAddress: Address? ->
-//                formState = formState.copy(address = newAddress)
-//            },
+            onAddressChange = { newAddress: Address? ->
+                formState = formState.copy(address = newAddress)
+            },
 
             onTransitTypeChange = { formState = formState.copy(transitType = it) },
             onSkipClick = onProfileCompleted,
@@ -164,7 +167,7 @@ private fun ProfileCompletionContent(
             data = ProfileCompletionScreenData(
                 formState = data.formState,
                 isSavingProfile = data.uiState.isSavingProfile,
-//                onAddressChange = data.onAddressChange,
+                onAddressChange = data.onAddressChange,
                 onTransitTypeChange = data.onTransitTypeChange,
                 onSkipClick = data.onSkipClick,
                 onSaveClick = data.onSaveClick
@@ -193,17 +196,16 @@ private fun ProfileCompletionBody(
 
         Spacer(modifier = Modifier.height(spacing.extraLarge2))
 
-//        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
-//        AddressPicker(
-//            viewModel = addressPickerViewModel,
-//            initialValue = data.formState.address,
-//            onAddressSelected = { address ->
-//                // Save to your form state or call backend
-//                data.onAddressChange
-//            }
-//        )
+        val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+        AddressPicker(
+            viewModel = addressPickerViewModel,
+            initialValue = data.formState.address,
+            onAddressSelected = { newAddress ->
+                data.onAddressChange(newAddress)
+            }
+        )
 
-//        Spacer(modifier = Modifier.height(spacing.medium))
+        Spacer(modifier = Modifier.height(spacing.medium))
 
         TransitTypeInputField(
             transitType = data.formState.transitType,
@@ -266,28 +268,6 @@ private fun ProfileDescription(
         modifier = modifier
     )
 }
-//legacy just basic text box replaced with AddressPicker.kt
-//
-//@Composable
-//private fun AddressInputField(
-//    addressText: String,
-//    isEnabled: Boolean,
-//    onAddressChange: (String) -> Unit,
-//    modifier: Modifier = Modifier
-//) {
-//    val spacing = LocalSpacing.current
-//
-//    OutlinedTextField(
-//        value = addressText,
-//        onValueChange = onAddressChange,
-//        label = { Text(stringResource(R.string.address)) },
-//        placeholder = { Text(stringResource(R.string.address_placeholder)) },
-//        modifier = modifier.fillMaxWidth(),
-//        shape = RoundedCornerShape(spacing.medium),
-//        enabled = isEnabled,
-//        singleLine = true
-//    )
-//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

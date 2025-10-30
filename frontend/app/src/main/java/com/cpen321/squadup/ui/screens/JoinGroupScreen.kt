@@ -32,14 +32,15 @@ fun JoinGroupScreen(
     groupViewMode: GroupViewModel,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val profileUiState by profileViewModel.uiState.collectAsState()
+    var useDefaultSettings by remember { mutableStateOf(true) }
     var joinCode by remember { mutableStateOf("") }
     var joinGroupMessage by remember { mutableStateOf<String?>(null) }
     var groupExists by remember { mutableStateOf(false) }
     var groupMeetingTime by remember { mutableStateOf<String?>(null) }
     var groupName by remember { mutableStateOf<String?>(null) }
-    var address by remember { mutableStateOf<Address?>(null) }
-    var transitType by remember { mutableStateOf<TransitType?>(null) }
-    val profileUiState by profileViewModel.uiState.collectAsState()
+    var address by remember { mutableStateOf(profileUiState.user?.address) }
+    var transitType by remember { mutableStateOf(profileUiState.user?.transitType) }
 
     LaunchedEffect(Unit) {
         transitType = profileUiState.user?.transitType
@@ -108,7 +109,6 @@ fun JoinGroupScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Display Group Meeting Time and Prompt (only if group exists)
             if (groupExists) {
                 groupName?.let {
                     Text(
@@ -132,22 +132,44 @@ fun JoinGroupScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Checkbox for using default profile settings
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Checkbox(
+                        checked = useDefaultSettings,
+                        onCheckedChange = { checked ->
+                            useDefaultSettings = checked
+                            if (checked) {
+                                address = profileUiState.user?.address
+                                transitType = profileUiState.user?.transitType
+                            } else {
+                                address = null
+                                transitType = null
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Use default settings from my profile")
+                }
+
                 // Address Input
                 val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
                 AddressPicker(
                     viewModel = addressPickerViewModel,
-                    initialValue = null, //TODO get default from profile
+                    initialValue = if (useDefaultSettings) profileUiState.user?.address else null,
                     onAddressSelected = { selectedAddressObject ->
-                        address = selectedAddressObject
-                    }
+                        if (!useDefaultSettings) address = selectedAddressObject
+                    },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Transit Type Drop-Down
                 TransitTypeInputField(
                     transitType = transitType,
-                    isEnabled = true,
-                    onTransitTypeChange = { transitType = it }
+                    isEnabled = !useDefaultSettings,
+                    onTransitTypeChange = { if (!useDefaultSettings) transitType = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -167,8 +189,8 @@ fun JoinGroupScreen(
                             onSuccess = { message ->
                                 joinGroupMessage = message
                                 groupViewMode.updateMidpoint(joinCode)
-                                mainViewModel.fetchGroups() // Refresh groups after joining
-                                navController.popBackStack() // Navigate back after joining
+                                mainViewModel.fetchGroups()     // Refresh groups after joining
+                                navController.popBackStack()    // Navigate back after joining
                             },
                             onError = { error ->
                                 joinGroupMessage = error

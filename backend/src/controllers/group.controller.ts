@@ -189,7 +189,7 @@ export class GroupController {
             updatedGroup.groupName
           );
           // FCM topic notification (clients subscribe to topic == joinCode)
-          void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName);
+          void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
         });
       }
 
@@ -334,7 +334,7 @@ export class GroupController {
           currentGroup.groupName
         );
         // FCM topic notification (clients subscribe to topic == joinCode)
-        void sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName);
+        void sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id);
       }
 
       if (result.deleted) {

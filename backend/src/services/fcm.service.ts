@@ -66,7 +66,7 @@ export async function sendToTopic(topic: string, payload: FcmPayload) {
   }
 }
 
-export async function sendGroupJoinFCM(joinCode: string, userName: string, groupName: string) {
+export async function sendGroupJoinFCM(joinCode: string, userName: string, groupName: string, actingUserId: string) {
   const title = 'Group Member Joined';
   const body = `${userName} joined the group "${groupName}"`;
   return sendToTopic(joinCode, {
@@ -78,11 +78,12 @@ export async function sendGroupJoinFCM(joinCode: string, userName: string, group
       userName,
       groupName,
       timestamp: new Date().toISOString(),
+      actingUserId, // new field for filtering on frontend
     },
   });
 }
 
-export async function sendGroupLeaveFCM(joinCode: string, userName: string, groupName: string) {
+export async function sendGroupLeaveFCM(joinCode: string, userName: string, groupName: string, actingUserId: string) {
   const title = 'Group Member Left';
   const body = `${userName} left the group "${groupName}"`;
   return sendToTopic(joinCode, {
@@ -94,6 +95,7 @@ export async function sendGroupLeaveFCM(joinCode: string, userName: string, grou
       userName,
       groupName,
       timestamp: new Date().toISOString(),
+      actingUserId, // new field for filtering on frontend
     },
   });
 }

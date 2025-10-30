@@ -72,7 +72,6 @@ fun GroupDetailsScreen(
             currentUserId?.let { userId ->
                 Log.d("GroupDetails", "Unsubscribing from group ${group.joinCode} for user $userId (WebSocket only)")
                 WebSocketManager.unsubscribeFromGroup(userId, group.joinCode)
-                // FCM topic unsubscribe REMOVED from here
             }
         }
     }

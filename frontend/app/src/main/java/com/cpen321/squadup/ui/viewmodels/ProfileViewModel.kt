@@ -57,6 +57,8 @@ class ProfileViewModel @Inject constructor(
 
             if (profileResult.isSuccess) {
                 val user = profileResult.getOrNull()!!
+                val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putString("user_id", user._id).apply()
                 //val availableHobbies = hobbiesResult.getOrNull()!!
                 
                 //val selectedHobbies = user?.hobbies?.toSet() ?: emptySet()

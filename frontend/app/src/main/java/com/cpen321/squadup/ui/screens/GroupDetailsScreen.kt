@@ -13,13 +13,29 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
+import com.cpen321.squadup.utils.WebSocketManager
+import android.util.Log
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.LocalClipboardManager
 import com.cpen321.squadup.ui.navigation.NavRoutes
+import com.google.firebase.messaging.FirebaseMessaging
+
+fun unsubscribeFromGroupTopic(joinCode: String) {
+    FirebaseMessaging.getInstance()
+        .unsubscribeFromTopic(joinCode)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("FCM", "Unsubscribed from FCM group topic $joinCode")
+            } else {
+                Log.e("FCM", "Failed to unsubscribe from FCM group topic $joinCode", task.exception)
+            }
+        }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +56,29 @@ fun GroupDetailsScreen(
         groupViewModel.resetMidpoint()
     }
 
+    // Subscribe to WebSocket notifications when viewing a group
+    LaunchedEffect(group.joinCode, currentUserId) {
+        currentUserId?.let { userId ->
+            Log.d("GroupDetails", "Subscribing to group ${group.joinCode} for user $userId")
+            // Wait a bit for WebSocket to be connected
+            kotlinx.coroutines.delay(500)
+            WebSocketManager.subscribeToGroup(userId, group.joinCode)
+        }
+    }
+    
+    // Unsubscribe when leaving the screen (WebSocket ONLY)
+    DisposableEffect(group.joinCode, currentUserId) {
+        onDispose {
+            currentUserId?.let { userId ->
+                Log.d("GroupDetails", "Unsubscribing from group ${group.joinCode} for user $userId (WebSocket only)")
+                WebSocketManager.unsubscribeFromGroup(userId, group.joinCode)
+            }
+        }
+    }
+
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
+            unsubscribeFromGroupTopic(group.joinCode)
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true } // Clear the back stack
             }

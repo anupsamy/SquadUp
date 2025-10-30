@@ -39,6 +39,36 @@ class NotificationManager @Inject constructor() {
             val timestamp = json.optString("timestamp", "")
             
             when (type) {
+                "group_join" -> {
+                    val notification = AppNotification(
+                        id = System.currentTimeMillis().toString(),
+                        title = "Group Member Joined",
+                        message = messageText,
+                        type = type,
+                        timestamp = timestamp
+                    )
+                    showNotification(notification)
+                }
+                "group_leave" -> {
+                    val notification = AppNotification(
+                        id = System.currentTimeMillis().toString(),
+                        title = "Group Member Left",
+                        message = messageText,
+                        type = type,
+                        timestamp = timestamp
+                    )
+                    showNotification(notification)
+                }
+                "group_update" -> {
+                    val notification = AppNotification(
+                        id = System.currentTimeMillis().toString(),
+                        title = "Group Update",
+                        message = messageText,
+                        type = type,
+                        timestamp = timestamp
+                    )
+                    showNotification(notification)
+                }
                 "notification" -> {
                     val notification = AppNotification(
                         id = System.currentTimeMillis().toString(),
@@ -53,7 +83,15 @@ class NotificationManager @Inject constructor() {
                     // Handle welcome message if needed
                 }
                 else -> {
-                    // Handle other message types if needed
+                    // For any other message type, still show it
+                    val notification = AppNotification(
+                        id = System.currentTimeMillis().toString(),
+                        title = "Notification",
+                        message = messageText,
+                        type = type,
+                        timestamp = timestamp
+                    )
+                    showNotification(notification)
                 }
             }
         } catch (e: Exception) {

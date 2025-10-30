@@ -46,4 +46,10 @@ router.post(
     groupController.leaveGroup.bind(groupController) // Bind the controller method
 );
 
+// Test endpoint for WebSocket notifications
+router.post(
+    '/test-notification/:joinCode',
+    groupController.testWebSocketNotification.bind(groupController)
+);
+
 export default router;

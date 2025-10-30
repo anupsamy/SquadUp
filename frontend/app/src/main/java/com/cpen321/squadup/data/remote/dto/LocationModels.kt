@@ -21,6 +21,11 @@ data class SquadGoal(
     val location: GeoLocation
 )
 
+data class MidpointActivitiesResponse (
+    val midpoint: SquadGoal,
+    val activities: List<Activity>
+)
+
 fun parseMidpointString(midpointStr: String?): SquadGoal? {
     if (midpointStr.isNullOrBlank()) return null
 
@@ -66,4 +71,3 @@ data class Activity(
     val businessStatus: String,
     val isOpenNow: Boolean
 )
-

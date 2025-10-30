@@ -10,6 +10,7 @@ import com.cpen321.squadup.data.remote.dto.SquadGoal
 import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.LeaveGroupRequest
+import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -49,7 +50,7 @@ interface GroupInterface {
     suspend fun getMidpointByJoinCode(
         @Header("Authorization") authHeader: String,
         @retrofit2.http.Path("joinCode") joinCode: String
-    ): Response<ApiResponse<SquadGoal>>
+    ): Response<ApiResponse<MidpointActivitiesResponse>>
 
     @POST("group/update")
     suspend fun joinGroup(

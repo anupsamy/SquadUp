@@ -244,6 +244,7 @@ export class GroupModel {
       }
     }
 
+    //TODO REMOVE
     async getActivities(joinCode: string): Promise<Activity[]> {
       try {
         // Verify the group exists (optional but good practice)
@@ -260,7 +261,7 @@ export class GroupModel {
       }
     }
 
-
+    //TODO REMOVE
     private getDefaultActivities(): Activity[] {
       return [
         {

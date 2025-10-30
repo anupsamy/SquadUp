@@ -16,6 +16,7 @@ import javax.inject.Singleton
 
 import com.cpen321.squadup.data.remote.api.SelectActivityRequest
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.SquadGoal
 
@@ -149,11 +150,11 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getMidpointByJoinCode(joinCode: String): Result<SquadGoal> {
+    override suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse> {
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getMidpointByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data!!.location}")
+            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data}")
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
             } else {
@@ -172,19 +173,18 @@ class GroupRepositoryImpl @Inject constructor(
 
     override suspend fun getActivities(joinCode: String): Result<List<Activity>> {
         return try {
-            val response = activityInterface.getActivities("", joinCode) // Auth header handled by interceptor
+            val response = activityInterface.getActivities("", joinCode)
+            val activities = response.body()?.data ?: emptyList()
 
-            if (response.isSuccessful && response.body()?.data != null) {
-                Result.success(response.body()!!.data!!)
-            } else {
-                Log.e(TAG, "Failed to fetch activities: ${response.message()}")
-                Result.success(emptyList())
-            }
+            Log.d(TAG, "Fetched activities: $activities")
+            Log.d(TAG, "response body: $response.body()")
+            Result.success(activities)
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching activities", e)
             Result.success(emptyList())
         }
     }
+
 
     override suspend fun selectActivity(joinCode: String, placeId: String): Result<Unit> {
         return try {

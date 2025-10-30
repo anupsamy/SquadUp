@@ -4,6 +4,7 @@ import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupUser
+import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import com.cpen321.squadup.data.remote.dto.SquadGoal
 import com.google.android.gms.maps.model.LatLng
 
@@ -22,7 +23,7 @@ interface GroupRepository {
         expectedPeople: Number,
         updatedMembers: List<GroupUser>
     ): Result<Unit> //add exp members later
-    suspend fun getMidpointByJoinCode(joinCode: String): Result<SquadGoal>
+    suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>
 
     suspend fun leaveGroup(
         joinCode: String, 

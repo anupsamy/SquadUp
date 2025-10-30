@@ -2,3 +2,5 @@
 !.idea/codeStyles
 !.idea/inspectionProfiles
 .vscode/*
+
+node_modules/

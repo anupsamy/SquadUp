@@ -89,7 +89,8 @@ fun LeaderGroupView(
         if (midpoint != null && !isCalculatingMidpoint) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { groupViewModel.getMidpoint(group.joinCode) },
+                onClick = { groupViewModel.getMidpoint(group.joinCode)
+                          activityPickerViewModel.loadActivities(group.joinCode)},
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)

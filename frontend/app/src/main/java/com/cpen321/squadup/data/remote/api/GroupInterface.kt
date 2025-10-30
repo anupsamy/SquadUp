@@ -42,8 +42,14 @@ interface GroupInterface {
         @retrofit2.http.Path("joinCode") joinCode: String
     ): Response<ApiResponse<SquadGoal>>
 
-    @POST("group/update")
+    @POST("group/join")
     suspend fun joinGroup(
+        @Header("Authorization") authHeader: String,
+        @Body request: UpdateGroupRequest
+    ): Response<Unit>
+
+    @POST("group/update")
+    suspend fun updateGroup(
         @Header("Authorization") authHeader: String,
         @Body request: UpdateGroupRequest
     ): Response<Unit>

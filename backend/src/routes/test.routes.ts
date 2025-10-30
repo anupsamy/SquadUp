@@ -8,7 +8,7 @@ const groupController = new GroupController();
 
 router.get('/test', (req, res, next) => testController.check(req, res, next));
 
-// Public WebSocket test endpoint (no auth required) for aws
+// Public WebSocket test endpoint (no auth required) for AWS
 router.post(
   '/websocket-notification/:joinCode',
   groupController.testWebSocketNotification.bind(groupController)

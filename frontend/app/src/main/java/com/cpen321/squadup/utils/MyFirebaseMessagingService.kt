@@ -29,6 +29,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, "From: ${remoteMessage.from}")
 
+        // ---> Added: Log full FCM message for debugging
+        Log.d("FCM", "Received FCM: ${remoteMessage.data} | ${remoteMessage.notification}")
+        // <---
+
         // Handle data payload (quick tasks)
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")

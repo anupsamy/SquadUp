@@ -140,7 +140,7 @@ export class GroupController {
     }
   }
 
-  async updateGroupByJoinCode(
+  async joinGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
     res: Response<GetGroupResponse>,
     next: NextFunction
@@ -190,6 +190,40 @@ export class GroupController {
           );
           // FCM topic notification (clients subscribe to topic == joinCode)
           void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
+        });
+      }
+
+      res.status(200).json({
+        message: 'Group info updated successfully',
+        data: { group: updatedGroup },
+      });
+    } catch (error) {
+      logger.error('Failed to update group info:', error);
+
+      if (error instanceof Error) {
+        return res.status(500).json({
+          message: error.message || 'Failed to update group info',
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  async updateGroupByJoinCode(
+    req: Request<unknown, unknown, UpdateGroupRequest>,
+    res: Response<GetGroupResponse>,
+    next: NextFunction
+  ) {
+    try {
+      const {joinCode, expectedPeople, groupMemberIds, meetingTime} = req.body;
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
+        {joinCode, expectedPeople,
+        groupMemberIds: groupMemberIds || [], meetingTime});
+
+      if (!updatedGroup) {
+        return res.status(404).json({
+          message: 'Group not found',
         });
       }
 

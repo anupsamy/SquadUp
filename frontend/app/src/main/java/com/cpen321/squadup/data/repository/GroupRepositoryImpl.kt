@@ -1,5 +1,6 @@
 package com.cpen321.squadup.data.repository
 
+import android.health.connect.ReadRecordsRequestUsingIds
 import android.util.Log
 import com.cpen321.squadup.data.local.preferences.TokenManager
 import com.cpen321.squadup.data.remote.api.GroupInterface
@@ -128,6 +129,38 @@ class GroupRepositoryImpl @Inject constructor(
             )
             Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
             val response = groupInterface.joinGroup(
+                authHeader = "Bearer $authToken",
+                request = request
+            )
+            Log.d(TAG, "GroupRepImpl updateGroupRequest response ${response}")
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateGroup(
+        joinCode: String,
+        expectedPeople: Number?,
+        updatedMembers: List<GroupUser>?,
+        meetingTime: String?
+    ): Result<Unit> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val request = UpdateGroupRequest(
+                joinCode = joinCode,
+                expectedPeople = expectedPeople,
+                groupMemberIds = updatedMembers,
+                meetingTime = meetingTime
+            )
+            Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
+            val response = groupInterface.updateGroup(
                 authHeader = "Bearer $authToken",
                 request = request
             )

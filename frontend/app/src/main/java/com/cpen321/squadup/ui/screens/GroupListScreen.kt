@@ -66,7 +66,9 @@ fun GroupListScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = {
+                        navController.navigate("${NavRoutes.GROUP_DETAILS}/${group.joinCode}")
+                    },) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -111,7 +113,7 @@ fun GroupListScreen(
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick = { navController.navigate(NavRoutes.PROFILE) },
+                    onClick = {navController.navigate("${NavRoutes.MEMBER_SETTINGS}/${group.joinCode}") },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("Settings") }
                 )

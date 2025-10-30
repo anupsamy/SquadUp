@@ -117,7 +117,7 @@ fun GroupDetailsScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { navController.navigate(NavRoutes.MAIN) }){
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -250,7 +250,7 @@ fun GroupDetailsScreen(
 
                 // See Details button
                 Button(
-                    onClick = { // Suppose you already have the group object
+                    onClick = {
                         navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}")
                     },
                     modifier = Modifier

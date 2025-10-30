@@ -48,13 +48,21 @@ fun ActivityMapView(
         modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         onMapLoaded = {
-            // Optional: recenter again when the map tiles finish loading
             if (allPoints.isNotEmpty()) {
-                val boundsBuilder = LatLngBounds.builder()
-                allPoints.forEach { boundsBuilder.include(it) }
-                val bounds = boundsBuilder.build()
-                val padding = 150
-                cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+                if (allPoints.size == 1) {
+                    // ✅ Single marker: center and zoom out manually
+                    val singlePoint = allPoints.first()
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(singlePoint, 14f) // smaller number = zoomed out
+                    )
+                } else {
+                    // ✅ Multiple markers: fit bounds normally
+                    val boundsBuilder = LatLngBounds.builder()
+                    allPoints.forEach { point -> boundsBuilder.include(point) }
+                    val bounds = boundsBuilder.build()
+                    val padding = 150
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+                }
             }
         }
     ) {

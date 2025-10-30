@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
@@ -20,11 +22,16 @@ fun LeaderGroupView(
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
     activityPickerViewModel: ActivityPickerViewModel,
+    selectedActivity: Activity?,
     midpoint: com.cpen321.squadup.data.remote.dto.SquadGoal?,
     modifier: Modifier = Modifier
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
     val activities by activityPickerViewModel.activities.collectAsState()
+
+    LaunchedEffect(Unit) {
+        activityPickerViewModel.loadActivities(group.joinCode)
+    }
 
     Column(
         modifier = modifier
@@ -79,7 +86,8 @@ fun LeaderGroupView(
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { groupViewModel.getMidpoint(group.joinCode) }) {
+                        Button(onClick = { groupViewModel.getMidpoint(group.joinCode)
+                                activityPickerViewModel.loadActivities(group.joinCode)}) {
                             Text(text = "Find midpoint")
                         }
                     }

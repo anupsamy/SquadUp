@@ -47,6 +47,8 @@ import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.compose
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailsScreen(
@@ -62,15 +64,30 @@ fun GroupDetailsScreen(
 
     val vmMidpoint by groupViewModel.midpoint.collectAsState()
     val staticMidpoint = parseMidpointString(group.midpoint)
-    val midpoint = vmMidpoint ?: staticMidpoint
+    val midpoint = vmMidpoint ?: staticMidpoint //take from static unless updated from v,
+
+    val vmSelectedActivity by activityPickerViewModel.selectedActivity.collectAsState()
+    val staticSelectedActivity = group.selectedActivity
+    val selectedActivity = vmSelectedActivity ?: staticSelectedActivity
 
     val currentUserId = profileUiState.user?._id
     val isLeader = group.groupLeaderId?.id == currentUserId
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
-        activityPickerViewModel.loadActivities(group.joinCode)
     }
+
+    LaunchedEffect(staticSelectedActivity) {
+        activityPickerViewModel.setInitialSelectedActivity(staticSelectedActivity)
+    }
+
+    LaunchedEffect(midpoint) {
+        // Only load activities if the midpoint is actually available
+        if (midpoint != null) {
+            activityPickerViewModel.loadActivities(group.joinCode)
+        }
+    }
+
 
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
@@ -135,6 +152,7 @@ fun GroupDetailsScreen(
                         groupViewModel = groupViewModel,
                         midpoint = midpoint,
                         activityPickerViewModel = activityPickerViewModel,
+                        selectedActivity = selectedActivity,
                         modifier = Modifier.weight(1f)
                     )
                 } else {
@@ -142,6 +160,7 @@ fun GroupDetailsScreen(
                         group = group,
                         groupViewModel = groupViewModel,
                         midpoint = midpoint,
+                        selectedActivity = selectedActivity,
                         modifier = Modifier.weight(1f)
                     )
                 }

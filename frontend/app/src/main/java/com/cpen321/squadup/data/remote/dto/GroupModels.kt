@@ -23,6 +23,7 @@ data class GroupsDataAll(
 data class GroupData(
     val group: GroupDataDetailed
 )
+
 data class GroupDataDetailed(
     val groupName: String,
     val meetingTime: String,
@@ -30,7 +31,8 @@ data class GroupDataDetailed(
     val groupLeaderId: GroupUser? = null,
     val expectedPeople: Number,
     val groupMemberIds: List<GroupUser>? = null,
-    val midpoint: String? = null
+    val midpoint: String? = null,
+    val selectedActivity: Activity? = null
 )
 
 data class GroupUser(

@@ -43,6 +43,9 @@ fun ActivityPicker(
 ) {
     val activities by viewModel.activities.collectAsState()
     val selectedActivityId by viewModel.selectedActivityId.collectAsState()
+    val sortedActivities = activities.sortedWith(
+        compareByDescending { it.placeId == selectedActivityId })
+
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -57,7 +60,7 @@ fun ActivityPicker(
                     .weight(1f)
                     .padding(16.dp)
             ) {
-                items(activities) { activity ->
+                items(sortedActivities) { activity ->
                     ActivityCard(
                         name = activity.name,
                         address = activity.address,

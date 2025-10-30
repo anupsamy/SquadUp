@@ -36,7 +36,6 @@ class GroupViewModel @Inject constructor(
     private val _isGroupDeleted = MutableStateFlow(false)
     val isGroupDeleted: StateFlow<Boolean> = _isGroupDeleted
 
-
     private val _midpoint = MutableStateFlow<SquadGoal?>(null)
     val midpoint: StateFlow<SquadGoal?> = _midpoint
     private val _isGroupLeft = MutableStateFlow(false)

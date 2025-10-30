@@ -10,9 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.GeoLocation
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.google.android.gms.maps.model.LatLng
 
@@ -21,6 +23,7 @@ fun MemberGroupView(
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
     midpoint: SquadGoal?,
+    selectedActivity: Activity?,
     modifier: Modifier = Modifier
 ) {
     //val midpoint by groupViewModel.midpoint.collectAsState()
@@ -59,7 +62,7 @@ fun MemberGroupView(
                         val locations = listOf(LatLng(lat, lng))
                         ActivityMapView(
                             locations = locations,
-                            activities = emptyList(),
+                            activities = listOfNotNull(selectedActivity),
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -79,7 +82,28 @@ fun MemberGroupView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // TODO: State 4 - Show selected activity details when available
-        // This will be added when activity selection is implemented
+        selectedActivity?.let { activity ->
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Selected Activity:",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                ActivityCard( //TODO: just pass activity
+                    name = activity.name,
+                    address = activity.address,
+                    rating = activity.rating ?: 0.0,
+                    userRatingsTotal = activity.userRatingsTotal ?: 0,
+                    priceLevel = activity.priceLevel ?: 0,
+                    type = activity.type ?: "",
+                    isSelected = true,
+                    onClick = { /* optional click action */ },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 }

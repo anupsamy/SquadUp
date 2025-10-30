@@ -22,8 +22,17 @@ class ActivityPickerViewModel @Inject constructor(
     private val _selectedActivityId = MutableStateFlow<String?>(null)
     val selectedActivityId: StateFlow<String?> = _selectedActivityId.asStateFlow()
 
+    private val _selectedActivity = MutableStateFlow<Activity?>(null)
+    val selectedActivity: StateFlow<Activity?> = _selectedActivity.asStateFlow()
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    fun setInitialSelectedActivity(activity: Activity?) {
+        if (_selectedActivity.value == null && activity != null) {
+            _selectedActivity.value = activity
+            _selectedActivityId.value = activity.placeId
+        }
+    }
 
     fun loadActivities(joinCode: String) {
         viewModelScope.launch {
@@ -33,11 +42,13 @@ class ActivityPickerViewModel @Inject constructor(
                     getDefaultActivities()
                 }
             }
+
         }
     }
 
     fun selectActivity(placeId: String) {
         _selectedActivityId.value = placeId
+        _selectedActivity.value = _activities.value.find { it.placeId == placeId }
     }
 
     fun confirmSelection(joinCode: String) {

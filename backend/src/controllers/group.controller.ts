@@ -18,7 +18,8 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const {groupName, meetingTime, groupLeaderId, expectedPeople} = req.body;
+      const {groupName, meetingTime, groupLeaderId, expectedPeople, activityType} = req.body;
+      console.log(activityType);
       const joinCode = Math.random().toString(36).slice(2, 8);
 
       // Use the GroupModel to create the group
@@ -28,7 +29,8 @@ export class GroupController {
         groupLeaderId: groupLeaderId,
         expectedPeople,
         groupMemberIds: [groupLeaderId],
-        meetingTime: meetingTime,  // Default to current time for now
+        meetingTime: meetingTime,  // Default to current time for now,
+        activityType: activityType
       });
       console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
@@ -343,6 +345,7 @@ async getActivities(req: Request, res: Response): Promise<void> {
   try {
     const { joinCode } = req.query;
 
+
     if (!joinCode || typeof joinCode !== 'string') {
       res.status(400).json({
         message: 'Join code is required',
@@ -437,7 +440,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // Update the group with the selected activity
     const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
     
@@ -461,7 +464,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 async getMidpoints(req: Request, res: Response): Promise<void> {
   try {
     const joinCode = req.query.joinCode;
-    
+
     if (!joinCode || typeof joinCode !== 'string') {
       res.status(400).json({
         success: false,
@@ -469,7 +472,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // Verify the group exists
     const group = await groupModel.findByJoinCode(joinCode);
     if (!group) {
@@ -479,14 +482,14 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-    
+
     // Return dummy midpoint data (3 locations in Vancouver area)
     const midpoints = [
       { latitude: 49.2827, longitude: -123.1207 },
       { latitude: 49.2606, longitude: -123.2460 },
       { latitude: 49.2488, longitude: -123.1163 }
     ];
-    
+
     res.status(200).json({
       success: true,
       data: midpoints,

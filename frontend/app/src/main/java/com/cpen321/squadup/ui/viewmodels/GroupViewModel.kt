@@ -45,11 +45,11 @@ class GroupViewModel @Inject constructor(
     private val _MemberUpdated = MutableStateFlow(false)
     val MemberUpdated: StateFlow<Boolean> = _MemberUpdated
 
-    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number) {
+    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
 
-            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople)
+            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople, activityType)
             if (result.isSuccess) {
                 val group = result.getOrNull()
                 Log.d(TAG, "GroupViewModel createGroup: ${group}")
@@ -61,7 +61,8 @@ class GroupViewModel @Inject constructor(
                         "groupName" to (group?.group?.groupName ?: ""),
                         "groupLeaderId" to (group?.group?.groupLeaderId ?: ""),
                         "meetingTime" to (group?.group?.meetingTime ?: ""),
-                        "expectedPeople" to (group?.group?.expectedPeople ?: "")
+                        "expectedPeople" to (group?.group?.expectedPeople ?: ""),
+                        "activityType" to (group?.group?.activityType ?: ""),
                     )
                 )
             } else {

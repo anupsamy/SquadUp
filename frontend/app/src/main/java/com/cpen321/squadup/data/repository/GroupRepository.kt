@@ -14,7 +14,8 @@ interface GroupRepository {
         groupName: String,
         meetingTime: String,
         groupLeaderId: GroupUser,
-        expectedPeople: Number
+        expectedPeople: Number,
+        activityType: String
     ): Result<GroupData>
     suspend fun getGroupByJoinCode(joinCode: String): Result<GroupDataDetailed>
     suspend fun deleteGroupByJoinCode(joinCode:String): Result<Unit>

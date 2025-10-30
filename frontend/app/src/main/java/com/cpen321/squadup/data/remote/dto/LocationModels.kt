@@ -71,3 +71,17 @@ data class Activity(
     val businessStatus: String,
     val isOpenNow: Boolean
 )
+
+enum class ActivityType(val storedValue: String, val displayName: String) {
+    RESTAURANT("restaurant", "RESTAURANT"),
+    CAFE("cafe", "CAFE"),
+    BAR("bar", "BAR"),
+    PARK("park", "PARK"),
+    GYM("gym", "GYM"),
+    BOWLING_ALLEY("bowling_alley", "BOWLING ALLEY"),
+    MOVIE_THEATER("movie_theater", "MOVIE THEATER"),
+    NIGHT_CLUB("night_club", "NIGHT CLUB"),
+    AMUSEMENT_PARK("amusement_park", "AMUSEMENT PARK"),
+    MUSEUM("museum", "MUSEUM")
+}
+

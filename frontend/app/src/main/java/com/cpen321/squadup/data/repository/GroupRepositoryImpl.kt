@@ -72,14 +72,16 @@ class GroupRepositoryImpl @Inject constructor(
         groupName: String,
         meetingTime: String,
         groupLeaderId: GroupUser,
-        expectedPeople: Number
+        expectedPeople: Number,
+        activityType: String
         ): Result<GroupData> {
         return try {
             val request = CreateGroupRequest(
                 groupName = groupName,
                 meetingTime = meetingTime,
                 groupLeaderId = groupLeaderId,
-                expectedPeople = expectedPeople
+                expectedPeople = expectedPeople,
+                activityType = activityType
             )
             val response = groupInterface.createGroup("", request)
             //:Response<ApiResponse<GroupData>>

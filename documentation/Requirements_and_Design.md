@@ -255,9 +255,6 @@ Nielsen, J. (1993, January 1). Response Time Limits: Article by Jakob Nielsen. N
 ---
 
 ## 4. Designs Specification
-## 4. Design Specification
-
-## 4. Designs Specification
 ### **4.1. Main Components**
 
 1. **User Management Service**
@@ -350,7 +347,6 @@ Nielsen, J. (1993, January 1). Response Time Limits: Article by Jakob Nielsen. N
     - **Purpose**: Reliable and scalable infrastructure for sending real-time notifications to users on Android.
 
 
-### **4.4. Frameworks**
 ### **4.4. Frameworks and Libraries**
 
 #### Backend Frameworks, Libraries, and Infrastructure

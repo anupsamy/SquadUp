@@ -38,9 +38,10 @@ class ActivityPickerViewModel @Inject constructor(
         viewModelScope.launch {
             val result = groupRepository.getActivities(joinCode)
             result.onSuccess { fetched ->
-                _activities.value = fetched.ifEmpty {
-                    getDefaultActivities()
-                }
+                _activities.value = fetched
+            }.onFailure {
+                _error.value = "Failed to load activities."
+                _activities.value = emptyList()
             }
 
         }

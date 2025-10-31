@@ -64,7 +64,7 @@ fun LeaderGroupView(
                         if (lat != null && lng != null) listOf(LatLng(lat, lng)) else emptyList()
                     } ?: emptyList()
 
-                    ActivityMapView(
+                    LeaderActivityMapView(
                         locations = locations,
                         activities = activities,
                         modifier = Modifier.fillMaxSize()

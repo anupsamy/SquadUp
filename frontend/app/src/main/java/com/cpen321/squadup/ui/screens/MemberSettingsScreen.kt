@@ -29,6 +29,8 @@ import androidx.compose.ui.platform.LocalContext
 import android.app.TimePickerDialog
 import android.app.DatePickerDialog
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import java.util.*
 
 
@@ -45,9 +47,13 @@ fun MemberSettingsScreen(
     val currentUserId = profileUiState.user?._id
     val context = LocalContext.current
 
-    // Form state
-    var address by remember { mutableStateOf<Address?>(currentUser?.address) }
-    var transitType by remember { mutableStateOf<TransitType?>(currentUser?.transitType) }
+    val existingMemberInfo = remember(group, currentUserId) {
+        group.groupMemberIds?.find { it.id == currentUserId }
+    }
+
+    // 2. Initialize the form state with the data from the group, not the general profile.
+    var address by remember { mutableStateOf(existingMemberInfo?.address) }
+    var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
 
     // Leader-only fields
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
@@ -181,6 +187,8 @@ fun MemberSettingsScreen(
                             onSuccess = { Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show() },
                             onError = { Toast.makeText(context, "Error saving!", Toast.LENGTH_SHORT).show()  }
                         )
+
+                        groupViewModel.updateMidpoint(joinCode = group.joinCode)
                     },
                     enabled = address != null && transitType != null
                 ) {

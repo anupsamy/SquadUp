@@ -14,12 +14,14 @@ import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.GeoLocation
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.data.remote.dto.User
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MemberGroupView(
+    user: User?,
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
     midpoint: SquadGoal?,
@@ -58,11 +60,21 @@ fun MemberGroupView(
                     val lat = midpoint.location.lat
                     val lng = midpoint.location.lng
 
+                    val groupMemberInfo = group.groupMemberIds?.find { it.id == user?._id }
+
+                    val userLoc = if (groupMemberInfo?.address?.lat != null && groupMemberInfo.address.lng != null) {
+                        LatLng(groupMemberInfo.address.lat, groupMemberInfo.address.lng)
+                    } else {
+                        null
+                    }
+
+
                     if (lat != null && lng != null) {
-                        val locations = listOf(LatLng(lat, lng))
-                        ActivityMapView(
-                            locations = locations,
-                            activities = listOfNotNull(selectedActivity),
+                        val mid = LatLng(lat, lng)
+                        MemberActivityMapView(
+                            midpoint = mid,
+                            userLocation = userLoc,
+                            group.selectedActivity,
                             modifier = Modifier.fillMaxSize()
                         )
                     }

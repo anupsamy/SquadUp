@@ -52,6 +52,12 @@ interface GroupInterface {
         @retrofit2.http.Path("joinCode") joinCode: String
     ): Response<ApiResponse<MidpointActivitiesResponse>>
 
+    @POST("group/midpoint/{joinCode}")
+    suspend fun updateMidpointByJoinCode(
+        @Header("Authorization") authHeader: String,
+        @retrofit2.http.Path("joinCode") joinCode: String
+    ): Response<ApiResponse<MidpointActivitiesResponse>>
+
     @POST("group/join")
     suspend fun joinGroup(
         @Header("Authorization") authHeader: String,

@@ -202,7 +202,22 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-
+    override suspend fun updateMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse> {
+        return try {
+            val authToken = tokenManager.getToken() ?: ""
+            val response = groupInterface.updateMidpointByJoinCode("Bearer $authToken", joinCode)
+            Log.d(TAG, "GroupRepImpl updateMidpointByJoinCode response: ${response.body()!!.data}")
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to update midpoint by joinCode.")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     //activities
 

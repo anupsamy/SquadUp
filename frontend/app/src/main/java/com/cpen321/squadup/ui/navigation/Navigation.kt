@@ -311,8 +311,8 @@ private fun AppNavHost(
             JoinGroupScreen(
                 navController = navController,
                 mainViewModel = mainViewModel,
+                groupViewMode = groupViewModel,
                 profileViewModel = profileViewModel,
-
                 )
         }
 

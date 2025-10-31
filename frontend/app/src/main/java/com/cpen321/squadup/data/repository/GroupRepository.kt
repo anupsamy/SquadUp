@@ -31,7 +31,7 @@ interface GroupRepository {
         meetingTime: String?
     ): Result<Unit>
     suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>
-
+    suspend fun updateMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>
     suspend fun leaveGroup(
         joinCode: String, 
         userId: String

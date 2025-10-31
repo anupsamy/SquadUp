@@ -84,10 +84,10 @@ async getActivityList(
       .map(place => {
         const loc = place.geometry?.location;
         if (!place.name || !loc) return null;
-        
+
         const primaryType = place.types?.[0] || "establishment";
         const openNow = place.opening_hours?.open_now ?? false;
-        
+
         return {
           name: place.name,
           placeId: place.place_id,
@@ -144,7 +144,7 @@ async getActivityList(
     if (totalWeight === 0) {
           // Fallback to a simple geographic midpoint if weights are zero
           return this.getGeographicMidpoint(geoLocation);
-      }
+    }
 
     const updatedMidpoint = { lat: newLat / totalWeight, lng: newLng / totalWeight };
 
@@ -157,7 +157,7 @@ async getActivityList(
   }
 
   return midpoint;
-  }
+}
 
 //   async findMultipleMeetingPoints(
 //   users: UserLocation[],

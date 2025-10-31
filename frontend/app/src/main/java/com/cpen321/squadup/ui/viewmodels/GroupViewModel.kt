@@ -42,8 +42,6 @@ class GroupViewModel @Inject constructor(
     val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
     private val _isCalculatingMidpoint = MutableStateFlow(false)
     val isCalculatingMidpoint: StateFlow<Boolean> = _isCalculatingMidpoint
-    private val _MemberUpdated = MutableStateFlow(false)
-    val MemberUpdated: StateFlow<Boolean> = _MemberUpdated
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String) {
         viewModelScope.launch {
@@ -91,9 +89,26 @@ class GroupViewModel @Inject constructor(
     fun getMidpoint(joinCode: String) {
         viewModelScope.launch {
             _isCalculatingMidpoint.value = true
+            resetMidpoint()
             val result = groupRepository.getMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
                 _midpoint.value = result.getOrNull()?.midpoint
+            } else {
+                val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
+                Log.e(TAG, "Error fetching midpoint: $error")
+            }
+            _isCalculatingMidpoint.value = false
+        }
+    }
+
+    fun updateMidpoint(joinCode: String) {
+        viewModelScope.launch {
+            _isCalculatingMidpoint.value = true
+            resetMidpoint()
+            val result = groupRepository.updateMidpointByJoinCode(joinCode)
+            if (result.isSuccess) {
+                _midpoint.value = result.getOrNull()?.midpoint
+                Log.e(TAG, "Updated midpoint!")
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
                 Log.e(TAG, "Error fetching midpoint: $error")
@@ -115,20 +130,6 @@ class GroupViewModel @Inject constructor(
             }
         }
     }
-
-//    fun getMidpoints(joinCode: String) {
-//        viewModelScope.launch {
-//            val result = groupRepository.getMidpoints(joinCode)
-//            if (result.isSuccess) {
-//                val data = result.getOrNull() ?: emptyList()
-//                Log.d(TAG, "midpoints retrieved successfully: $data")
-//                _midpoints.value = data
-//            } else {
-//                val error = result.exceptionOrNull()?.message ?: "Failed to get midpoints"
-//                Log.e(TAG, "Error getting midpoints: $error")
-//            }
-//        }
-//    }
 
     fun updateMember(
         joinCode: String,

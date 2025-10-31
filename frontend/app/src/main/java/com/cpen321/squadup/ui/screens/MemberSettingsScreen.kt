@@ -187,6 +187,8 @@ fun MemberSettingsScreen(
                             onSuccess = { Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show() },
                             onError = { Toast.makeText(context, "Error saving!", Toast.LENGTH_SHORT).show()  }
                         )
+
+                        groupViewModel.updateMidpoint(joinCode = group.joinCode)
                     },
                     enabled = address != null && transitType != null
                 ) {

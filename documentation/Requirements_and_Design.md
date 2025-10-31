@@ -436,9 +436,16 @@ Nielsen, J. (1993, January 1). Response Time Limits: Article by Jakob Nielsen. N
 
 
 ### **4.6. Use Case Sequence Diagram (5 Most Major Use Cases)**
-1. [**[WRITE_NAME_HERE]**](#uc1)\
-[SEQUENCE_DIAGRAM_HERE]
-2. ...
+1. [**[Create Group]**](#uc1)\
+![Create Group Use Case Diagram](images/usecase-create-group.png)
+1. [**[Join Group]**](#uc1)\
+![Join Group Use Case Diagram](images/usecase-join-group.png)
+1. [**[View Group]**](#uc1)\
+![View Group Use Case Diagram](images/usecase-view-group.png)
+1. [**[Find Midpoint]**](#uc1)\
+![Midpoint Use Case Diagram](images/usecase-midpoint.png)
+1. [**[Select Activity]**](#uc1)\
+![Select Activity Case Diagram](images/usecase-select-activity.png)
 
 
 ### **4.7. Design and Ways to Test Non-Functional Requirements**

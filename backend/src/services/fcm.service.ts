@@ -99,3 +99,21 @@ export async function sendGroupLeaveFCM(joinCode: string, userName: string, grou
     },
   });
 }
+
+export async function sendActivitySelectedFCM(joinCode: string, activityName: string, groupName: string, leaderId: string, activityData?: string) {
+  const title = 'Activity Selected';
+  const body = `Group leader selected "${activityName}" for the group "${groupName}"`;
+  return sendToTopic(joinCode, {
+    title,
+    body,
+    data: {
+      type: 'activity_selected',
+      joinCode,
+      activityName,
+      groupName,
+      timestamp: new Date().toISOString(),
+      actingUserId: leaderId, // new field for filtering on frontend
+      activityData: activityData || '', // Optional activity data as JSON string
+    },
+  });
+}

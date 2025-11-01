@@ -92,6 +92,10 @@ const groupSchema = new Schema<IGroup>(
       type: String,
       required: true,
       trim: true
+    },
+    autoUpdateMidpoint: {
+      type: Boolean,
+      required: true
     }
   },
     {

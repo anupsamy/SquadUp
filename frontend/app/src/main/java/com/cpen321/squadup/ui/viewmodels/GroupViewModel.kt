@@ -43,11 +43,11 @@ class GroupViewModel @Inject constructor(
     private val _isCalculatingMidpoint = MutableStateFlow(false)
     val isCalculatingMidpoint: StateFlow<Boolean> = _isCalculatingMidpoint
 
-    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String) {
+    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String, autoUpdateMidpoint: Boolean) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
 
-            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople, activityType)
+            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople, activityType, autoUpdateMidpoint)
             if (result.isSuccess) {
                 val group = result.getOrNull()
                 Log.d(TAG, "GroupViewModel createGroup: ${group}")
@@ -136,6 +136,7 @@ class GroupViewModel @Inject constructor(
         expectedPeople: Number,
         updatedMembers: List<GroupUser>,
         meetingTime: String,
+        autoUpdateMidpoint: Boolean,
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -146,7 +147,8 @@ class GroupViewModel @Inject constructor(
                         joinCode = joinCode,
                         expectedPeople = expectedPeople,
                         updatedMembers = updatedMembers,
-                        meetingTime = meetingTime
+                        meetingTime = meetingTime,
+                        autoUpdateMidpoint = autoUpdateMidpoint
                     )
                     if (joinResult.isSuccess) {
                         onSuccess("Successfully updated!")

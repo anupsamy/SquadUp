@@ -15,14 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.TransitType
-import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.navigation.NavRoutes
-import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 import androidx.compose.ui.platform.LocalContext
@@ -44,7 +40,7 @@ fun MemberSettingsScreen(
 ) {
     val profileUiState by profileViewModel.uiState.collectAsState()
     val currentUser = profileUiState.user
-    val currentUserId = profileUiState.user?._id
+    val currentUserId = currentUser?._id
     val context = LocalContext.current
 
     val existingMemberInfo = remember(group, currentUserId) {
@@ -58,6 +54,7 @@ fun MemberSettingsScreen(
     // Leader-only fields
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
     var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
+    var autoUpdateMidpoint by remember { mutableStateOf(group.autoUpdateMidpoint ?: false) }
 
     Scaffold(
         topBar = {
@@ -160,7 +157,7 @@ fun MemberSettingsScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text( text = "Update Meeting Date & Time" )
+                        Text( text = "Click to update Meeting Date & Time" )
                     }
 
                     OutlinedTextField(
@@ -169,6 +166,17 @@ fun MemberSettingsScreen(
                         label = { Text("Expected People") },
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Checkbox(
+                            checked = autoUpdateMidpoint,
+                            onCheckedChange = { autoUpdateMidpoint = it }
+                        )
+                        Text(text = "Auto-update midpoint", modifier = Modifier.padding(start = 8.dp))
+                    }
                 }
 
                 Button(
@@ -179,16 +187,22 @@ fun MemberSettingsScreen(
                             } else member
                         } ?: emptyList()
 
+                        // Detect if member list changed
+                        val memberListUpdated = updatedMembers != group.groupMemberIds
+
                         groupViewModel.updateMember(
                             joinCode = group.joinCode,
                             updatedMembers = updatedMembers,
                             meetingTime = meetingTime,
                             expectedPeople = expectedPeople.toIntOrNull() ?: 0,
+                            autoUpdateMidpoint = autoUpdateMidpoint,
                             onSuccess = { Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show() },
                             onError = { Toast.makeText(context, "Error saving!", Toast.LENGTH_SHORT).show()  }
                         )
 
-                        groupViewModel.updateMidpoint(joinCode = group.joinCode)
+                        if (autoUpdateMidpoint && memberListUpdated) {
+                            groupViewModel.updateMidpoint(joinCode = group.joinCode)
+                        }
                     },
                     enabled = address != null && transitType != null
                 ) {

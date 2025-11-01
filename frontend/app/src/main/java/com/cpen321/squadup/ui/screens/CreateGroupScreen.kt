@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.ui.graphics.Color
 import com.cpen321.squadup.data.remote.dto.ActivityType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,6 +47,8 @@ fun CreateGroupScreen(
     var meetingTime by remember { mutableStateOf("") }
     var expectedPeople by remember { mutableStateOf("") }
     var selectedActivity by remember { mutableStateOf<ActivityType?>(null) }
+    var autoUpdateMidpoint by remember { mutableStateOf(false) }
+
     var expanded by remember { mutableStateOf(false) }
 
     // State for the combined date-time string
@@ -86,6 +89,70 @@ fun CreateGroupScreen(
                     label = { Text("Group Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Input for Expected People
+                TextField(
+                    value = expectedPeople,
+                    onValueChange = { expectedPeople = it },
+                    label = { Text("Expected People") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Checkbox(
+                        checked = autoUpdateMidpoint,
+                        onCheckedChange = { autoUpdateMidpoint = it }
+                    )
+                    Text(
+                        text = "Auto-update midpoint when members leave or change address",
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextField(
+                        value = selectedActivity?.displayName ?: "Select Activity Type",
+                        onValueChange = {}, // Required but we don’t allow typing
+                        readOnly = true,   // Prevent keyboard input
+                        label = { Text("Activity Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .menuAnchor() // Important! Anchors the dropdown properly
+                            .fillMaxWidth()
+                            .clickable { expanded = true } // Allow clicking to expand
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        ActivityType.values().forEach { type ->
+                            DropdownMenuItem(
+                                text = { Text(type.displayName) },
+                                onClick = {
+                                    selectedActivity = type
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Date Picker for Meeting Date
@@ -142,52 +209,6 @@ fun CreateGroupScreen(
                 ) {
                     Text(text = "Confirm Date-Time")
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Input for Expected People
-                TextField(
-                    value = expectedPeople,
-                    onValueChange = { expectedPeople = it },
-                    label = { Text("Expected People") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number
-                    )
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    TextField(
-                        value = selectedActivity?.displayName ?: "Select Activity Type",
-                        onValueChange = {}, // Required but we don’t allow typing
-                        readOnly = true,   // Prevent keyboard input
-                        label = { Text("Activity Type") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .menuAnchor() // Important! Anchors the dropdown properly
-                            .fillMaxWidth()
-                            .clickable { expanded = true } // Allow clicking to expand
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        ActivityType.values().forEach { type ->
-                            DropdownMenuItem(
-                                text = { Text(type.displayName) },
-                                onClick = {
-                                    selectedActivity = type
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -207,14 +228,19 @@ fun CreateGroupScreen(
                                 meetingTime = meetingDateTime,
                                 groupLeaderId = groupLeaderUser,
                                 expectedPeople = expectedPeople.toIntOrNull() ?: 0,
-                                activityType = selectedActivity?.storedValue ?: ""
+                                activityType = selectedActivity?.storedValue ?: "",
+                                autoUpdateMidpoint = autoUpdateMidpoint
                             )
                         } else {
                             Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !uiState.isCreatingGroup
+                    enabled = !uiState.isCreatingGroup,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Blue,
+                        contentColor = Color.White,
+                    )
                 ) {
                     Text(text = if (uiState.isCreatingGroup) "Creating..." else "Create Group")
                 }

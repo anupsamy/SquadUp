@@ -18,7 +18,7 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const {groupName, meetingTime, groupLeaderId, expectedPeople, activityType} = req.body;
+      const {groupName, meetingTime, groupLeaderId, expectedPeople, activityType, autoUpdateMidpoint} = req.body;
       console.log(activityType);
       const joinCode = Math.random().toString(36).slice(2, 8);
 
@@ -30,7 +30,8 @@ export class GroupController {
         expectedPeople,
         groupMemberIds: [groupLeaderId],
         meetingTime: meetingTime,  // Default to current time for now,
-        activityType: activityType
+        activityType: activityType,
+        autoUpdateMidpoint: autoUpdateMidpoint
       });
       console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
@@ -215,10 +216,10 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const {joinCode, expectedPeople, groupMemberIds, meetingTime} = req.body;
+      const {joinCode, expectedPeople, groupMemberIds, meetingTime, autoUpdateMidpoint} = req.body;
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
         {joinCode, expectedPeople,
-        groupMemberIds: groupMemberIds || [], meetingTime});
+        groupMemberIds: groupMemberIds || [], meetingTime, autoUpdateMidpoint});
 
       if (!updatedGroup) {
         return res.status(404).json({

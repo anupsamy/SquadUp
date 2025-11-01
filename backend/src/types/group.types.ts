@@ -20,6 +20,7 @@ export interface IGroup extends Document {
     midpoint: string,
     activityType: string,
     selectedActivity?: Activity;
+    autoUpdateMidpoint: boolean;
     createdAt: Date;
   }
 
@@ -52,8 +53,8 @@ export const basicGroupSchema = z.object({
     transitType: transitTypeSchema.optional()
   })).optional(),
   midpoint: z.string().default('').optional(),
-  activityType: z.string().min(1, 'Activity type is required')
-
+  activityType: z.string().min(1, 'Activity type is required'),
+  autoUpdateMidpoint: z.boolean().default(false)
 });
 
 export const createGroupSchema = z.object({
@@ -67,7 +68,8 @@ export const createGroupSchema = z.object({
     transitType: transitTypeSchema.optional()
   }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
-  activityType: z.string().min(1, 'Activity type is required')
+  activityType: z.string().min(1, 'Activity type is required'),
+  autoUpdateMidpoint: z.boolean().default(false)
 });
 
 export const updateGroupSchema = z.object({
@@ -82,7 +84,8 @@ export const updateGroupSchema = z.object({
   })).optional(),
   meetingTime: z.string().optional(),
   midpoint: z.string().default("").optional(),
-  activityType: z.string().optional()
+  activityType: z.string().optional(),
+  autoUpdateMidpoint: z.boolean().optional()
 });
 
 //Activity model
@@ -173,7 +176,8 @@ export type BasicGroupInfo = {
     groupLeaderId: GroupUser;
     expectedPeople: number;
     groupMemberIds?: GroupUser[];
-    activityType: string
+    activityType: string;
+    autoUpdateMidpoint: boolean;
 };
 
 export type CreateGroupInfo = {
@@ -182,12 +186,14 @@ export type CreateGroupInfo = {
   groupLeaderId: GroupUser;
   expectedPeople: number;
   activityType: string;
+  autoUpdateMidpoint: boolean
 };
 
 export type UpdateInfo = {
     joinCode: string;
     expectedPeople: number;
     groupMemberIds: GroupUser[];
+    autoUpdateMidpoint: boolean;
 };
 
 export type GroupUser = {
@@ -197,8 +203,3 @@ export type GroupUser = {
   address?: Address,
   transitType?: TransitType
 }
-
-
-
-
-

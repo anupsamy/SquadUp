@@ -9,7 +9,7 @@ import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsR
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
-import { sendGroupJoinFCM, sendGroupLeaveFCM } from '../services/fcm.service';
+import { sendGroupJoinFCM, sendGroupLeaveFCM, sendActivitySelectedFCM } from '../services/fcm.service';
 
 export class GroupController {
   async createGroup(
@@ -502,6 +502,36 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
     // Update the group with the selected activity
     const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
+
+    // Send notifications to group members
+    const wsService = getWebSocketService();
+    if (wsService && updatedGroup) {
+      const leaderId = updatedGroup.groupLeaderId?.id || '';
+      const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
+      const activityName = activity.name || 'an activity';
+      
+      // Send WebSocket notification
+      wsService.notifyGroupUpdate(
+        joinCode,
+        `${leaderName} selected "${activityName}" for the group`,
+        {
+          type: 'activity_selected',
+          activity: activity,
+          leaderId: leaderId,
+          leaderName: leaderName
+        }
+      );
+
+      // Send FCM notification (will be suppressed in foreground on client side)
+      const activityDataStr = JSON.stringify(activity);
+      void sendActivitySelectedFCM(
+        joinCode,
+        activityName,
+        updatedGroup.groupName,
+        leaderId,
+        activityDataStr
+      );
+    }
 
     res.status(200).json({
       message: 'Activity selected successfully',

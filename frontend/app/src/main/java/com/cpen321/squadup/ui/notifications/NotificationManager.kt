@@ -60,14 +60,31 @@ class NotificationManager @Inject constructor() {
                     showNotification(notification)
                 }
                 "group_update" -> {
-                    val notification = AppNotification(
-                        id = System.currentTimeMillis().toString(),
-                        title = "Group Update",
-                        message = messageText,
-                        type = type,
-                        timestamp = timestamp
-                    )
-                    showNotification(notification)
+                    // Check if this is an activity_selected update
+                    val dataObj = json.optJSONObject("data")
+                    val updateType = dataObj?.optString("type", "")
+                    
+                    if (updateType == "activity_selected") {
+                        val activityObj = dataObj.optJSONObject("activity")
+                        val activityName = activityObj?.optString("name", "an activity") ?: "an activity"
+                        val notification = AppNotification(
+                            id = System.currentTimeMillis().toString(),
+                            title = "Activity Selected",
+                            message = "Group leader selected \"$activityName\"",
+                            type = "activity_selected",
+                            timestamp = timestamp
+                        )
+                        showNotification(notification)
+                    } else {
+                        val notification = AppNotification(
+                            id = System.currentTimeMillis().toString(),
+                            title = "Group Update",
+                            message = messageText,
+                            type = type,
+                            timestamp = timestamp
+                        )
+                        showNotification(notification)
+                    }
                 }
                 "notification" -> {
                     val notification = AppNotification(

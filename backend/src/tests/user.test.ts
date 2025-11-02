@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { UserController } from '../controllers/user.controller';
 import { userModel } from '../user.model';
 import { GoogleUserInfo } from '../types/user.types';
+import { TRANSIT_TYPES } from '@/types/transit.types';
 
 jest.mock('../utils/logger.util');
 jest.mock('../services/media.service');
@@ -38,7 +39,7 @@ describe('Unmocked: User Endpoints (No Mocks)', () => {
 
     // Setup routes
     app.get('/profile', (req, res) => userController.getProfile(req, res));
-    app.patch('/profile', (req, res, next) => userController.updateProfile(req, res, next));
+    app.post('/profile', (req, res, next) => userController.updateProfile(req, res, next));
     app.delete('/profile', (req, res, next) => userController.deleteProfile(req, res, next));
 
     // Create a test user in the database
@@ -81,7 +82,7 @@ describe('Unmocked: User Endpoints (No Mocks)', () => {
     });
   });
 
-  describe('PATCH /profile', () => {
+  describe('POST /profile', () => {
     // Input: valid user update with name change
     // Expected status code: 200
     // Expected behavior: user is updated in database
@@ -92,7 +93,7 @@ describe('Unmocked: User Endpoints (No Mocks)', () => {
       };
 
       const res = await request(app)
-        .patch('/profile')
+        .post('/profile')
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -130,7 +131,7 @@ describe('Unmocked: User Endpoints (No Mocks)', () => {
       };
 
       const res = await request(app)
-        .patch('/profile')
+        .post('/profile')
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -147,15 +148,15 @@ describe('Unmocked: User Endpoints (No Mocks)', () => {
     // Expected output: user data with updated transitType
     it('should update transitType', async () => {
       const updateData = {
-        transitType: 'bus',
+        transitType: 'transit',
       };
 
       const res = await request(app)
-        .patch('/profile')
+        .post('/profile')
         .send(updateData);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.user.transitType).toBe('bus');
+      expect(res.body.data.user.transitType).toBe('transit');
     });
 
     // Input: empty update object
@@ -167,7 +168,7 @@ describe('Unmocked: User Endpoints (No Mocks)', () => {
       const updateData = {};
 
       const res = await request(app)
-        .patch('/profile')
+        .post('/profile')
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -185,16 +186,16 @@ describe('Unmocked: User Endpoints (No Mocks)', () => {
     it('should update multiple fields simultaneously', async () => {
       const updateData = {
         name: 'Multi Field User',
-        transitType: 'car',
+        transitType: 'bicycling',
       };
 
       const res = await request(app)
-        .patch('/profile')
+        .post('/profile')
         .send(updateData);
 
       expect(res.status).toBe(200);
       expect(res.body.data.user.name).toBe('Multi Field User');
-      expect(res.body.data.user.transitType).toBe('car');
+      expect(res.body.data.user.transitType).toBe('bicycling');
     });
   });
 

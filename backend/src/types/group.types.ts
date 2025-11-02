@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import z from 'zod';
-import { HOBBIES } from '../hobbies';
 import { UserModel, userModel } from '../user.model';
 import { GoogleUserInfo } from '../types/user.types';
 import {Address} from './address.types';

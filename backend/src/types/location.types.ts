@@ -14,20 +14,6 @@ export interface GeoLocation {
     transitType?: TransitType
 }
 
-// export interface Activity {
-//   name: string;
-//   placeId: string;
-//   address: string;
-//   rating: number;
-//   userRatingsTotal: number;
-//   priceLevel: number;
-//   type: string;
-//   latitude: number;
-//   longitude: number;
-//   businessStatus: string;
-//   isOpenNow: boolean;
-// }
-
 // types/location.ts (update existing)
 export type getLocationResponse = {
   message: string;

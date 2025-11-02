@@ -23,10 +23,12 @@ import retrofit2.http.Part
 import retrofit2.http.Query
 
 interface GroupInterface {
-    @GET("group/info")
-    suspend fun getGroups(
-        @Header("Authorization") authHeader: String
-    ): Response<ApiResponse<GroupsDataAll>>
+
+    @POST("group/create")
+    suspend fun createGroup(
+        @Header("Authorization") authHeader: String,
+        @Body request: CreateGroupRequest
+    ): Response<ApiResponse<GroupData>>
 
     @GET("group/{joinCode}")
     suspend fun getGroupByJoinCode(
@@ -34,17 +36,35 @@ interface GroupInterface {
         @retrofit2.http.Path("joinCode") joinCode: String
     ): Response<ApiResponse<GroupData>>
 
+    @GET("group/info")
+    suspend fun getGroups(
+        @Header("Authorization") authHeader: String
+    ): Response<ApiResponse<GroupsDataAll>>
+
+    @POST("group/update")
+    suspend fun updateGroup(
+        @Header("Authorization") authHeader: String,
+        @Body request: UpdateGroupRequest
+    ): Response<Unit>
+
+    @POST("group/join")
+    suspend fun joinGroup(
+        @Header("Authorization") authHeader: String,
+        @Body request: UpdateGroupRequest
+    ): Response<Unit>
+
+    @POST("group/leave/{joinCode}")
+    suspend fun leaveGroup(
+        @Header("Authorization") authHeader: String,
+        @retrofit2.http.Path("joinCode") joinCode: String,
+        @Body request: LeaveGroupRequest
+    ): Response<Unit>
+
     @GET("group/midpoints")
     suspend fun getMidpoints(
         @Header("Authorization") authHeader: String,
         @Query("joinCode") joinCode: String
     ): Response<ApiResponse<List<ActivityCoordinates>>>
-
-    @POST("group/create")
-    suspend fun createGroup(
-        @Header("Authorization") authHeader: String,
-        @Body request: CreateGroupRequest
-    ): Response<ApiResponse<GroupData>>
 
     @GET("group/midpoint/{joinCode}")
     suspend fun getMidpointByJoinCode(
@@ -58,28 +78,11 @@ interface GroupInterface {
         @retrofit2.http.Path("joinCode") joinCode: String
     ): Response<ApiResponse<MidpointActivitiesResponse>>
 
-    @POST("group/join")
-    suspend fun joinGroup(
-        @Header("Authorization") authHeader: String,
-        @Body request: UpdateGroupRequest
-    ): Response<Unit>
-
-    @POST("group/update")
-    suspend fun updateGroup(
-        @Header("Authorization") authHeader: String,
-        @Body request: UpdateGroupRequest
-    ): Response<Unit>
-
     @DELETE("group/delete/{joinCode}")
     suspend fun deleteGroup(
         @Header("Authorization") authHeader: String,
         @retrofit2.http.Path("joinCode") joinCode: String
     ): Response<Unit>
 
-    @POST("group/leave/{joinCode}")
-    suspend fun leaveGroup(
-        @Header("Authorization") authHeader: String,
-        @retrofit2.http.Path("joinCode") joinCode: String,
-        @Body request: LeaveGroupRequest
-    ): Response<Unit>
+    
 }

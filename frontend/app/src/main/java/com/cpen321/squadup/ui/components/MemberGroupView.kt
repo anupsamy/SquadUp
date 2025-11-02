@@ -28,7 +28,6 @@ fun MemberGroupView(
     selectedActivity: Activity?,
     modifier: Modifier = Modifier
 ) {
-    //val midpoint by groupViewModel.midpoint.collectAsState()
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
 
     Column(

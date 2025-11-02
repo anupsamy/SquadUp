@@ -50,7 +50,6 @@ import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
-import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.utils.WebSocketManager
 import com.google.firebase.messaging.FirebaseMessaging
@@ -59,9 +58,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
-    newsViewModel: NewsViewModel,
     profileViewModel: ProfileViewModel = hiltViewModel(),
-    selectedHobbies: List<String>,
     onProfileClick: () -> Unit,
     navController: NavController 
 ) {
@@ -118,8 +115,6 @@ fun MainScreen(
             MainBody(
                 modifier = Modifier.weight(1f),
                 paddingValues = PaddingValues(0.dp),
-                newsViewModel = newsViewModel,
-                selectedHobbies = selectedHobbies,
                 onCreateGroupClick = {
                     navController.navigate(NavRoutes.CREATE_GROUP)
                 },
@@ -209,8 +204,6 @@ private fun JoinGroupSection(
 @Composable
 private fun MainContent(
     uiState: MainUiState,
-    newsViewModel: NewsViewModel,
-    selectedHobbies: List<String>,
     groups: List<GroupDataDetailed>,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
@@ -235,8 +228,6 @@ private fun MainContent(
     ) { paddingValues ->
         MainBody(
             paddingValues = paddingValues,
-            newsViewModel = newsViewModel,
-            selectedHobbies = selectedHobbies,
             onCreateGroupClick = onCreateGroupClick,
             groups = groups,
             onGroupClick = onGroupClick,
@@ -323,8 +314,6 @@ private fun MainSnackbarHost(
 @Composable
 private fun MainBody(
     paddingValues: PaddingValues,
-    newsViewModel: NewsViewModel,
-    selectedHobbies: List<String>,
     onCreateGroupClick: () -> Unit,
     groups: List<GroupDataDetailed>,
     onGroupClick: (String) -> Unit,

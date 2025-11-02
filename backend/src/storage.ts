@@ -3,15 +3,13 @@ import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 
-import { IMAGES_DIR } from './hobbies';
-
-if (!fs.existsSync(IMAGES_DIR)) {
-  fs.mkdirSync(IMAGES_DIR, { recursive: true });
+if (!fs.existsSync('uploads/images')) {
+  fs.mkdirSync('uploads/images', { recursive: true });
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, IMAGES_DIR);
+    cb(null, 'uploads/images');
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -38,3 +36,5 @@ export const upload = multer({
     fileSize: 5 * 1024 * 1024,
   },
 });
+
+export const IMAGES_DIR = 'uploads/images';

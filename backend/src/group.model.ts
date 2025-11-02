@@ -1,7 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
-
-import { HOBBIES } from './hobbies';
 import {
     BasicGroupInfo,
   basicGroupSchema,
@@ -127,8 +125,6 @@ export class GroupModel {
     async findAll(): Promise<IGroup[]> {
       try {
         const groups = await this.group.find(); // Fetch all groups
-        // console.error('GroupModel findAll 1:', groups[4].groupMemberIds);
-        // console.error('GroupModel findAll 2:', groups[4]);
         return groups;
       } catch (error) {
         logger.error('Error fetching all groups:', error);
@@ -163,10 +159,7 @@ export class GroupModel {
       group: Partial<IGroup>
     ): Promise<IGroup | null> {
       try {
-        console.error('GroupModel joinCode:', joinCode);
-        console.error('GroupModel update by joinCode group:', group);
         const validatedData = updateGroupSchema.parse(group);
-        console.error('GroupModel validatedData:', validatedData);
         const updatedGroup = await this.group.findOneAndUpdate(
           {joinCode},
           validatedData,
@@ -196,7 +189,6 @@ export class GroupModel {
     async findByJoinCode(joinCode: string): Promise<IGroup | null> {
       try {
         const group = await this.group.findOne({ joinCode }); // Query the database
-        console.error('GroupModel findByJoinCode:', group);
         return group;
       } catch (error) {
         logger.error('Error finding group by joinCode:', error);

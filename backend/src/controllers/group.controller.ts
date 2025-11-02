@@ -49,14 +49,11 @@ export class GroupController {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
-      // console.error('GroupController getAllGroups:', groups);
-      // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
-      //   console.error('GroupController groups[4]:', groups[4]);
+
       const sanitizedGroups:IGroup[] = groups.map(group => ({
       ...group.toObject(),
       groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
       }));
-      // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
       res.status(200).json({
         message: 'Groups fetched successfully',
@@ -78,7 +75,6 @@ export class GroupController {
 
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
-      console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({
@@ -250,8 +246,6 @@ export class GroupController {
     try {
       const {joinCode} = req.params;
 
-      //await MediaService.deleteAllUserImages(user._id.toString());
-
       await groupModel.delete(joinCode); //NOTE: see if anything else needs to be removed first
 
       res.status(200).json({
@@ -307,7 +301,6 @@ export class GroupController {
       }));
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
-      //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
 
       if (!group) {
@@ -365,7 +358,6 @@ async updateMidpointByJoinCode(
       }));
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
-      //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
 
       if (!group) {

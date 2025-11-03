@@ -14,6 +14,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import com.cpen321.squadup.TestUtilities.waitForNodeWithText
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -64,13 +65,60 @@ class GroupMidpointE2ETest {
     }
 
     @Test
-    fun viewMidpointAndRecommendedLocations() {
+    fun groupDetailsScreen() {
         // Navigate to the first group
         navigateToFirstGroup()
 
         // Click midpoint button every time
         clickMidpointButton()
 
+        viewMidpointAndRecommendedLocations()
+        selectActivity()
+    }
+
+    private fun viewSelectedActivity() {
+        // For members: verify the selected activity is displayed
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithTag("ActivityPicker").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag("ActivityPicker").assertIsDisplayed()
+    }
+
+    private fun selectActivity() {
+        // Pick the first activity from the ActivityPicker list
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithTag("ActivityPicker").fetchSemanticsNodes().isNotEmpty()
+        }
+        val activities = composeTestRule.onAllNodesWithTag("ActivityPicker")
+        if (activities.fetchSemanticsNodes().isNotEmpty()) {
+            activities.onFirst().performClick()
+        }
+
+        // Confirm selection
+        composeTestRule.waitForIdle()
+        val confirmButtons = composeTestRule.onAllNodesWithText("Select Activity", substring = true)
+        if (confirmButtons.fetchSemanticsNodes().isNotEmpty()) {
+            confirmButtons.onFirst().performClick()
+        }
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(1000)
+
+        // Verify success
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText(
+                "Activity selected successfully!",
+                substring = true
+            ).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onAllNodesWithText(
+            "Activity selected successfully!",
+            substring = true
+        ).onFirst().assertIsDisplayed()
+
+    }
+
+    private fun viewMidpointAndRecommendedLocations() {
         // Wait for midpoint map to appear
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("LeaderMapView").fetchSemanticsNodes().isNotEmpty()

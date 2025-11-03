@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.cpen321.squadup.data.remote.dto.Activity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -135,7 +136,7 @@ fun MemberActivityMapView(
     }
 
     GoogleMap(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().testTag("MidpointMap"),
         cameraPositionState = cameraPositionState,
         onMapLoaded = {
             if (allPoints.isNotEmpty()) {
@@ -152,7 +153,7 @@ fun MemberActivityMapView(
                     cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
                 }
             }
-        }
+        },
     ) {
         // Midpoint marker (red)
         midpoint?.let { point ->

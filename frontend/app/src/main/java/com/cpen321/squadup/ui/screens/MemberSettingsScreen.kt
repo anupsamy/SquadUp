@@ -170,6 +170,10 @@ fun MemberSettingsScreen(
 
                 Button(
                     onClick = {
+                        val existingMember = group.groupMemberIds?.find { it.id == currentUserId }
+                        val addressChanged = existingMember?.address != address
+                        val transitChanged = existingMember?.transitType != transitType
+
                         val updatedMembers = group.groupMemberIds?.map { member ->
                             if (member.id == currentUserId) {
                                 member.copy(address = address, transitType = transitType)
@@ -193,7 +197,10 @@ fun MemberSettingsScreen(
                             }
                         )
 
-                        groupViewModel.updateMidpoint(joinCode = group.joinCode)
+                        // Only update midpoint if address or transit type actually changed
+//                        if (addressChanged || transitChanged) {
+//                            groupViewModel.updateMidpoint(joinCode = group.joinCode)
+//                        }
                     },
                     enabled = address != null && transitType != null
                 ) {

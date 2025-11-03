@@ -72,10 +72,10 @@ class MemberSettingsE2ETest {
     }
 
     @Test
-    fun updateMemberSettings_success() {
+    fun updateMemberSettings() {
         navigateToMemberSettings()
 
-        // 4️⃣ Expected People
+        // Expected People
         composeTestRule.onNode(hasText("Expected People"))
             .performTextClearance()
 
@@ -86,7 +86,7 @@ class MemberSettingsE2ETest {
 
         Thread.sleep(500)
 
-        // 3️⃣ Meeting Time (click to open picker, then confirm date & time)
+        // Meeting Time (click to open picker, then confirm date & time)
         composeTestRule.onNodeWithText("Update Meeting Date & Time")
             .performClick()
         Thread.sleep(500)
@@ -97,7 +97,7 @@ class MemberSettingsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        // 1️⃣ AddressPicker: type and click first prediction
+        // AddressPicker: type and click first prediction
         composeTestRule.onNode(hasText("Address"))
             .performTextClearance()
 
@@ -117,7 +117,7 @@ class MemberSettingsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        // 2️⃣ TransitType
+        // TransitType
         composeTestRule.onNodeWithText("Preferred Mode of Transport")
             .performClick()
         composeTestRule.waitForIdle()
@@ -133,7 +133,7 @@ class MemberSettingsE2ETest {
             composeTestRule.onAllNodesWithText("Meeting set to:", substring = true).fetchSemanticsNodes().isEmpty()
         }
 
-        // 5️⃣ Save
+        // Save
         composeTestRule.onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
@@ -141,7 +141,7 @@ class MemberSettingsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        // 6️⃣ Verify Snackbar
+        // Verify success
         composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
     }

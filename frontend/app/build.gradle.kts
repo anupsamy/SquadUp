@@ -163,13 +163,16 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0-alpha05")
+    androidTestImplementation(libs.androidx.ui.automator)
+    //androidTestImplementation(libs.androidx.material3)
     // Compose BOM - manages versions for all Compose dependencies
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    
+
     // Test rules and transitive dependencies:
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     // Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.2")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.57.2")
 }

@@ -198,9 +198,9 @@ fun MemberSettingsScreen(
                         )
 
                         // Only update midpoint if address or transit type actually changed
-//                        if (addressChanged || transitChanged) {
-//                            groupViewModel.updateMidpoint(joinCode = group.joinCode)
-//                        }
+                        if (addressChanged || transitChanged) {
+                            groupViewModel.updateMidpoint(joinCode = group.joinCode)
+                        }
                     },
                     enabled = address != null && transitType != null
                 ) {

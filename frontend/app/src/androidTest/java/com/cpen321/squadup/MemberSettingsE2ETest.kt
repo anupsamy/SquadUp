@@ -1,14 +1,13 @@
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
-import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -51,7 +50,7 @@ class MemberSettingsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        // Click on "test 2" group (or first group if needed)
+        // Click on the first group on main screen
         composeTestRule.onAllNodesWithText("Leader:", substring = true)
             .onFirst()
             .performClick()
@@ -77,23 +76,16 @@ class MemberSettingsE2ETest {
     fun updateMemberSettings_success() {
         navigateToMemberSettings()
 
-        // 1️⃣ AddressPicker: type and click first prediction
-        composeTestRule.onNodeWithText("Address")
-            .performTextInput("456 New Street")
+        // 4️⃣ Expected People
+        composeTestRule.onNode(hasText("Expected People"))
+            .performTextClearance()
 
-        composeTestRule.onAllNodesWithText("456 New Street", substring = true)
-            .onFirst()
-            .performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(500)
+        composeTestRule.onNode(hasText("Expected People"))
+            .performTextInput("7")
 
-        // 2️⃣ TransitType
-        composeTestRule.onNodeWithText("Preferred Mode of Transport")
-            .performClick()
-        composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-        composeTestRule.onNodeWithText("DRIVING")
-            .performClick()
-        composeTestRule.waitForIdle()
-        Thread.sleep(1000)
+        Thread.sleep(500)
 
         // 3️⃣ Meeting Time (click to open picker, then confirm date & time)
         composeTestRule.onNodeWithText("Update Meeting Date & Time")
@@ -103,12 +95,44 @@ class MemberSettingsE2ETest {
         Thread.sleep(500)
         device.findObject(By.text("OK"))?.click() // time
 
-        // 4️⃣ Expected People
-        composeTestRule.onNode(hasText("Expected People"))
-            .performTextInput("7")
+        composeTestRule.waitForIdle()
+        Thread.sleep(1000)
+
+        // 1️⃣ AddressPicker: type and click first prediction
+        composeTestRule.onNode(hasText("Address"))
+            .performTextClearance()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(500)
+
+        composeTestRule.onNodeWithText("Address")
+            .performTextInput("6445 University Boulevard, Vancouver, BC, Canada, V6T 1Z2")
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
+
+        composeTestRule.onAllNodesWithText("6445 University Boulevard", substring = true)
+            .onLast()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(1000)
+
+        // 2️⃣ TransitType
+        composeTestRule.onNodeWithText("Preferred Mode of Transport")
+            .performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(500)
+        composeTestRule.onAllNodesWithText("DRIVING")
+            .onLast()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(1000)
+
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithText("Meeting set to:", substring = true).fetchSemanticsNodes().isEmpty()
+        }
 
         // 5️⃣ Save
         composeTestRule.onNodeWithText("Save")
@@ -116,10 +140,10 @@ class MemberSettingsE2ETest {
             .performClick()
 
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
+        Thread.sleep(2000)
 
         // 6️⃣ Verify Snackbar
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 5000)
+        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
     }
 }

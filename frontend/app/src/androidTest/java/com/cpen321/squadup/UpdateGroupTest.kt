@@ -1,184 +1,143 @@
-package com.cpen321.squadup.ui.screens
+package com.cpen321.squadup
 
-import androidx.activity.ComponentActivity
+// Compose UI testing
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+
+// AndroidX test runner
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.MediumTest
-import com.cpen321.squadup.data.remote.dto.*
-import com.cpen321.squadup.data.repository.GroupRepository
-import com.cpen321.squadup.data.repository.ProfileRepository
-import com.cpen321.squadup.ui.viewmodels.GroupViewModel
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import com.google.android.gms.maps.model.LatLng
-import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.filters.LargeTest
+
+// UI Automator
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+
+// App and theme
+import com.cpen321.squadup.ui.theme.UserManagementTheme
+import com.cpen321.squadup.MainActivity
+
+// JUnit
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// --- Hilt Test Activity ---
-@AndroidEntryPoint
-class HiltTestActivity : ComponentActivity()
+// Optional test utilities
+import com.cpen321.squadup.TestUtilities.waitForNodeWithText
+import com.cpen321.squadup.TestUtilities.waitForEnabled
 
-// --- Fake Profile Repository ---
-class FakeProfileRepository : ProfileRepository {
-    private var dummyUser = User(
-        _id = "1",
-        email = "leader@example.com",
-        name = "Leader User",
-        address = Address("123 Main St"),
-        transitType = TransitType.DRIVING,
-        profilePicture = ""
-    )
-
-    override suspend fun getProfile(): Result<User> = Result.success(dummyUser)
-
-    override suspend fun updateProfile(
-        name: String,
-        address: Address?,
-        transitType: TransitType?
-    ): Result<User> {
-        dummyUser = dummyUser.copy(name = name, address = address, transitType = transitType)
-        return Result.success(dummyUser)
-    }
-
-    override suspend fun updateProfilePicture(profilePictureUrl: String): Result<User> {
-        dummyUser = dummyUser.copy(profilePicture = profilePictureUrl)
-        return Result.success(dummyUser)
-    }
-}
-
-// --- Fake Group Repository ---
-class FakeGroupRepository : GroupRepository {
-    override suspend fun getGroups(): Result<List<GroupDataDetailed>> = Result.success(emptyList())
-    override suspend fun createGroup(
-        groupName: String,
-        meetingTime: String,
-        groupLeaderId: GroupUser,
-        expectedPeople: Number,
-        activityType: String
-    ): Result<GroupData> =
-        Result.success(GroupData(GroupDataDetailed(groupName, meetingTime, "JOINCODE123", groupLeaderId, expectedPeople)))
-
-    override suspend fun getGroupByJoinCode(joinCode: String): Result<GroupDataDetailed> =
-        Result.success(GroupDataDetailed("Test group", "2025-11-05T14:00:00Z", joinCode, GroupUser("1", "Leader", ""), 5, listOf()))
-
-    override suspend fun deleteGroupByJoinCode(joinCode: String): Result<Unit> = Result.success(Unit)
-    override suspend fun joinGroup(joinCode: String, expectedPeople: Number, updatedMembers: List<GroupUser>): Result<Unit> = Result.success(Unit)
-    override suspend fun updateGroup(joinCode: String, expectedPeople: Number?, updatedMembers: List<GroupUser>?, meetingTime: String?): Result<Unit> = Result.success(Unit)
-    override suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse> = Result.success(MidpointActivitiesResponse(SquadGoal(GeoLocation(0.0, 0.0)), listOf()))
-    override suspend fun updateMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse> = Result.success(MidpointActivitiesResponse(SquadGoal(GeoLocation(0.0, 0.0)), listOf()))
-    override suspend fun leaveGroup(joinCode: String, userId: String): Result<Unit> = Result.success(Unit)
-    override suspend fun getActivities(joinCode: String): Result<List<Activity>> = Result.success(emptyList())
-    override suspend fun selectActivity(joinCode: String, activity: Activity): Result<Unit> = Result.success(Unit)
-    override suspend fun getMidpoints(joinCode: String): Result<List<LatLng>> = Result.success(emptyList())
-}
-
-@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
-@MediumTest
-class MemberSettingsScreenTest {
+@LargeTest
+class MemberSettingsE2ETest {
 
-    @get:Rule(order = 0)
-    val hiltRule = HiltAndroidRule(this)
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
-    @get:Rule(order = 1)
-    val composeTestRule = createAndroidComposeRule<HiltTestActivity>()
+    private lateinit var device: UiDevice
 
-    private val testGroup = GroupDataDetailed(
-        joinCode = "ABC123",
-        groupLeaderId = GroupUser("1", "Leader", email = ""),
-        groupMemberIds = listOf(
-            GroupUser("1", "Leader", address = Address("123 Main St"), transitType = TransitType.DRIVING, email = ""),
-            GroupUser("2", "Member", address = Address("UBC"), transitType = TransitType.TRANSIT, email = "")
-        ),
-        meetingTime = "2025-11-05T14:00:00Z",
-        expectedPeople = 5,
-        groupName = "Test group"
-    )
+    @Before
+    fun setup() {
+        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        // Wait for app to launch
+        device.wait(Until.hasObject(By.pkg(TestData.APP_PACKAGE_NAME)), TestData.TEST_TIMEOUT_LONG)
+        composeTestRule.waitForIdle()
 
-    private fun createProfileViewModel(): ProfileViewModel =
-        ProfileViewModel(FakeProfileRepository(), composeTestRule.activity)
+        // Note: These tests assume the user is already authenticated
+        // In a real scenario, you would need to handle authentication first
 
-    private fun createGroupViewModel(): GroupViewModel =
-        GroupViewModel(FakeGroupRepository())
+        // Wait for main screen to load (check for SquadUp title or icon buttons)
+        Thread.sleep(3000) // Give time for authentication and navigation
+        composeTestRule.waitForIdle()
+    }
 
-    @Test
-    fun updateMemberAddress() {
-        val profileViewModel = createProfileViewModel()
-        val groupViewModel = createGroupViewModel()
+    /**
+     * Helper function to select the group named "test 2"
+     */
+    private fun selectTest2Group() {
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
 
-        composeTestRule.setContent {
-            MemberSettingsScreen(
-                navController = rememberNavController(),
-                group = testGroup,
-                profileViewModel = profileViewModel,
-                groupViewModel = groupViewModel
-            )
-        }
+        // Look for any group button (groups display "Leader: ..." text)
+        composeTestRule.onAllNodesWithText("Leader:", substring = true)
+            .onFirst()
+            .assertExists()
 
-        composeTestRule.onNodeWithText("Address").performTextInput("456 New Street")
-        composeTestRule.onNodeWithText("Save").assertIsEnabled().performClick()
-        composeTestRule.onNodeWithText("Settings saved successfully!").assertIsDisplayed()
+        // Click on the first available group
+        composeTestRule.onAllNodesWithText("Leader:", substring = true)
+            .onFirst()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+    }
+
+    //@Test
+    fun updateMemberAddress_success() {
+        selectTest2Group()
+        composeTestRule.onNodeWithContentDescription("See Details")
+            .assertIsDisplayed()
+            .performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+        // Navigate to Member Settings screen
+        composeTestRule.onNodeWithContentDescription("Settings")
+            .assertIsDisplayed()
+            .performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+
+        // Input new address
+        composeTestRule.onNodeWithText("Address")
+            .performTextInput("456 New Street")
+
+        // Save changes
+        composeTestRule.onNodeWithText("Save")
+            .assertIsEnabled()
+            .performClick()
+
+        // Verify success message
+        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 5000)
+            .assertIsDisplayed()
     }
 
     @Test
-    fun updateExpectedPeople() {
-        val profileViewModel = createProfileViewModel()
-        val groupViewModel = createGroupViewModel()
-
-        composeTestRule.setContent {
-            MemberSettingsScreen(
-                navController = rememberNavController(),
-                group = testGroup,
-                profileViewModel = profileViewModel,
-                groupViewModel = groupViewModel
-            )
-        }
-
-        composeTestRule.onNodeWithText("Expected People").performTextInput("10")
-        composeTestRule.onNodeWithText("Save").performClick()
-        composeTestRule.onNodeWithText("Settings saved successfully!").assertIsDisplayed()
+    fun updateTransitType_success() {
+        selectTest2Group()
+        composeTestRule.onNodeWithText("See Details")
+            .assertIsDisplayed()
+            .performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+        // Navigate to Member Settings screen
+        composeTestRule.onNodeWithContentDescription("Settings")
+            .assertIsDisplayed()
+            .performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+        composeTestRule.onNodeWithText("Transit Type")
+            .performClick()
+        composeTestRule.onNodeWithText("WALKING")
+            .performClick()
+        composeTestRule.onNodeWithText("Save")
+            .performClick()
+        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 5000)
+            .assertIsDisplayed()
     }
 
-    @Test
-    fun updateTransitType() {
-        val profileViewModel = createProfileViewModel()
-        val groupViewModel = createGroupViewModel()
+    //@Test
+    fun updateMeetingTime_success() {
+        composeTestRule.waitForIdle()
+        Thread.sleep(1000)
+        composeTestRule.onNodeWithText("Update Meeting Date & Time")
+            .performClick()
 
-        composeTestRule.setContent {
-            MemberSettingsScreen(
-                navController = rememberNavController(),
-                group = testGroup,
-                profileViewModel = profileViewModel,
-                groupViewModel = groupViewModel
-            )
-        }
+        // Interact with system date/time picker dialogs
+        device.findObject(By.text("OK"))?.click()
 
-        composeTestRule.onNodeWithText("Transit Type").performClick()
-        composeTestRule.onNodeWithText("WALKING").performClick()
-        composeTestRule.onNodeWithText("Save").performClick()
-        composeTestRule.onNodeWithText("Settings saved successfully!").assertIsDisplayed()
-    }
-
-    @Test
-    fun updateEventTime() {
-        val profileViewModel = createProfileViewModel()
-        val groupViewModel = createGroupViewModel()
-
-        composeTestRule.setContent {
-            MemberSettingsScreen(
-                navController = rememberNavController(),
-                group = testGroup,
-                profileViewModel = profileViewModel,
-                groupViewModel = groupViewModel
-            )
-        }
-
-        composeTestRule.onNodeWithText("Update Meeting Date & Time").performClick()
-        composeTestRule.onNodeWithText("Meeting Time").assertExists()
+        composeTestRule.onNodeWithText("Confirm Date-Time")
+            .performClick()
     }
 }

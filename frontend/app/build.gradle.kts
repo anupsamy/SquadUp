@@ -173,6 +173,4 @@ dependencies {
     // Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.2")
-    kspAndroidTest("com.google.dagger:hilt-compiler:2.57.2")
 }

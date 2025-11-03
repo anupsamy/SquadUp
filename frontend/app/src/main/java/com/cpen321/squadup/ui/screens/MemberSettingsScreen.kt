@@ -31,6 +31,7 @@ import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import java.util.*
 
 
@@ -51,13 +52,14 @@ fun MemberSettingsScreen(
         group.groupMemberIds?.find { it.id == currentUserId }
     }
 
-    // 2. Initialize the form state with the data from the group, not the general profile.
     var address by remember { mutableStateOf(existingMemberInfo?.address) }
     var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
-
-    // Leader-only fields
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
     var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
+
+    // Snackbar state
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -83,18 +85,19 @@ fun MemberSettingsScreen(
             NavigationBar {
                 NavigationBarItem(
                     selected = false,
-                    onClick = {navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}")},
+                    onClick = { navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}") },
                     icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Squads") },
                     label = { Text("Squads") }
                 )
                 NavigationBarItem(
                     selected = true,
-                    onClick = {  },
+                    onClick = { },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("Settings") }
                 )
             }
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, // Add this
         content = { paddingValues ->
             Column(
                 modifier = Modifier
@@ -117,12 +120,8 @@ fun MemberSettingsScreen(
                     onTypeSelected = { transitType = it }
                 )
 
-                // Leader-only: allow updating meeting time and expected people
                 if (group.groupLeaderId?.id == currentUserId) {
-                    val context = LocalContext.current
                     val calendar = Calendar.getInstance()
-
-                    // Display-only field for meeting time
                     OutlinedTextField(
                         value = meetingTime,
                         onValueChange = {},
@@ -131,22 +130,20 @@ fun MemberSettingsScreen(
                         readOnly = true
                     )
 
-                    // Button to open time picker
                     Button(
                         onClick = {
-                            // Step 1: Pick Date
                             DatePickerDialog(
                                 context,
                                 { _, year, month, dayOfMonth ->
                                     val selectedDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
-
-                                    // Step 2: Then pick Time
                                     TimePickerDialog(
                                         context,
                                         { _, hourOfDay, minute ->
                                             val selectedTime = String.format("%02d:%02d", hourOfDay, minute)
                                             meetingTime = "${selectedDate}T${selectedTime}:00Z"
-                                            Toast.makeText(context, "Meeting set to: $meetingTime", Toast.LENGTH_SHORT).show()
+                                            coroutineScope.launch {
+                                                snackbarHostState.showSnackbar("Meeting set to: $meetingTime")
+                                            }
                                         },
                                         calendar.get(Calendar.HOUR_OF_DAY),
                                         calendar.get(Calendar.MINUTE),
@@ -160,7 +157,7 @@ fun MemberSettingsScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text( text = "Update Meeting Date & Time" )
+                        Text(text = "Update Meeting Date & Time")
                     }
 
                     OutlinedTextField(
@@ -184,8 +181,16 @@ fun MemberSettingsScreen(
                             updatedMembers = updatedMembers,
                             meetingTime = meetingTime,
                             expectedPeople = expectedPeople.toIntOrNull() ?: 0,
-                            onSuccess = { Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show() },
-                            onError = { Toast.makeText(context, "Error saving!", Toast.LENGTH_SHORT).show()  }
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Settings saved successfully!")
+                                }
+                            },
+                            onError = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Error saving!")
+                                }
+                            }
                         )
 
                         groupViewModel.updateMidpoint(joinCode = group.joinCode)

@@ -22,6 +22,7 @@ import com.cpen321.squadup.TestData
 import com.cpen321.squadup.TestUtilities.waitForNodeWithText
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
@@ -73,7 +74,7 @@ class MemberSettingsE2ETest {
         Thread.sleep(2000)
     }
 
-    //@Test
+    @Test
     fun updateMemberSettings_success() {
         navigateToMemberSettings()
 

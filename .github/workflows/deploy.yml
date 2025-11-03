@@ -3,14 +3,34 @@ name: Deploy to EC2
 on:
   push:
     branches:
-       - notif-bugs
+       - robert-user-testing
        - prod
     paths:
       - 'backend/**'
       - '.github/workflows/deploy.yml'
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test
   deploy: 
+    needs: test #if tests fail will not deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

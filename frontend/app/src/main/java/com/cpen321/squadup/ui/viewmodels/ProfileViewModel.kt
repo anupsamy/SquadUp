@@ -175,7 +175,7 @@ class ProfileViewModel @Inject constructor(
                         errorMessage = "Failed to update profile picture"
                     )
                 }
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 Log.e(TAG, "Failed to update profile picture", e)
                 _uiState.value = _uiState.value.copy(
                     isLoadingPhoto = false,

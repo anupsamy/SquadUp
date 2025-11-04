@@ -42,7 +42,11 @@ export class AuthService {
   }
 
   private generateAccessToken(user: IUser): string {
-    return jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is not set');
+    }
+    return jwt.sign({ id: user._id }, jwtSecret, {
       expiresIn: '19h',
     });
   }

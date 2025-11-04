@@ -28,6 +28,7 @@ import com.cpen321.squadup.ui.viewmodels.ChatViewModel
 import com.cpen321.squadup.ui.notifications.NotificationManager
 import com.cpen321.squadup.ui.notifications.GlobalNotificationOverlay
 import javax.inject.Inject
+import java.io.IOException
 
 
 
@@ -124,7 +125,7 @@ class MainActivity : ComponentActivity() {
         // Cleanly close the websocket when activity is destroyed
         try {
             wsManager.stop()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.w("WebSocket", "Error stopping websocket: ${e.message}")
         }
     }

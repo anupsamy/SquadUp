@@ -336,6 +336,10 @@ export class GroupModel {
             { new: true }
           );
 
+          if (!updatedGroup) {
+            throw new Error(`Failed to update group leadership for joinCode '${joinCode}'`);
+          }
+
           return {
             success: true,
             deleted: false,
@@ -357,6 +361,10 @@ export class GroupModel {
             { groupMemberIds: updatedMembers },
             { new: true }
           );
+
+          if (!updatedGroup) {
+            throw new Error(`Failed to remove user from group with joinCode '${joinCode}'`);
+          }
 
           return {
             success: true,

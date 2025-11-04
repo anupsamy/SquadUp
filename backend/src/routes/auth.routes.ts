@@ -11,14 +11,24 @@ router.post(
   '/signup',
   validateBody<AuthenticateUserRequest>(authenticateUserSchema),
   (req, res, next) => {
-    void authController.signUp(req, res, next);
+    authController.signUp(req, res, next).catch((error) => {
+      if (next) {
+        next(error);
+      }
+    });
   }
 );
 
 router.post(
   '/signin',
   validateBody(authenticateUserSchema),
-  authController.signIn
+  (req, res, next) => {
+    authController.signIn(req, res, next).catch((error) => {
+      if (next) {
+        next(error);
+      }
+    });
+  }
 );
 
 export default router;

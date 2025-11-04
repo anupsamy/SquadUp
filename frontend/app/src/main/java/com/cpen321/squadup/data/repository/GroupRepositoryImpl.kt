@@ -20,6 +20,7 @@ import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import java.io.IOException
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
@@ -43,7 +44,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch group by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }

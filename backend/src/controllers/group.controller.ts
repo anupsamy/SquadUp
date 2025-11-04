@@ -3,7 +3,7 @@ import crypto from 'crypto';
 
 import logger from '../utils/logger.util';
 import { groupModel } from '../group.model';
-import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity, GroupUser } from '../types/group.types';
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
@@ -51,10 +51,13 @@ export class GroupController {
       // console.error('GroupController getAllGroups:', groups);
       // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
       //   console.error('GroupController groups[4]:', groups[4]);
-      const sanitizedGroups:IGroup[] = groups.map(group => ({
-      ...group.toObject(),
-      groupMemberIds: group.groupMemberIds,
-      }));
+      const sanitizedGroups: IGroup[] = groups.map((group) => {
+        const groupObj = group.toObject() as unknown as IGroup;
+        return {
+          ...groupObj,
+          groupMemberIds: group.groupMemberIds,
+        } as IGroup;
+      });
       // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
       res.status(200).json({
@@ -90,9 +93,9 @@ export class GroupController {
         data: {
           group: {
             ...group.toObject(),
-            groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
+            groupMemberIds: group.groupMemberIds,
           },
-      }});
+        }});
     } catch (error) {
       logger.error('Failed to fetch group by joinCode:', error);
       next(error);
@@ -189,24 +192,36 @@ export class GroupController {
       // Send WebSocket notifications for new members
       const wsService = getWebSocketService();
       if (wsService) {
-        const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
-        const newMemberIds = (groupMemberIds || []).map(member => member.id);
+        const validatedGroupMemberIds: GroupUser[] = Array.isArray(groupMemberIds) ? groupMemberIds : [];
+        const currentMemberIds = currentGroup.groupMemberIds.map(member => {
+          const memberId: string = typeof member.id === 'string' ? member.id : '';
+          return memberId;
+        });
+        const newMemberIds = validatedGroupMemberIds.map(member => {
+          const memberId: string = typeof member.id === 'string' ? member.id : '';
+          return memberId;
+        });
 
         // Find new members (users who joined)
-        const joinedMembers = (groupMemberIds || []).filter(member =>
-          !currentMemberIds.includes(member.id)
-        );
+        const joinedMembers = validatedGroupMemberIds.filter(member => {
+          const memberId: string = typeof member.id === 'string' ? member.id : '';
+          return !currentMemberIds.includes(memberId);
+        });
 
         // Send notifications for each new member
         joinedMembers.forEach(member => {
+          const memberName: string = typeof member.name === 'string' ? member.name : '';
+          const memberId: string = typeof member.id === 'string' ? member.id : '';
           wsService.notifyGroupJoin(
             validatedJoinCode,
-            member.id,
-            member.name,
+            memberId,
+            memberName,
             updatedGroup.groupName
           );
           // FCM topic notification (clients subscribe to topic == joinCode)
-          void sendGroupJoinFCM(validatedJoinCode, member.name, updatedGroup.groupName, member.id);
+          sendGroupJoinFCM(validatedJoinCode, memberName, updatedGroup.groupName, memberId).catch((error) => {
+            logger.error('Failed to send group join FCM notification:', error);
+          });
         });
       }
 
@@ -397,12 +412,6 @@ async updateMidpointByJoinCode(
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
-
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng
@@ -668,7 +677,9 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
           currentGroup.groupName
         );
         // FCM topic notification (clients subscribe to topic == joinCode)
-        void sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id);
+        sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id).catch((error) => {
+          logger.error('Failed to send group leave FCM notification:', error);
+        });
       }
 
       if (result.deleted) {
@@ -713,7 +724,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
   }
 
   // Test endpoint for WebSocket notifications
-  async testWebSocketNotification(
+  testWebSocketNotification(
     req: Request<{joinCode: string}>,
     res: Response,
     next: NextFunction) {

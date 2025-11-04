@@ -1,6 +1,5 @@
 import { Client } from "@googlemaps/google-maps-services-js";
 import type { LocationInfo, GeoLocation } from "../types/location.types";
-import { format } from "path";
 import { Activity } from "../types/group.types";
 
 export class LocationService {
@@ -143,7 +142,9 @@ async getActivityList(
 
     for (let j = 0; j < geoLocation.length; j++) {
       //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
-      const weight = travelTimes[j];
+      const rawWeight = travelTimes[j];
+      // Validate weight to prevent object injection: ensure it's a finite number and non-negative
+      const weight = typeof rawWeight === 'number' && isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       totalWeight += weight;
       newLat += geoLocation[j].lat * weight;
       newLng += geoLocation[j].lng * weight;

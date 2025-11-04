@@ -17,28 +17,32 @@ export class MediaService {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
-      return Promise.reject(new Error(`Failed to save profile picture: ${error}`));
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return Promise.reject(new Error(`Failed to save profile picture: ${errorMessage}`));
     }
   }
 
-  static async deleteImage(url: string): Promise<void> {
+  static deleteImage(url: string): Promise<void> {
     try {
       const filePath = path.join(process.cwd(),IMAGES_DIR, url);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
+      return Promise.resolve();
     } catch (error) {
       console.error('Failed to delete old profile picture:', error);
+      return Promise.resolve();
     }
   }
 
   static async deleteAllUserImages(userId: string): Promise<void> {
     try {
-      if (!fs.existsSync(IMAGES_DIR)) {
+      const imagesDir = path.join(process.cwd(), IMAGES_DIR);
+      if (!fs.existsSync(imagesDir)) {
         return;
       }
 
-      const files = fs.readdirSync(IMAGES_DIR);
+      const files = fs.readdirSync(imagesDir);
       const userFiles = files.filter(file => file.startsWith(userId + '-'));
 
       await Promise.all(userFiles.map(file => this.deleteImage(file)));

@@ -36,7 +36,11 @@ router.post( //have seperate endpoint for updating?
     '/create',
     validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
     (req, res, next) => {
-      void groupController.createGroup(req, res, next);
+      groupController.createGroup(req, res, next).catch((error) => {
+        if (next) {
+          next(error);
+        }
+      });
     }
 );
 
@@ -51,13 +55,19 @@ router.post( //have seperate endpoint for updating?
 router.post(
     '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
-    groupController.updateGroupByJoinCode.bind(groupController)
+    (req, res, next) => {
+      void groupController.updateGroupByJoinCode(req, res, next);
+    }
 );
 
 router.delete(
     '/delete/:joinCode', // Define the route parameter
     (req, res, next) => {
-      void groupController.deleteGroupByJoinCode(req, res, next);
+      groupController.deleteGroupByJoinCode(req, res, next).catch((error) => {
+        if (next) {
+          next(error);
+        }
+      });
     }
 );
 

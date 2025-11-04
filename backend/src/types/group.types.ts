@@ -125,22 +125,6 @@ export const activityZodSchema = z.object({
   isOpenNow: z.boolean(),
 });
 
-//Activity model
-
-export interface Activity {
-  name: string;
-  placeId: string;
-  address: string;
-  rating: number;
-  userRatingsTotal: number;
-  priceLevel: number;
-  type: string;
-  latitude: number;
-  longitude: number;
-  businessStatus: string;
-  isOpenNow: boolean;
-}
-
 // Request types
 // ------------------------------------------------------------
 export interface GetGroupResponse {

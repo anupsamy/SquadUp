@@ -41,6 +41,8 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
     app.get('/group/:joinCode',(req, res, next) => groupController.getGroupByJoinCode(req, res, next));
     app.post('/group/join', (req, res, next) => groupController.joinGroupByJoinCode(req, res, next));
     app.post('/group/create', (req, res, next) => groupController.createGroup(req, res, next));
+    app.post('/group/update', (req, res, next) => groupController.updateGroupByJoinCode(req, res, next));
+    app.post('/group/leave/:joinCode', (req, res, next) => groupController.leaveGroup(req, res, next));
     app.delete('/group/delete/:joinCode', (req, res, next) => groupController.deleteGroupByJoinCode(req, res, next));
     app.get('/group/:joinCode/midpoint',(req, res, next) => groupController.getMidpointByJoinCode(req, res, next));
     app.post('/group/:joinCode/midpoint/update', (req, res, next) => groupController.updateMidpointByJoinCode(req, res, next));
@@ -387,6 +389,60 @@ describe('POST /group/:joinCode/midpoint/update', () => {
     const res = await request(app).post(`/group/${exampleJoinCode}/midpoint/update`);
 
     expect(res.status).toBe(500);
+  });
+});
+
+describe('POST /group/update', () => {
+  it('should return 500 when updateGroupByJoinCode throws an Error', async () => {
+    const exampleJoinCode = 'test-join-code';
+    const updateData = {
+      joinCode: exampleJoinCode,
+      expectedPeople: 7,
+      groupMemberIds: [{ id: 'user-id', name: 'User', email: 'user@example.com' }],
+      meetingTime: "2026-11-02T12:30:00Z"
+    };
+
+    const errorMessage = 'Database connection failed';
+    jest.spyOn(groupModel, 'updateGroupByJoinCode').mockRejectedValueOnce(new Error(errorMessage));
+
+    const res = await request(app).post('/group/update').send(updateData);
+
+    expect(res.status).toBe(500);
+    expect(res.body).toHaveProperty('message', errorMessage);
+  });
+});
+
+describe('POST /group/leave/:joinCode', () => {
+  it('should return 500 when leaveGroup throws an Error', async () => {
+    const exampleMeetingTime = "2026-11-02T12:30:00Z";
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: "leader-id",
+      name: "Leader",
+      email: "leader@example.com"
+    };
+
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 2,
+      groupMemberIds: [exampleGroupLeader],
+      meetingTime: exampleMeetingTime,
+      activityType: 'CAFE',
+    });
+
+    const errorMessage = 'Database error occurred';
+    jest.spyOn(groupModel, 'leaveGroup').mockRejectedValueOnce(new Error(errorMessage));
+
+    const leaveData = {
+      userId: exampleGroupLeader.id
+    };
+
+    const res = await request(app).post(`/group/leave/${exampleJoinCode}`).send(leaveData);
+
+    expect(res.status).toBe(500);
+    expect(res.body).toHaveProperty('message', errorMessage);
   });
 });
 

@@ -166,13 +166,14 @@ export class GroupController {
     } catch (error) {
       logger.error('Failed to update group info:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to update group info';
 
-      next(error);
+      return res.status(500).json({ message });
     }
   }
 
@@ -200,13 +201,14 @@ export class GroupController {
     } catch (error) {
       logger.error('Failed to update group info:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to update group info';
 
-      next(error);
+      return res.status(500).json({ message });
     }
   }
 
@@ -227,13 +229,15 @@ export class GroupController {
     } catch (error) {
       logger.error('Failed to delete group:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to delete group',
-        });
-      }
 
-      next(error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to delete group';
+
+      return res.status(500).json({ message });
     }
   }
 
@@ -619,13 +623,14 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     } catch (error) {
       logger.error('Failed to leave group:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to leave group',
-        });
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to leave group';
 
-      next(error);
+      return res.status(500).json({ message });
     }
   }
 

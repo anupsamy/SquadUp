@@ -809,6 +809,41 @@ describe('Unmocked: Group Controller', () => {
     expect(res.body.data.midpoint.location.lat).toBeDefined();
     expect(res.body.data.midpoint.location.lng).toBeDefined();
   });
+
+  it('should calculate midpoint with members that have address and transitType', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: "leader-id",
+      name: "Leader",
+      email: "leader@example.com",
+      address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
+      transitType: 'transit' as const,
+    };
+    const exampleMember = {
+      id: "member-id",
+      name: "Member",
+      email: "member@example.com",
+      address: { formatted: 'Address 2', lat: 49.29, lng: -123.13 },
+      transitType: 'driving' as const,
+    };
+
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 2,
+      groupMemberIds: [exampleGroupLeader, exampleMember],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    const res = await request(app).get(`/group/${exampleJoinCode}/midpoint`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.midpoint.location).toBeDefined();
+    expect(res.body.data.midpoint.location.lat).toBeDefined();
+    expect(res.body.data.midpoint.location.lng).toBeDefined();
+  });
 });
 
 describe('POST /group/:joinCode/midpoint/update', () => {
@@ -873,6 +908,58 @@ describe('POST /group/:joinCode/midpoint/update', () => {
     expect(res.status).toBe(500);
   });
 
+  it('should update midpoint with members that have address and transitType', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: "leader-id",
+      name: "Leader",
+      email: "leader@example.com",
+      address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
+      transitType: 'transit' as const,
+    };
+    const exampleMember = {
+      id: "member-id",
+      name: "Member",
+      email: "member@example.com",
+      address: { formatted: 'Address 2', lat: 49.29, lng: -123.13 },
+      transitType: 'driving' as const,
+    };
+
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 2,
+      groupMemberIds: [exampleGroupLeader, exampleMember],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    const res = await request(app).post(`/group/${exampleJoinCode}/midpoint/update`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.midpoint.location).toBeDefined();
+    expect(res.body.data.midpoint.location.lat).toBeDefined();
+    expect(res.body.data.midpoint.location.lng).toBeDefined();
+  });
+
+});
+
+describe('POST /group/update', () => {
+  it('should return 404 when group does not exist', async () => {
+    const nonexistentJoinCode = 'nonexistent123';
+    const updateData = {
+      joinCode: nonexistentJoinCode,
+      expectedPeople: 5,
+      groupMemberIds: [{ id: 'user-id', name: 'User', email: 'user@example.com' }],
+      meetingTime: "2026-11-02T12:30:00Z"
+    };
+
+    const res = await request(app).post('/group/update').send(updateData);
+
+    expect(res.status).toBe(404);
+    expect(res.body).toHaveProperty('message', 'Group not found');
+  });
 });
 });
 

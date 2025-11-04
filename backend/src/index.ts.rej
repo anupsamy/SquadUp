@@ -1,8 +1,0 @@
---- backend/src/index.ts
-+++ backend/src/index.ts
-@@ -10 +10 @@
--import { initializeWebSocketService } from './services/websocket.service';
-+dotenv.config();
-@@ -31 +31 @@
--connectDB();
-+void connectDB();

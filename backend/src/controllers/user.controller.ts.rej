@@ -1,8 +1,0 @@
---- backend/src/controllers/user.controller.ts
-+++ backend/src/controllers/user.controller.ts
-@@ -27 +27 @@
--        name: name,
-+        name,
-@@ -28 +28 @@
--        transitType: transitType,
-+        transitType,

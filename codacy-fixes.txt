@@ -1,90 +1,180 @@
-diff --git a/backend/src/controllers/news.controller.ts b/backend/src/controllers/news.controller.ts
---- a/backend/src/controllers/news.controller.ts
-+++ b/backend/src/controllers/news.controller.ts
-@@ -30,1 +30,1 @@
--          const articles = response.data.articles.map((a: any) => ({
-+          const articles = response.data.articles.map((a: unknown) => ({
-diff --git a/backend/src/controllers/group.controller.ts b/backend/src/controllers/group.controller.ts
---- a/backend/src/controllers/group.controller.ts
-+++ b/backend/src/controllers/group.controller.ts
-@@ -391,1 +391,1 @@
--              lat: lat,
-+              lat,
-@@ -392,1 +392,1 @@
--              lng: lng,
-+              lng,
-@@ -614,1 +614,1 @@
--      const leavingUser = currentGroup.groupMemberIds?.find(member => member.id === userId) ??
-+      const leavingUser = currentGroup.groupMemberIds.find(member => member.id === userId) ??
+diff --git a/backend/src/types/location.types.ts b/backend/src/types/location.types.ts
+--- a/backend/src/types/location.types.ts
++++ b/backend/src/types/location.types.ts
+@@ -11,1 +11,1 @@
+-    formatted?: String,
++    formatted?: string,
 diff --git a/backend/src/types/group.types.ts b/backend/src/types/group.types.ts
 --- a/backend/src/types/group.types.ts
 +++ b/backend/src/types/group.types.ts
-@@ -155,1 +155,1 @@
+@@ -102,1 +102,1 @@
 -};
 +}
-diff --git a/backend/src/types/media.types.ts b/backend/src/types/media.types.ts
---- a/backend/src/types/media.types.ts
-+++ b/backend/src/types/media.types.ts
-@@ -5,1 +5,1 @@
--};
-+}
+@@ -150,1 +150,1 @@
+-export type GetGroupResponse = {
++export interface GetGroupResponse {
+@@ -157,1 +157,1 @@
+-export type GetAllGroupsResponse = {
++export interface GetAllGroupsResponse {
+@@ -169,1 +169,1 @@
+-export type BasicGroupInfo = {
++export interface BasicGroupInfo {
+@@ -179,1 +179,1 @@
+-export type CreateGroupInfo = {
++export interface CreateGroupInfo {
+@@ -187,1 +187,1 @@
+-export type UpdateInfo = {
++export interface UpdateInfo {
+@@ -193,1 +193,1 @@
+-export type GroupUser = {
++export interface GroupUser {
 diff --git a/backend/src/index.ts b/backend/src/index.ts
 --- a/backend/src/index.ts
 +++ b/backend/src/index.ts
-@@ -4,1 +4,1 @@
+@@ -3,1 +3,1 @@
 -import express from 'express';
 +import express from 'express';
-@@ -5,1 +5,1 @@
+@@ -4,1 +4,1 @@
 -import { createServer } from 'http';
 +import { createServer } from 'http';
-@@ -7,1 +7,1 @@
+@@ -6,1 +6,1 @@
 -import { connectDB } from './database';
 +import { connectDB } from './database';
-@@ -8,1 +8,1 @@
+@@ -7,1 +7,1 @@
 -import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
 +import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
-@@ -9,1 +9,1 @@
+@@ -8,1 +8,1 @@
 -import router from './routes';
 +import router from './routes';
-@@ -10,1 +10,1 @@
+@@ -9,1 +9,1 @@
 -import path from 'path';
 +import path from 'path';
+@@ -10,1 +10,1 @@
+-import { initializeWebSocketService } from './services/websocket.service';
++dotenv.config();
+@@ -31,1 +31,1 @@
+-connectDB();
++void connectDB();
+diff --git a/backend/src/controllers/user.controller.ts b/backend/src/controllers/user.controller.ts
+--- a/backend/src/controllers/user.controller.ts
++++ b/backend/src/controllers/user.controller.ts
+@@ -27,1 +27,1 @@
+-        name: name,
++        name,
+@@ -28,1 +28,1 @@
+-        transitType: transitType,
++        transitType,
 diff --git a/backend/src/services/websocket.service.ts b/backend/src/services/websocket.service.ts
 --- a/backend/src/services/websocket.service.ts
 +++ b/backend/src/services/websocket.service.ts
-@@ -74,1 +74,1 @@
--  private handleMessage(ws: WebSocket, message: any) {
-+  private handleMessage(ws: WebSocket, message: unknown) {
+@@ -13,1 +13,1 @@
+-  data?: any;
++  data?: unknown;
+@@ -18,1 +18,1 @@
+-  private clients: Map<string, WebSocket> = new Map(); // userId -> WebSocket
++  private clients = new Map<string, WebSocket>(); // userId -> WebSocket
+@@ -19,1 +19,1 @@
+-  private groupSubscriptions: Map<string, Set<string>> = new Map(); // joinCode -> Set<userId>
++  private groupSubscriptions = new Map<string, Set<string>>(); // joinCode -> Set<userId>
+@@ -111,1 +111,1 @@
+-    this.groupSubscriptions.get(joinCode)!.add(userId);
++    this.groupSubscriptions.get(joinCode)?.add(userId);
+@@ -180,1 +180,1 @@
+-  public notifyGroupUpdate(joinCode: string, message: string, data?: any) {
++  public notifyGroupUpdate(joinCode: string, message: string, data?: unknown) {
+@@ -231,1 +231,1 @@
+-  private sendMessage(ws: WebSocket, message: any) {
++  private sendMessage(ws: WebSocket, message: unknown) {
 diff --git a/backend/src/services/fcm.service.ts b/backend/src/services/fcm.service.ts
 --- a/backend/src/services/fcm.service.ts
 +++ b/backend/src/services/fcm.service.ts
 @@ -14,1 +14,1 @@
--    const serviceAccount: any = JSON.parse(keyJson);
+-    const serviceAccount: unknown = JSON.parse(keyJson as string);
 +    const serviceAccount: unknown = JSON.parse(keyJson);
-@@ -20,1 +20,1 @@
--      credential: admin.credential.cert(serviceAccount as any),
-+      credential: admin.credential.cert(serviceAccount),
+@@ -29,1 +29,1 @@
+-export type FcmPayload = {
++export interface FcmPayload {
+@@ -116,1 +116,1 @@
+-      activityData: activityData || '', // Optional activity data as JSON string
++      activityData: activityData ?? '', // Optional activity data as JSON string
+diff --git a/backend/src/group.model.ts b/backend/src/group.model.ts
+--- a/backend/src/group.model.ts
++++ b/backend/src/group.model.ts
+@@ -345,1 +345,1 @@
+-            newLeader: newLeader
++            newLeader
+diff --git a/backend/src/controllers/group.controller.ts b/backend/src/controllers/group.controller.ts
+--- a/backend/src/controllers/group.controller.ts
++++ b/backend/src/controllers/group.controller.ts
+@@ -29,1 +29,1 @@
+-        groupLeaderId: groupLeaderId,
++        groupLeaderId,
+@@ -32,1 +32,1 @@
+-        meetingTime: meetingTime,  // Default to current time for now,
++        meetingTime,  // Default to current time for now,
 @@ -33,1 +33,1 @@
--};
-+}
+-        activityType: activityType
++        activityType
+@@ -509,1 +509,1 @@
+-      const leaderId = updatedGroup.groupLeaderId?.id || '';
++      const leaderId = updatedGroup.groupLeaderId.id || '';
+@@ -510,1 +510,1 @@
+-      const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
++      const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
+@@ -519,1 +519,1 @@
+-          activity: activity,
++          activity,
+@@ -520,1 +520,1 @@
+-          leaderId: leaderId,
++          leaderId,
+@@ -521,1 +521,1 @@
+-          leaderName: leaderName
++          leaderName
+diff --git a/backend/src/services/location.service.ts b/backend/src/services/location.service.ts
+--- a/backend/src/services/location.service.ts
++++ b/backend/src/services/location.service.ts
+@@ -20,1 +20,1 @@
+-          mode: origin.transitType as any,
++          mode: origin.transitType as unknown,
+@@ -41,1 +41,1 @@
+-    let x = 0, y = 0, z = 0;
++    let x = 0; let y = 0; let z = 0;
+@@ -64,1 +64,1 @@
+-  type: string = "restaurant",
++  type = "restaurant",
+@@ -65,1 +65,1 @@
+-  radius: number = 1000,
++  radius = 1000,
+@@ -66,1 +66,1 @@
+-  maxResults: number = 10
++  maxResults = 10
+@@ -135,1 +135,1 @@
+-    let newLat = 0, newLng = 0;
++    let newLat = 0; let newLng = 0;
+diff --git a/backend/src/types/media.types.ts b/backend/src/types/media.types.ts
+--- a/backend/src/types/media.types.ts
++++ b/backend/src/types/media.types.ts
+@@ -3,1 +3,1 @@
+-export type UploadImageRequest = {
++export interface UploadImageRequest {
+diff --git a/backend/src/middleware/auth.middleware.ts b/backend/src/middleware/auth.middleware.ts
+--- a/backend/src/middleware/auth.middleware.ts
++++ b/backend/src/middleware/auth.middleware.ts
+@@ -27,1 +27,1 @@
+-    if (!decoded || !decoded.id) {
++    if (!decoded?.id) {
 diff --git a/backend/src/types/user.types.ts b/backend/src/types/user.types.ts
 --- a/backend/src/types/user.types.ts
 +++ b/backend/src/types/user.types.ts
-@@ -47,1 +47,1 @@
--};
-+}
+@@ -42,1 +42,1 @@
+-export type GetProfileResponse = {
++export interface GetProfileResponse {
+@@ -53,1 +53,1 @@
+-export type GoogleUserInfo = {
++export interface GoogleUserInfo {
 diff --git a/backend/src/types/hobby.types.ts b/backend/src/types/hobby.types.ts
 --- a/backend/src/types/hobby.types.ts
 +++ b/backend/src/types/hobby.types.ts
-@@ -8,1 +8,1 @@
--};
-+}
-diff --git a/backend/src/types/auth.types.ts b/backend/src/types/auth.types.ts
---- a/backend/src/types/auth.types.ts
-+++ b/backend/src/types/auth.types.ts
-@@ -16,1 +16,1 @@
--export type AuthenticateUserResponse = {
-+export interface AuthenticateUserResponse {
-@@ -23,1 +23,1 @@
--export type AuthResult = {
-+export interface AuthResult {
+@@ -3,1 +3,1 @@
+-export type GetAllHobbiesResponse = {
++export interface GetAllHobbiesResponse {

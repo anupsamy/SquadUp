@@ -17,7 +17,7 @@ export class LocationService {
           origins: [`${origin.lat},${origin.lng}`],
           destinations: [`${destination.lat},${destination.lng}`],
           key: process.env.MAPS_API_KEY!,
-          mode: origin.transitType as any,
+          mode: origin.transitType as unknown,
         },
       });
 
@@ -38,7 +38,7 @@ export class LocationService {
     const DEG_TO_RAD = Math.PI / 180;
     const RAD_TO_DEG = 180 / Math.PI;
 
-    let x = 0, y = 0, z = 0;
+    let x = 0; let y = 0; let z = 0;
     for (const { lat, lng } of coords) {
       const latRad = lat * DEG_TO_RAD;
       const lonRad = lng * DEG_TO_RAD;
@@ -61,9 +61,9 @@ export class LocationService {
   }
 async getActivityList(
   location: GeoLocation,
-  type: string = "restaurant",
-  radius: number = 1000,
-  maxResults: number = 10
+  type = "restaurant",
+  radius = 1000,
+  maxResults = 10
 ): Promise<Activity[]> {
   try {
     const response = await this.mapsClient.placesNearby({
@@ -132,7 +132,7 @@ async getActivityList(
     );
 
     let totalWeight = 0;
-    let newLat = 0, newLng = 0;
+    let newLat = 0; let newLng = 0;
 
     for (let j = 0; j < geoLocation.length; j++) {
       //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime

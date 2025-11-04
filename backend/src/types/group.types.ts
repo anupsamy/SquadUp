@@ -99,7 +99,7 @@ export interface Activity {
   longitude: number;
   businessStatus: string;
   isOpenNow: boolean;
-};
+}
 
 export const activitySchema = new Schema({
   name: { type: String, required: true },
@@ -147,26 +147,26 @@ export interface Activity {
 
 // Request types
 // ------------------------------------------------------------
-export type GetGroupResponse = {
+export interface GetGroupResponse {
   message: string;
   data?: {
     group: IGroup;
   };
 }
 
-export type GetAllGroupsResponse = {
+export interface GetAllGroupsResponse {
   message: string;
   data?: {
     groups: IGroup[];
   };
-};
+}
 
 export type CreateGroupRequest = z.infer<typeof createGroupSchema>;
 export type UpdateGroupRequest = z.infer<typeof updateGroupSchema>;
 
 // Generic types
 // ------------------------------------------------------------
-export type BasicGroupInfo = {
+export interface BasicGroupInfo {
     joinCode: string;
     groupName: string;
     meetingTime: string;
@@ -174,23 +174,23 @@ export type BasicGroupInfo = {
     expectedPeople: number;
     groupMemberIds?: GroupUser[];
     activityType: string
-};
+}
 
-export type CreateGroupInfo = {
+export interface CreateGroupInfo {
   groupName: string;
   meetingTime: string;
   groupLeaderId: GroupUser;
   expectedPeople: number;
   activityType: string;
-};
+}
 
-export type UpdateInfo = {
+export interface UpdateInfo {
     joinCode: string;
     expectedPeople: number;
     groupMemberIds: GroupUser[];
-};
+}
 
-export type GroupUser = {
+export interface GroupUser {
   id: string;
   name: string;
   email: string;

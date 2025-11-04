@@ -39,7 +39,7 @@ export const updateProfileSchema = z.object({
 
 // Request types
 // ------------------------------------------------------------
-export type GetProfileResponse = {
+export interface GetProfileResponse {
   message: string;
   data?: {
     user: IUser;
@@ -50,9 +50,9 @@ export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
 
 // Generic types
 // ------------------------------------------------------------
-export type GoogleUserInfo = {
+export interface GoogleUserInfo {
   googleId: string;
   email: string;
   name: string;
   profilePicture?: string;
-};
+}

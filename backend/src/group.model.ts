@@ -342,7 +342,7 @@ export class GroupModel {
           return {
             success: true,
             deleted: false,
-            newLeader: newLeader
+            newLeader
           };
         }
         // If the user is the leader and there are no other members, delete the group

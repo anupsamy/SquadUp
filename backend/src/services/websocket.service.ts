@@ -10,13 +10,13 @@ export interface WebSocketMessage {
   userName: string;
   message: string;
   timestamp: string;
-  data?: any;
+  data?: unknown;
 }
 
 export class WebSocketService {
   private wss: WebSocket.Server;
-  private clients: Map<string, WebSocket> = new Map(); // userId -> WebSocket
-  private groupSubscriptions: Map<string, Set<string>> = new Map(); // joinCode -> Set<userId>
+  private clients = new Map<string, WebSocket>(); // userId -> WebSocket
+  private groupSubscriptions = new Map<string, Set<string>>(); // joinCode -> Set<userId>
 
   constructor(server: Server) {
     console.log('🔧 Creating WebSocket server...');
@@ -108,7 +108,7 @@ export class WebSocketService {
     if (!this.groupSubscriptions.has(joinCode)) {
       this.groupSubscriptions.set(joinCode, new Set());
     }
-    this.groupSubscriptions.get(joinCode)!.add(userId);
+    this.groupSubscriptions.get(joinCode)?.add(userId);
 
     logger.info(`User ${userId} subscribed to group ${joinCode}`);
   }
@@ -177,7 +177,7 @@ export class WebSocketService {
     logger.info(`Notified group ${joinCode} about user ${userName} leaving`);
   }
 
-  public notifyGroupUpdate(joinCode: string, message: string, data?: any) {
+  public notifyGroupUpdate(joinCode: string, message: string, data?: unknown) {
     const wsMessage: WebSocketMessage = {
       type: 'group_update',
       groupId: '',
@@ -228,7 +228,7 @@ export class WebSocketService {
     logger.info(`Broadcast to group ${joinCode}: ${successCount} success, ${failureCount} failures`);
   }
 
-  private sendMessage(ws: WebSocket, message: any) {
+  private sendMessage(ws: WebSocket, message: unknown) {
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
     }

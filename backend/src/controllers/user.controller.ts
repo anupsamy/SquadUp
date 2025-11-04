@@ -24,8 +24,8 @@ export class UserController {
       const user = req.user!;
       const { name, transitType, address } = req.body;
       const updatedUser = await userModel.update(user._id, {
-        name: name,
-        transitType: transitType,
+        name,
+        transitType,
         address, 
       });
 

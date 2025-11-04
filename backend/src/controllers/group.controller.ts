@@ -26,11 +26,11 @@ export class GroupController {
       const newGroup = await groupModel.create({
         joinCode,
         groupName,
-        groupLeaderId: groupLeaderId,
+        groupLeaderId,
         expectedPeople,
         groupMemberIds: [groupLeaderId],
-        meetingTime: meetingTime,  // Default to current time for now,
-        activityType: activityType
+        meetingTime,  // Default to current time for now,
+        activityType
       });
       console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
@@ -506,8 +506,8 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     // Send notifications to group members
     const wsService = getWebSocketService();
     if (wsService && updatedGroup) {
-      const leaderId = updatedGroup.groupLeaderId?.id || '';
-      const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
+      const leaderId = updatedGroup.groupLeaderId.id || '';
+      const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
       const activityName = activity.name || 'an activity';
       
       // Send WebSocket notification
@@ -516,9 +516,9 @@ async selectActivity(req: Request, res: Response): Promise<void> {
         `${leaderName} selected "${activityName}" for the group`,
         {
           type: 'activity_selected',
-          activity: activity,
-          leaderId: leaderId,
-          leaderName: leaderName
+          activity,
+          leaderId,
+          leaderName
         }
       );
 

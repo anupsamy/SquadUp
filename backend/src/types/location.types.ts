@@ -8,7 +8,7 @@ export interface LocationInfo {
 }
 
 export interface GeoLocation {
-    formatted?: String,
+    formatted?: string,
     lat: number,
     lng: number,
     transitType?: TransitType

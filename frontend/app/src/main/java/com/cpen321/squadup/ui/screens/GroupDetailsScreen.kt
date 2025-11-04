@@ -164,7 +164,8 @@ fun GroupDetailsScreen(
                         )
                         Text(
                             text = group.meetingTime,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.testTag("groupMeetingTime")
                         )
                     }
                 },

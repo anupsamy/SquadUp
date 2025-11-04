@@ -28,6 +28,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.testTag
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.SnackbarHost
@@ -82,7 +83,8 @@ fun ActivityPicker(
                             priceLevel = activity.priceLevel,
                             type = activity.type,
                             isSelected = activity.placeId == selectedActivityId,
-                            onClick = { viewModel.selectActivity(activity.placeId) }
+                            onClick = { viewModel.selectActivity(activity.placeId)},
+                            modifier = Modifier.testTag("activityCard")
                         )
                     }
                 }

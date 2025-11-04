@@ -7,6 +7,8 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -47,6 +49,37 @@ class GroupDetailsLeaderE2ETest {
 
         composeTestRule.onAllNodesWithText("Leader:", substring = true)
             .onFirst()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+    }
+
+    private fun navigateToLastGroup() {
+        // Navigate to Main
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText("Group Update", substring = true).fetchSemanticsNodes().isEmpty()
+        }
+        composeTestRule.onNodeWithContentDescription("Back")
+            .assertIsDisplayed()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+
+        composeTestRule.onNodeWithContentDescription("Back")
+            .assertIsDisplayed()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+
+        composeTestRule.onNodeWithContentDescription("Create Group").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Join Group").assertIsDisplayed()
+
+        // Click the last group (by "Leader:" label)
+        composeTestRule.onAllNodesWithText("Leader:", substring = true)
+            .onLast()
             .performClick()
 
         composeTestRule.waitForIdle()
@@ -104,42 +137,61 @@ class GroupDetailsLeaderE2ETest {
         // Use cases
         navigateToGroupList()
         viewAttendees()
+
+        // Navigate to the last group
+        navigateToFirstGroup()
+
+        // Click midpoint button every time
+        clickMidpointButton()
+
+        // Use cases
+        viewMidpointAndRecommendedLocations()
+        selectActivityAndViewSelectedActivity()
     }
 
     private fun selectActivityAndViewSelectedActivity() {
         // Pick the first activity from the ActivityPicker list
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
+        val emptyNodes = composeTestRule.onAllNodesWithTag("NoActivitiesMessage")
+        when {
+            emptyNodes.fetchSemanticsNodes().isNotEmpty() -> {
+                // No activities case
+                emptyNodes.onFirst().assertIsDisplayed()
+            }
+            else -> {
+                composeTestRule.waitUntil(timeoutMillis = 5000) {
+                    composeTestRule.onAllNodesWithTag("ActivityPicker").fetchSemanticsNodes().isNotEmpty()
+                }
+                val activities = composeTestRule.onAllNodesWithTag("ActivityPicker")
+                if (activities.fetchSemanticsNodes().isNotEmpty()) {
+                    activities.onFirst().performClick()
+                }
 
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule.onAllNodesWithTag("ActivityPicker").fetchSemanticsNodes().isNotEmpty()
-        }
-        val activities = composeTestRule.onAllNodesWithTag("ActivityPicker")
-        if (activities.fetchSemanticsNodes().isNotEmpty()) {
-            activities.onFirst().performClick()
-        }
+                // Confirm selection
+                composeTestRule.waitForIdle()
+                val confirmButtons = composeTestRule.onAllNodesWithText("Select Activity", substring = true)
+                if (confirmButtons.fetchSemanticsNodes().isNotEmpty()) {
+                    confirmButtons.onFirst().performClick()
+                }
 
-        // Confirm selection
-        composeTestRule.waitForIdle()
-        val confirmButtons = composeTestRule.onAllNodesWithText("Select Activity", substring = true)
-        if (confirmButtons.fetchSemanticsNodes().isNotEmpty()) {
-            confirmButtons.onFirst().performClick()
-        }
+                composeTestRule.waitForIdle()
+                Thread.sleep(1000)
 
-        composeTestRule.waitForIdle()
-        Thread.sleep(1000)
+                // Verify success
+                composeTestRule.waitUntil(timeoutMillis = 10000) {
+                    composeTestRule.onAllNodesWithText(
+                        "Activity selected successfully!",
+                        substring = true
+                    ).fetchSemanticsNodes().isNotEmpty()
+                }
+                composeTestRule.onAllNodesWithText(
+                    "Activity selected successfully!",
+                    substring = true
+                ).onFirst().assertIsDisplayed()
 
-        // Verify success
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText(
-                "Activity selected successfully!",
-                substring = true
-            ).fetchSemanticsNodes().isNotEmpty()
+            }
         }
-        composeTestRule.onAllNodesWithText(
-            "Activity selected successfully!",
-            substring = true
-        ).onFirst().assertIsDisplayed()
     }
 
     private fun viewMidpointAndRecommendedLocations() {

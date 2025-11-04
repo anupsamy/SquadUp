@@ -80,9 +80,12 @@ class GroupDetailsMemberE2ETest {
     }
 
     private fun viewSelectedActivity() {
+        // Wait for the ActivityCard to appear
         composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule.onAllNodesWithTag("Selected Activity:").fetchSemanticsNodes().isNotEmpty()
+            composeTestRule.onAllNodesWithTag("SelectedActivityCard").fetchSemanticsNodes().isNotEmpty()
         }
-        composeTestRule.onNodeWithTag("Selected Activity:").assertIsDisplayed()
+
+        // Assert the selected activity card is displayed
+        composeTestRule.onNodeWithTag("SelectedActivityCard").assertIsDisplayed()
     }
 }

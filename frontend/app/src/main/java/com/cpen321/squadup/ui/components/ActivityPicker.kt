@@ -34,6 +34,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.launch
 @Composable
 fun ActivityPicker(
@@ -59,7 +60,8 @@ fun ActivityPicker(
             Text(
                 text = "No activities found within the radius. Try a group with a new activity type",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.testTag("NoActivitiesMessage")
             )
         }
     } else {

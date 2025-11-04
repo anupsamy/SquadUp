@@ -32,9 +32,9 @@ export class GroupController {
         meetingTime: meetingTime,  // Default to current time for now,
         activityType: activityType
       });
-      console.error('GroupController newGroup:', newGroup);
+      //console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
-        message: 'Group ${groupName} created successfully',
+        message: `Group ${groupName} created successfully`,
         data: {
           group: newGroup,
         }
@@ -78,7 +78,7 @@ export class GroupController {
 
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
-      console.error('GroupController getGroupByJoinCode:', group);
+      //console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({
@@ -107,39 +107,6 @@ export class GroupController {
       message: 'Group fetched successfully',
       data: { group },
     });
-  }
-
-  async updateGroup(
-    req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
-  ) {
-    try {
-      const group = req.group!;
-
-      const updatedGroup = await groupModel.update(group._id, req.body);
-
-      if (!updatedGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
-
-      res.status(200).json({
-        message: 'Group info updated successfully',
-        data: { group: updatedGroup },
-      });
-    } catch (error) {
-      logger.error('Failed to update group info:', error);
-
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
-
-      next(error);
-    }
   }
 
   async joinGroupByJoinCode(
@@ -382,7 +349,7 @@ async updateMidpointByJoinCode(
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
 
-      console.log("Activities List: " , activityList);
+      //console.log("Activities List: " , activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {

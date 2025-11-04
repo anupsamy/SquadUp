@@ -256,8 +256,8 @@ describe('Mocked: Auth Endpoints', () => {
       expect(mockNext).toHaveBeenCalledWith('Unknown error');
     });
 
-    // it('should fail to test pipeline', async () => {
-    //   expect(0).toEqual(1);
-    // });
+    it('should fail to test pipeline', async () => {
+      expect(0).toEqual(1);
+    });
   });
 });

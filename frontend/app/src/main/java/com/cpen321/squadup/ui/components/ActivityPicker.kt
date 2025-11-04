@@ -61,7 +61,6 @@ fun ActivityPicker(
                 text = "No activities found within the radius. Try a group with a new activity type",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.testTag("NoActivitiesMessage")
             )
         }
     } else {

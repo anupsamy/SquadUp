@@ -66,9 +66,20 @@ class GroupDetailsMemberE2ETest {
         Thread.sleep(2000)
     }
 
+    // Use case: View Attendees
     private fun viewAttendees() {
-        composeTestRule.onAllNodesWithContentDescription("Member", substring = true).fetchSemanticsNodes().isNotEmpty()
+        // Wait for members to appear
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithContentDescription("Member", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        // Assert that at least one member exists
+        composeTestRule.onAllNodesWithContentDescription("Member", substring = true)
+            .onFirst()
+            .assertIsDisplayed()
     }
+
 
     @Test
     fun groupDetailsScreen() {
@@ -79,6 +90,7 @@ class GroupDetailsMemberE2ETest {
         viewAttendees()
     }
 
+    // Use case: View Selected Activity
     private fun viewSelectedActivity() {
         // Wait for the ActivityCard to appear
         composeTestRule.waitUntil(timeoutMillis = 5000) {

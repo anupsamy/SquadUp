@@ -73,6 +73,7 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(2000)
     }
 
+    // Use case: Update Expected People
     private fun testExpectedPeople() {
         // Expected People
         // Failure scenario of invalid input
@@ -127,6 +128,7 @@ class MemberSettingsLeaderE2ETest {
         }
     }
 
+    // Use case: Update Meeting Time
     private fun testMeetingTime() {
         // Meeting Time (click to open picker, then confirm date & time)
         composeTestRule.onNodeWithText("Click to update Meeting Date & Time")
@@ -185,6 +187,7 @@ class MemberSettingsLeaderE2ETest {
 
     }
 
+    // Use case: Update Address
     private fun testAddress() {
         // AddressPicker: type and click first prediction
         composeTestRule.onNode(hasText("Address")).performTextClearance()
@@ -241,6 +244,7 @@ class MemberSettingsLeaderE2ETest {
         }
     }
 
+    // Use case: Update Transit Type
     private fun testTransitType() {
         // TransitType
         composeTestRule.waitForIdle()

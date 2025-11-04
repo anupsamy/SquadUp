@@ -73,6 +73,7 @@ class MemberSettingsMemberE2ETest {
         Thread.sleep(2000)
     }
 
+    // Use case: Update Address
     private fun testAddress() {
         // AddressPicker: type and click first prediction
         composeTestRule.onNode(hasText("Address")).performTextClearance()
@@ -129,6 +130,7 @@ class MemberSettingsMemberE2ETest {
         }
     }
 
+    // Use case: Update Transit Type
     private fun testTransitType() {
         // TransitType
         composeTestRule.waitForIdle()

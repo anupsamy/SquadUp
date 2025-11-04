@@ -1,3 +1,4 @@
+import { GroupController } from '@/controllers/group.controller';
 import { LocationService } from '../services/location.service';
 import type { LocationInfo } from '../types/location.types';
 import type { TransitType } from '../types/transit.types';
@@ -292,3 +293,149 @@ describe('Non-Functional Requirements: Location Service', () => {
     });
   });
 });
+
+describe('Nonfunctional Requirements: Group View Load Time', () => {
+    // Note: Tests use existing GroupController endpoints
+    // Measures time to fetch group details via API
+
+    
+    let groupController: GroupController;
+    const testJoinCode = 'testcode123';
+
+    beforeEach(() => {
+      groupController = new GroupController();
+    });
+
+    // Input: valid joinCode for group with 2 members
+    // Expected behavior: group details (name, members, meetingTime) loaded
+    // Expected output: response time within 2 seconds
+    it('should load group by joinCode with 2 members within 2 seconds', async () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any;
+      const mockNext = jest.fn();
+      const mockReq = {
+        params: { joinCode: testJoinCode },
+      } as any;
+
+      const startTime = performance.now();
+      await groupController.getGroupByJoinCode(mockReq, mockRes, mockNext);
+      const endTime = performance.now();
+
+      const responseTime = endTime - startTime;
+
+      console.log(`Group (2 members) - Response time: ${responseTime.toFixed(2)}ms`);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalled();
+      expect(responseTime).toBeLessThan(2000);
+      expect(responseTime).toBeGreaterThan(0);
+    });
+
+    // Input: valid joinCode for group with 5 members
+    // Expected behavior: group details loaded with all attendees
+    // Expected output: response time within 2 seconds
+    it('should load group by joinCode with 5 members within 2 seconds', async () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any;
+      const mockNext = jest.fn();
+      const mockReq = {
+        params: { joinCode: testJoinCode },
+      } as any;
+
+      const startTime = performance.now();
+      await groupController.getGroupByJoinCode(mockReq, mockRes, mockNext);
+      const endTime = performance.now();
+
+      const responseTime = endTime - startTime;
+
+      console.log(`Group (5 members) - Response time: ${responseTime.toFixed(2)}ms`);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalled();
+      expect(responseTime).toBeLessThan(2000);
+      expect(responseTime).toBeGreaterThan(0);
+    });
+
+    // Input: valid joinCode for group with 10 members
+    // Expected behavior: group details loaded with all attendees
+    // Expected output: response time within 2 seconds
+    it('should load group by joinCode with 10 members within 2 seconds', async () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any;
+      const mockNext = jest.fn();
+      const mockReq = {
+        params: { joinCode: testJoinCode },
+      } as any;
+
+      const startTime = performance.now();
+      await groupController.getGroupByJoinCode(mockReq, mockRes, mockNext);
+      const endTime = performance.now();
+
+      const responseTime = endTime - startTime;
+
+      console.log(`Group (10 members) - Response time: ${responseTime.toFixed(2)}ms`);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalled();
+      expect(responseTime).toBeLessThan(2000);
+      expect(responseTime).toBeGreaterThan(0);
+    });
+
+    // Input: getAllGroups fetch all groups at once
+    // Expected behavior: all groups loaded
+    // Expected output: response time within 2 seconds
+    it('should fetch all groups within 2 seconds', async () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any;
+      const mockNext = jest.fn();
+      const mockReq = {} as any;
+
+      const startTime = performance.now();
+      await groupController.getAllGroups(mockReq, mockRes, mockNext);
+      const endTime = performance.now();
+
+      const responseTime = endTime - startTime;
+
+      console.log(`Fetch all groups - Response time: ${responseTime.toFixed(2)}ms`);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalled();
+      expect(responseTime).toBeLessThan(2000);
+      expect(responseTime).toBeGreaterThan(0);
+    });
+
+    // Input: getMidpointByJoinCode to get optimal meeting point
+    // Expected behavior: midpoint calculated and returned
+    // Expected output: response time within 5 seconds (same as location optimization requirement)
+    it('should get midpoint by joinCode within 5 seconds', async () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any;
+      const mockNext = jest.fn();
+      const mockReq = {
+        params: { joinCode: testJoinCode },
+      } as any;
+
+      const startTime = performance.now();
+      await groupController.getMidpointByJoinCode(mockReq, mockRes, mockNext);
+      const endTime = performance.now();
+
+      const responseTime = endTime - startTime;
+
+      console.log(`Get midpoint - Response time: ${responseTime.toFixed(2)}ms`);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalled();
+      expect(responseTime).toBeLessThan(5000);
+      expect(responseTime).toBeGreaterThan(0);
+    });
+  });

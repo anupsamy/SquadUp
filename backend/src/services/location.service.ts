@@ -118,12 +118,19 @@ async getActivityList(
   epsilon = 1e-5
 ): Promise<GeoLocation> {
   let geoLocation: GeoLocation[] = locationInfo
-  .filter(loc => loc.address.lat && loc.address.lng)
-  .map(loc => ({
-        lat: loc.address.lat!,
-        lng: loc.address.lng!,
-        transitType: loc.transitType
-      }));
+  .filter(loc => loc.address.lat != null && loc.address.lng != null)
+  .map(loc => {
+        const lat = loc.address.lat;
+        const lng = loc.address.lng;
+        if (lat == null || lng == null) {
+          throw new Error('Address coordinates are required');
+        }
+        return {
+          lat,
+          lng,
+          transitType: loc.transitType
+        };
+      });
   let midpoint = this.getGeographicMidpoint(geoLocation);
 
   for (let i = 0; i < maxIterations; i++) {

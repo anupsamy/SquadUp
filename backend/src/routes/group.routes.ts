@@ -20,24 +20,32 @@ router.get(
 
 router.post(
     '/activities/select',
-    groupController.selectActivity.bind(groupController)
+    (req, res, next) => {
+      void groupController.selectActivity(req, res);
+    }
 );
 
 router.get(
     '/:joinCode', // Define the route parameter
-    groupController.getGroupByJoinCode.bind(groupController) // Bind the controller method
+    (req, res, next) => {
+      void groupController.getGroupByJoinCode(req, res, next);
+    }
 );
 // Route to create a group
 router.post( //have seperate endpoint for updating?
     '/create',
     validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
-    groupController.createGroup
+    (req, res, next) => {
+      void groupController.createGroup(req, res, next);
+    }
 );
 
 router.post( //have seperate endpoint for updating?
     '/join',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
-    groupController.joinGroupByJoinCode.bind(groupController)
+    (req, res, next) => {
+      void groupController.joinGroupByJoinCode(req, res, next);
+    }
 );
 
 router.post(
@@ -48,7 +56,9 @@ router.post(
 
 router.delete(
     '/delete/:joinCode', // Define the route parameter
-    groupController.deleteGroupByJoinCode.bind(groupController) // Bind the controller method
+    (req, res, next) => {
+      void groupController.deleteGroupByJoinCode(req, res, next);
+    }
 );
 
 router.get(
@@ -63,13 +73,17 @@ router.post(
 
 router.post(
     '/leave/:joinCode', // Define the route parameter
-    groupController.leaveGroup.bind(groupController) // Bind the controller method
+    (req, res, next) => {
+      void groupController.leaveGroup(req, res, next);
+    }
 );
 
 // Test endpoint for WebSocket notifications
 router.post(
     '/test-notification/:joinCode',
-    groupController.testWebSocketNotification.bind(groupController)
+    (req, res, next) => {
+      void groupController.testWebSocketNotification(req, res, next);
+    }
 );
 
 export default router;

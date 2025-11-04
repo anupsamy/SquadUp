@@ -20,6 +20,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 
 data class ProfileUiState(
@@ -206,7 +207,7 @@ class ProfileViewModel @Inject constructor(
                 return response.body()!!.data?.image.toString()
             } else {
                 val errorBody = response.errorBody()?.string()
-                throw Exception("Failed to upload profile picture: $errorBody")
+                throw IOException("Failed to upload profile picture: $errorBody")
             }
         } finally {
             setLoadingPhoto(false)

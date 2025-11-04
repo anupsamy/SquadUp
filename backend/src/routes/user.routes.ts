@@ -15,6 +15,8 @@ router.post(
   userController.updateProfile
 );
 
-router.delete('/profile', userController.deleteProfile);
+router.delete('/profile', (req, res, next) => {
+  void userController.deleteProfile(req, res, next);
+});
 
 export default router;

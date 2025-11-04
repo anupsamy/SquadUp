@@ -4,7 +4,7 @@ import path from 'path';
 import { IMAGES_DIR } from '../hobbies';
 
 export class MediaService {
-  static async saveImage(filePath: string, userId: string): Promise<string> {
+  static saveImage(filePath: string, userId: string): Promise<string> {
     try {
       const fileExtension = path.extname(filePath);
       const fileName = `${userId}-${Date.now()}${fileExtension}`;
@@ -12,12 +12,12 @@ export class MediaService {
 
       fs.renameSync(filePath, newPath);
 
-      return newPath.split(path.sep).join('/');
+      return Promise.resolve(newPath.split(path.sep).join('/'));
     } catch (error) {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
-      throw new Error(`Failed to save profile picture: ${error}`);
+      return Promise.reject(new Error(`Failed to save profile picture: ${error}`));
     }
   }
 

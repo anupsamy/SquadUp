@@ -5,6 +5,10 @@ import type { TransitType } from '../types/transit.types';
 
 jest.mock('@googlemaps/google-maps-services-js');
 
+   // Mocked: Google Places API to avoid quota exhaustion and rate limiting
+   // while maintaining test reliability. This is a controlled external dependency
+   // that we verify through error case testing below.
+
 const locationFixtures = {
   // GeoLocation fixtures for getGeographicMidpoint
   singlePoint: [

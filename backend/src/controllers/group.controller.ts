@@ -1,10 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
+import crypto from 'crypto';
 
-import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
-import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
-import { userModel } from '../user.model';
 import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity } from '../types/group.types';
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
@@ -19,8 +17,9 @@ export class GroupController {
   ) {
     try {
       const {groupName, meetingTime, groupLeaderId, expectedPeople, activityType} = req.body;
-      console.log(activityType);
-      const joinCode = Math.random().toString(36).slice(2, 8);
+      logger.debug('Creating group with activity type:', activityType);
+      const randomBytes = crypto.randomBytes(4);
+      const joinCode = randomBytes.readUInt32BE(0).toString(36).slice(0, 6).padStart(6, '0');
 
       // Use the GroupModel to create the group
       const newGroup = await groupModel.create({
@@ -54,7 +53,7 @@ export class GroupController {
       //   console.error('GroupController groups[4]:', groups[4]);
       const sanitizedGroups:IGroup[] = groups.map(group => ({
       ...group.toObject(),
-      groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
+      groupMemberIds: group.groupMemberIds,
       }));
       // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
@@ -102,7 +101,12 @@ export class GroupController {
 
 
   getGroup(req: Request, res: Response<GetGroupResponse>) {
-    const group = req.group!;
+    const group = req.group;
+    if (!group) {
+      return res.status(404).json({
+        message: 'Group not found',
+      });
+    }
     res.status(200).json({
       message: 'Group fetched successfully',
       data: { group },
@@ -115,9 +119,14 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const group = req.group!;
+      const group = req.group;
+      if (!group) {
+        return res.status(404).json({
+          message: 'Group not found',
+        });
+      }
 
-      const updatedGroup = await groupModel.update(group._id, req.body);
+      const updatedGroup = await groupModel.update(group._id, req.body as Partial<IGroup>);
 
       if (!updatedGroup) {
         return res.status(404).json({
@@ -150,16 +159,25 @@ export class GroupController {
     try {
       const {joinCode, expectedPeople, groupMemberIds} = req.body;
 
+      if (!joinCode || typeof joinCode !== 'string') {
+        return res.status(400).json({
+          message: 'Join code is required and must be a string',
+        });
+      }
+
+      // TypeScript now knows joinCode is a string
+      const validatedJoinCode: string = joinCode;
+
       // Get the current group to compare member changes
-      const currentGroup = await groupModel.findByJoinCode(joinCode);
+      const currentGroup = await groupModel.findByJoinCode(validatedJoinCode);
       if (!currentGroup) {
         return res.status(404).json({
           message: 'Group not found',
         });
       }
 
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
-        {joinCode, expectedPeople,
+      const updatedGroup = await groupModel.updateGroupByJoinCode(validatedJoinCode,
+        {joinCode: validatedJoinCode, expectedPeople,
         groupMemberIds: groupMemberIds || []});
 
       if (!updatedGroup) {
@@ -182,13 +200,13 @@ export class GroupController {
         // Send notifications for each new member
         joinedMembers.forEach(member => {
           wsService.notifyGroupJoin(
-            joinCode,
+            validatedJoinCode,
             member.id,
             member.name,
             updatedGroup.groupName
           );
           // FCM topic notification (clients subscribe to topic == joinCode)
-          void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
+          void sendGroupJoinFCM(validatedJoinCode, member.name, updatedGroup.groupName, member.id);
         });
       }
 
@@ -300,29 +318,34 @@ export class GroupController {
       }
 
       const locationInfo: LocationInfo[] = group.groupMemberIds
-      .filter(member => member.address && member.transitType)
-      .map(member => ({
-        address: member.address!,
-        transitType: member.transitType!,
-      }));
+      .filter(member => member.address != null && member.transitType != null)
+      .map(member => {
+        const address = member.address;
+        const transitType = member.transitType;
+        if (address == null || transitType == null) {
+          throw new Error('Address and transit type are required');
+        }
+        return {
+          address,
+          transitType,
+        };
+      });
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
-
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng
 
       const midpoint = lat.toString() + ' ' + lng.toString();
 
-      // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
+      if (!updatedGroup) {
+        return res.status(500).json({
+          message: 'Failed to update group midpoint',
+        });
+      }
 
       console.log("Activities List: " , activityList);
       res.status(200).json({
@@ -358,11 +381,18 @@ async updateMidpointByJoinCode(
       }
 
       const locationInfo: LocationInfo[] = group.groupMemberIds
-      .filter(member => member.address && member.transitType)
-      .map(member => ({
-        address: member.address!,
-        transitType: member.transitType!,
-      }));
+      .filter(member => member.address != null && member.transitType != null)
+      .map(member => {
+        const address = member.address;
+        const transitType = member.transitType;
+        if (address == null || transitType == null) {
+          throw new Error('Address and transit type are required');
+        }
+        return {
+          address,
+          transitType,
+        };
+      });
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
@@ -477,6 +507,16 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    if (typeof joinCode !== 'string') {
+      res.status(400).json({
+        message: 'Join code must be a string',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+
     // Validate required activity fields
     if (!activity.placeId || !activity.name) {
       res.status(400).json({
@@ -524,13 +564,15 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
       // Send FCM notification (will be suppressed in foreground on client side)
       const activityDataStr = JSON.stringify(activity);
-      void sendActivitySelectedFCM(
+      sendActivitySelectedFCM(
         joinCode,
         activityName,
         updatedGroup.groupName,
         leaderId,
         activityDataStr
-      );
+      ).catch((error) => {
+        logger.error('Failed to send activity selected FCM notification:', error);
+      });
     }
 
     res.status(200).json({

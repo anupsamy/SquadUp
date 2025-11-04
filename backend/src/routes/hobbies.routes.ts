@@ -5,6 +5,8 @@ import { HobbyController } from '../controllers/hobby.controller';
 const router = Router();
 const hobbyController = new HobbyController();
 
-router.get('/', hobbyController.getAllHobbies);
+router.get('/', (req, res, next) => {
+  void hobbyController.getAllHobbies(req, res, next);
+});
 
 export default router;

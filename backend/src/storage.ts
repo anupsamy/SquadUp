@@ -1,20 +1,23 @@
 import { Express, Request } from 'express';
+import crypto from 'crypto';
 import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 
 import { IMAGES_DIR } from './hobbies';
 
-if (!fs.existsSync(IMAGES_DIR)) {
-  fs.mkdirSync(IMAGES_DIR, { recursive: true });
+const imagesDir = path.join(process.cwd(), IMAGES_DIR);
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, IMAGES_DIR);
+    cb(null, imagesDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const randomBytes = crypto.randomBytes(4).readUInt32BE(0);
+    const uniqueSuffix = Date.now() + '-' + randomBytes;
     cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
   },
 });

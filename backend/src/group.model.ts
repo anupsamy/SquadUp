@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
 
-import { HOBBIES } from './hobbies';
 import {
     BasicGroupInfo,
   basicGroupSchema,
@@ -14,8 +13,6 @@ import {
   GroupUser,
   Activity,
 } from './types/group.types';
-import {addressSchema, userModel, UserModel} from './user.model';
-import {GoogleUserInfo} from './types/user.types';
 import logger from './utils/logger.util';
 
 
@@ -322,7 +319,7 @@ export class GroupModel {
         const isLeader = group.groupLeaderId.id === userId;
 
         // Remove user from group members
-        const updatedMembers = (group.groupMemberIds || []).filter(member => member.id !== userId);
+        const updatedMembers = group.groupMemberIds.filter(member => member.id !== userId);
 
         // If the user is the leader and there are other members, transfer leadership
         if (isLeader && updatedMembers.length > 0) {

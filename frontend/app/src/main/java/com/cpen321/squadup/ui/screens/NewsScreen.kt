@@ -254,7 +254,7 @@ private fun formatDate(dateString: String): String {
         } else {
             dateString
         }
-    } catch (e: Exception) {
+    } catch (e: IndexOutOfBoundsException) {
         dateString
     }
 }

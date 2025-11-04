@@ -1,13 +1,14 @@
 import dotenv from 'dotenv';
-dotenv.config();
 import express from 'express';
 import { createServer } from 'http';
+import path from 'path';
 
 import { connectDB } from './database';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
 import router from './routes';
-import path from 'path';
 import { initializeWebSocketService } from './services/websocket.service';
+
+dotenv.config();
 
 const app = express();
 const server = createServer(app);

@@ -29,7 +29,7 @@ export interface GeoLocation {
 // }
 
 // types/location.ts (update existing)
-export type getLocationResponse = {
+export interface getLocationResponse {
   message: string;
   data?: {
     midpoint: {
@@ -40,4 +40,4 @@ export type getLocationResponse = {
     };
     activities?: Activity[];
   };
-};
+}

@@ -41,7 +41,15 @@ export class WebSocketService {
 
       ws.on('message', (data: WebSocket.Data) => {
         try {
-          const message = JSON.parse(data.toString());
+          let messageString: string;
+          if (typeof data === 'string') {
+            messageString = data;
+          } else if (Buffer.isBuffer(data)) {
+            messageString = data.toString('utf8');
+          } else {
+            messageString = String(data);
+          }
+          const message = JSON.parse(messageString);
           this.handleMessage(ws, message);
         } catch (error: unknown) {
           logger.error('Error parsing WebSocket message:', error);

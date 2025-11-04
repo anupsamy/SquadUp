@@ -10,8 +10,8 @@ export class NewsController {
   // Expects req.body.hobbies = ["Reading", "Coding", "Cooking"]
   async getNewsByHobbies(req: Request, res: Response) {
     try {
-      const hobbies: string[] = req.body.hobbies;
-      if (!hobbies || !Array.isArray(hobbies) || hobbies.length === 0) {
+      const hobbies = req.body.hobbies;
+      if (!Array.isArray(hobbies) || hobbies.length === 0) {
         return res.status(400).json({ message: 'Hobbies array is required' });
       }
 

@@ -10,7 +10,9 @@ const authController = new AuthController();
 router.post(
   '/signup',
   validateBody<AuthenticateUserRequest>(authenticateUserSchema),
-  authController.signUp
+  (req, res, next) => {
+    void authController.signUp(req, res, next);
+  }
 );
 
 router.post(

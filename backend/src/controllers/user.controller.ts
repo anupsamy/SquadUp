@@ -7,7 +7,12 @@ import { userModel } from '../user.model';
 
 export class UserController {
   getProfile(req: Request, res: Response<GetProfileResponse>) {
-    const user = req.user!;
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({
+        message: 'User not authenticated',
+      });
+    }
 
     res.status(200).json({
       message: 'Profile fetched successfully',
@@ -21,7 +26,12 @@ export class UserController {
     next: NextFunction
   ) {
     try {
-      const user = req.user!;
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({
+          message: 'User not authenticated',
+        });
+      }
       const { name, transitType, address } = req.body;
       const updatedUser = await userModel.update(user._id, {
         name,
@@ -54,7 +64,12 @@ export class UserController {
 
   async deleteProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = req.user!;
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({
+          message: 'User not authenticated',
+        });
+      }
 
       await MediaService.deleteAllUserImages(user._id.toString());
 

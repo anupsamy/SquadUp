@@ -437,16 +437,42 @@ class GroupDetailsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1500)
 
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText("Group Update", substring = true).fetchSemanticsNodes().isEmpty()
+        }
+
         // Test back button on group details
         composeTestRule.onNodeWithContentDescription("Back")
             .assertIsDisplayed()
             .performClick()
 
         composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
-        // Should be back on main screen
-        composeTestRule.onNodeWithContentDescription("Create Group")
-            .assertIsDisplayed()
+        // Verify we're back on main screen - check for app title and icon buttons
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            try {
+                composeTestRule.onNodeWithText("SquadUp")
+                    .fetchSemanticsNode()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+        composeTestRule.onNodeWithText("SquadUp").assertIsDisplayed()
+        
+        // Verify Create Group and Join Group icon buttons (by contentDescription, not text)
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            try {
+                composeTestRule.onNodeWithContentDescription("Create Group")
+                    .fetchSemanticsNode()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+        composeTestRule.onNodeWithContentDescription("Create Group").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Join Group").assertIsDisplayed()
 
         // Navigate to group details again
         composeTestRule.onAllNodesWithText("Leader:", substring = true)

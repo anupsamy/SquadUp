@@ -34,11 +34,11 @@ interface GroupInterface {
         @retrofit2.http.Path("joinCode") joinCode: String
     ): Response<ApiResponse<GroupData>>
 
-    @GET("group/midpoints")
-    suspend fun getMidpoints(
-        @Header("Authorization") authHeader: String,
-        @Query("joinCode") joinCode: String
-    ): Response<ApiResponse<List<ActivityCoordinates>>>
+//    @GET("group/midpoints")
+//    suspend fun getMidpoints(
+//        @Header("Authorization") authHeader: String,
+//        @Query("joinCode") joinCode: String
+//    ): Response<ApiResponse<List<ActivityCoordinates>>>
 
     @POST("group/create")
     suspend fun createGroup(

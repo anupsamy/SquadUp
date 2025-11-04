@@ -19,7 +19,6 @@
     }
 
   },
-  "include": ["src/**/*", "jest.setup.ts",],
-  "exclude": ["node_modules", "dist", "jest.config.ts", "src/services/websocket.service.ts"],
-  "rootDir": "./"
+  "include": ["src/**/*", "jest.setup.ts", "**/*.ts", "tests/**/*"],
+  "exclude": ["node_modules", "dist", "jest.config.ts", "src/services/websocket.service.ts"]
 }

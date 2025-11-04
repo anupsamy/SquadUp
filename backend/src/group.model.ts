@@ -110,14 +110,14 @@ export class GroupModel {
     async create(groupInfo: BasicGroupInfo): Promise<IGroup> {
       try {
         //console.error('GroupModel BasicGroupInfo:', groupInfo);
-        console.error('GroupModel.create - Input Data:', groupInfo);
+        //console.log('GroupModel.create - Input Data:', groupInfo);
         const validatedData = basicGroupSchema.parse(groupInfo);
         //console.error('GroupModel ValidatedData:', validatedData);
 
         return await this.group.create(validatedData);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          //console.error('Validation error:', error.issues);
+          console.error('Validation error:', error.issues);
           throw new Error('Invalid update data');
         }
         console.error('Error updating user:', error);

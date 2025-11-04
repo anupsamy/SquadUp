@@ -63,8 +63,7 @@ export class GroupController {
         data: { groups: sanitizedGroups },
       });
     } catch (error) {
-      logger.error('Failed to fetch groups:', error);
-      next(error);
+        res.status(500).json({ message: 'Failed to fetch groups' });
     }
   }
 
@@ -96,18 +95,19 @@ export class GroupController {
       }});
     } catch (error) {
       logger.error('Failed to fetch group by joinCode:', error);
-      next(error);
+      res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + error });
+      //next(error);
     }
   }
 
-
-  getGroup(req: Request, res: Response<GetGroupResponse>) {
-    const group = req.group!;
-    res.status(200).json({
-      message: 'Group fetched successfully',
-      data: { group },
-    });
-  }
+  //unused
+  // getGroup(req: Request, res: Response<GetGroupResponse>) {
+  //   const group = req.group!;
+  //   res.status(200).json({
+  //     message: 'Group fetched successfully',
+  //     data: { group },
+  //   });
+  // }
 
   async joinGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
@@ -249,7 +249,9 @@ export class GroupController {
       const group = await groupModel.findByJoinCode(joinCode);
 
       if (!group) {
-        throw new Error("Group not found");
+        return res.status(404).json({
+          message: `Group with joinCode '${joinCode}' not found`,
+        });
       }
 
       if (group.midpoint) {
@@ -276,12 +278,6 @@ export class GroupController {
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
-
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng
@@ -321,7 +317,9 @@ async updateMidpointByJoinCode(
       const group = await groupModel.findByJoinCode(joinCode);
 
       if (!group) {
-        throw new Error("Group not found");
+        return res.status(404).json({
+          message: `Group with joinCode '${joinCode}' not found`,
+        });
       }
 
       const locationInfo: LocationInfo[] = group.groupMemberIds
@@ -334,12 +332,6 @@ async updateMidpointByJoinCode(
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
-
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng
@@ -517,47 +509,47 @@ async selectActivity(req: Request, res: Response): Promise<void> {
   }
 }
 
-async getMidpoints(req: Request, res: Response): Promise<void> {
-  try {
-    const joinCode = req.query.joinCode;
+// async getMidpoints(req: Request, res: Response): Promise<void> {
+//   try {
+//     const joinCode = req.query.joinCode;
 
-    if (!joinCode || typeof joinCode !== 'string') {
-      res.status(400).json({
-        success: false,
-        message: 'Join code is required',
-      });
-      return;
-    }
+//     if (!joinCode || typeof joinCode !== 'string') {
+//       res.status(400).json({
+//         success: false,
+//         message: 'Join code is required',
+//       });
+//       return;
+//     }
 
-    // Verify the group exists
-    const group = await groupModel.findByJoinCode(joinCode);
-    if (!group) {
-      res.status(404).json({
-        success: false,
-        message: 'Group not found',
-      });
-      return;
-    }
+//     // Verify the group exists
+//     const group = await groupModel.findByJoinCode(joinCode);
+//     if (!group) {
+//       res.status(404).json({
+//         success: false,
+//         message: 'Group not found',
+//       });
+//       return;
+//     }
 
-    // Return dummy midpoint data (3 locations in Vancouver area)
-    const midpoints = [
-      { latitude: 49.2827, longitude: -123.1207 },
-      { latitude: 49.2606, longitude: -123.2460 },
-      { latitude: 49.2488, longitude: -123.1163 }
-    ];
+//     // Return dummy midpoint data (3 locations in Vancouver area)
+//     const midpoints = [
+//       { latitude: 49.2827, longitude: -123.1207 },
+//       { latitude: 49.2606, longitude: -123.2460 },
+//       { latitude: 49.2488, longitude: -123.1163 }
+//     ];
 
-    res.status(200).json({
-      success: true,
-      data: midpoints,
-    });
-  } catch (error) {
-    logger.error('Error fetching midpoints:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch midpoints',
-    });
-  }
-}
+//     res.status(200).json({
+//       success: true,
+//       data: midpoints,
+//     });
+//   } catch (error) {
+//     logger.error('Error fetching midpoints:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to fetch midpoints',
+//     });
+//   }
+// }
 
 
 

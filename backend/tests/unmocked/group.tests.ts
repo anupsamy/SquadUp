@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { GroupController } from '../../src/controllers/group.controller';
 import { getWebSocketService } from '../../src/services/websocket.service';
 import { groupModel } from '../../src/group.model';
+import { locationService } from '@/services/location.service';
 
 
 jest.mock('../../src/utils/logger.util');
@@ -419,6 +420,9 @@ describe('Unmocked: Group Controller', () => {
     app.delete('/group/delete/:joinCode', (req, res, next) => groupController.deleteGroupByJoinCode(req, res, next));
     app.post('/group/join', (req, res, next) => groupController.joinGroupByJoinCode(req, res, next));
     app.post('/group/leave/:joinCode', (req, res, next) => groupController.leaveGroup(req, res, next));
+    app.get('/group/:joinCode/midpoint',(req, res, next) => groupController.getMidpointByJoinCode(req, res, next));
+    app.post('/group/:joinCode/midpoint/update', (req, res, next) => groupController.updateMidpointByJoinCode(req, res, next));
+
 
   });
 
@@ -737,6 +741,139 @@ describe('Unmocked: Group Controller', () => {
         });
 
     });
+
+    describe('GET /group/:joinCode/midpoint', () => {
+  // Branch 1: Group does not exist
+  it('should return 404 when group does not exist', async () => {
+    const res = await request(app).get('/group/nonexistent/midpoint');
+
+    expect(res.status).toBe(404);
+    expect(res.body.message).toContain('not found');
+  });
+
+  // Branch 2: Group has cached midpoint
+  it('should return cached midpoint without recalculating', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: "leader-id",
+      name: "Leader",
+      email: "leader@example.com",
+    };
+
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 2,
+      groupMemberIds: [],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    await groupModel.updateGroupByJoinCode(exampleJoinCode, {
+      joinCode: exampleJoinCode,
+      midpoint: '49.28 -123.12',
+    });
+
+    const res = await request(app).get(`/group/${exampleJoinCode}/midpoint`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.midpoint.location).toEqual({ lat: 49.28, lng: -123.12 });
+  });
+
+  // Branch 3: Normal midpoint calculation
+  it('should calculate midpoint for group without cached value', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: "leader-id",
+      name: "Leader",
+      email: "leader@example.com",
+      address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
+      transitType: 'transit' as const,
+    };
+
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 1,
+      groupMemberIds: [],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    const res = await request(app).get(`/group/${exampleJoinCode}/midpoint`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.midpoint.location).toBeDefined();
+    expect(res.body.data.midpoint.location.lat).toBeDefined();
+    expect(res.body.data.midpoint.location.lng).toBeDefined();
+  });
+});
+
+describe('POST /group/:joinCode/midpoint/update', () => {
+  // Branch 1: Group does not exist
+  it('should return 404 when group does not exist', async () => {
+    const res = await request(app).post('/group/nonexistent/midpoint/update');
+
+    expect(res.status).toBe(404);
+    expect(res.body.message).toContain('not found');
+  });
+
+  // Branch 2: Successfully update midpoint
+  it('should update midpoint and return 200', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: "leader-id",
+      name: "Leader",
+      email: "leader@example.com",
+      address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
+      transitType: 'transit' as const,
+    };
+
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 1,
+      groupMemberIds: [],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    const res = await request(app).post(`/group/${exampleJoinCode}/midpoint/update`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.midpoint.location).toBeDefined();
+    expect(res.body.data.midpoint.location.lat).toBeDefined();
+    expect(res.body.data.midpoint.location.lng).toBeDefined();
+  });
+
+  // Branch 3: Group with no members with location info
+  it('should handle group with no valid members', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: "leader-id",
+      name: "Leader",
+      email: "leader@example.com",
+    };
+
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 1,
+      groupMemberIds: [],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    const res = await request(app).post(`/group/${exampleJoinCode}/midpoint/update`);
+
+    expect(res.status).toBe(500);
+  });
+
+});
 });
 
 

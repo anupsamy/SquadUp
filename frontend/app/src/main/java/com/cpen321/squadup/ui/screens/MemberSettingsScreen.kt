@@ -131,7 +131,7 @@ fun MemberSettingsScreen(
                         isError = meetingTimeError != null,
                         supportingText = {
                             if (meetingTimeError != null) Text(meetingTimeError!!, color = MaterialTheme.colorScheme.error)
-                        }
+                        },
                     )
 
                     Button(
@@ -194,7 +194,10 @@ fun MemberSettingsScreen(
                 Button(
                     onClick = {
                         var isValid = true
-                        if ((!addressSelected && addressPickerViewModel.query.isNotEmpty()) || addressPickerViewModel.query.isBlank()) {
+                        val addressChanged = existingMemberInfo?.address != address
+                        val transitChanged = existingMemberInfo?.transitType != transitType
+
+                        if ((!addressSelected && addressPickerViewModel.query.isNotEmpty() && addressChanged) || addressPickerViewModel.query.isBlank()) {
                             addressError = "Please select a valid address"
                             isValid = false
                         }
@@ -206,6 +209,7 @@ fun MemberSettingsScreen(
                             isValid = false
                         }
                         if (!isValid) return@Button
+                        addressSelected = false
 
                         val updatedMembers = group.groupMemberIds?.map { member ->
                             if (member.id == currentUserId) {
@@ -230,8 +234,6 @@ fun MemberSettingsScreen(
                             }
                         )
 
-                        val addressChanged = existingMemberInfo?.address != address
-                        val transitChanged = existingMemberInfo?.transitType != transitType
                         if (addressChanged || transitChanged) {
                             groupViewModel.updateMidpoint(joinCode = group.joinCode)
                         }

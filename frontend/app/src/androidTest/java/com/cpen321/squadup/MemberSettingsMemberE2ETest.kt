@@ -8,7 +8,6 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,7 +28,7 @@ import java.util.Calendar
 @RunWith(AndroidJUnit4::class)
 @ExperimentalTestApi
 @LargeTest
-class MemberSettingsE2ETest {
+class MemberSettingsMemberE2ETest {
 
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
@@ -48,8 +47,9 @@ class MemberSettingsE2ETest {
      * Helper to navigate to a group and Member Settings
      */
     private fun navigateToMemberSettings() {
-        composeTestRule.waitForIdle()
-        Thread.sleep(2000)
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText("Leader:", substring = true).fetchSemanticsNodes().isNotEmpty()
+        }
 
         // Click on the first group on main screen
         composeTestRule.onAllNodesWithText("Leader:", substring = true)
@@ -71,118 +71,6 @@ class MemberSettingsE2ETest {
 
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
-    }
-
-    private fun testExpectedPeople() {
-        // Expected People
-        // Failure scenario of invalid input
-        composeTestRule.onNode(hasText("Expected People"))
-            .performTextClearance()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        composeTestRule.onNode(hasText("Expected People"))
-            .performTextInput("0")
-
-        // Save
-        composeTestRule.onNodeWithText("Save")
-            .assertIsEnabled()
-            .performClick()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-
-        // Verify failure
-        composeTestRule.waitForNodeWithText("Expected people must be a positive number", timeoutMillis = 10000)
-            .assertIsDisplayed()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-
-        // Successful scenario
-        composeTestRule.onNode(hasText("Expected People"))
-            .performTextClearance()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        composeTestRule.onNode(hasText("Expected People"))
-            .performTextInput("7")
-
-        device.pressBack()
-
-        // Save
-        composeTestRule.onNodeWithText("Save")
-            .assertIsEnabled()
-            .performClick()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(2000)
-
-        // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
-            .assertIsDisplayed()
-
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule.onAllNodesWithText("Settings saved successfully!", substring = true).fetchSemanticsNodes().isEmpty()
-        }
-    }
-
-    private fun testMeetingTime() {
-        // Meeting Time (click to open picker, then confirm date & time)
-        composeTestRule.onNodeWithText("Click to update Meeting Date & Time")
-            .performClick()
-        Thread.sleep(500)
-        device.findObject(By.text("OK"))?.click() // date
-        Thread.sleep(500)
-        device.findObject(By.text("OK"))?.click() // time
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-
-        // Verify failure
-        composeTestRule.waitForNodeWithText("Meeting time must be in the future", timeoutMillis = 10000)
-            .assertIsDisplayed()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
-
-        composeTestRule.onNodeWithText("Click to update Meeting Date & Time")
-            .performClick()
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        // Wait until TimePicker dialog shows
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_MONTH, 1)  // next day
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-        device.wait(Until.hasObject(By.clazz("android.widget.TimePicker")), 2000)
-        device.findObject(By.text(day.toString()))?.click()
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        device.findObject(By.text("OK"))?.click() // date
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        device.findObject(By.text("OK"))?.click() // time
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule.onAllNodesWithText("Meeting set to:", substring = true).fetchSemanticsNodes().isEmpty()
-        }
-
-        // Save
-        composeTestRule.onNodeWithText("Save")
-            .assertIsEnabled()
-            .performClick()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(2000)
-
-        // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
-            .assertIsDisplayed()
-
-
     }
 
     private fun testAddress() {
@@ -272,9 +160,7 @@ class MemberSettingsE2ETest {
     @Test
     fun updateMemberSettings() {
         navigateToMemberSettings()
-        testExpectedPeople()
         testAddress()
         testTransitType()
-        testMeetingTime()
     }
 }

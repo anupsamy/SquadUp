@@ -59,7 +59,6 @@ fun MemberSettingsScreen(
     var addressError by remember { mutableStateOf<String?>(null) }
     var expectedPeopleError by remember { mutableStateOf<String?>(null) }
     var meetingTimeError by remember { mutableStateOf<String?>(null) }
-    var addressSelected by remember { mutableStateOf(false) } // new flag
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -108,7 +107,6 @@ fun MemberSettingsScreen(
                     initialValue = address,
                     onAddressSelected = { picked ->
                         address = picked
-                        addressSelected = true;
                         addressError = null
                     }
                 )
@@ -197,7 +195,7 @@ fun MemberSettingsScreen(
                         val addressChanged = existingMemberInfo?.address != address
                         val transitChanged = existingMemberInfo?.transitType != transitType
 
-                        if ((!addressSelected && addressPickerViewModel.query.isNotEmpty() && addressChanged) || addressPickerViewModel.query.isBlank()) {
+                        if (addressPickerViewModel.query != address?.formatted || addressPickerViewModel.query.isBlank()) {
                             addressError = "Please select a valid address"
                             isValid = false
                         }
@@ -209,7 +207,6 @@ fun MemberSettingsScreen(
                             isValid = false
                         }
                         if (!isValid) return@Button
-                        addressSelected = false
 
                         val updatedMembers = group.groupMemberIds?.map { member ->
                             if (member.id == currentUserId) {

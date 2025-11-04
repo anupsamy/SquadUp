@@ -65,14 +65,14 @@ class GroupDetailsLeaderE2ETest {
             .performClick()
 
         composeTestRule.waitForIdle()
-        Thread.sleep(2000)
+        Thread.sleep(1000)
 
         composeTestRule.onNodeWithContentDescription("Back")
             .assertIsDisplayed()
             .performClick()
 
         composeTestRule.waitForIdle()
-        Thread.sleep(2000)
+        Thread.sleep(1000)
 
         composeTestRule.onNodeWithContentDescription("Create Group").assertIsDisplayed()
         composeTestRule.onNodeWithContentDescription("Join Group").assertIsDisplayed()
@@ -124,7 +124,7 @@ class GroupDetailsLeaderE2ETest {
 
     @Test
     fun groupDetailsScreen() {
-        // Navigate to the first group
+        // Navigate to the first group with a determined midpoint with activities
         navigateToFirstGroup()
 
         // Click midpoint button every time
@@ -138,8 +138,8 @@ class GroupDetailsLeaderE2ETest {
         navigateToGroupList()
         viewAttendees()
 
-        // Navigate to the last group
-        navigateToFirstGroup()
+        // Navigate to the last group with no activites
+        navigateToLastGroup()
 
         // Click midpoint button every time
         clickMidpointButton()

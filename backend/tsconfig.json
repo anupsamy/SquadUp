@@ -1,18 +1,13 @@
 {
   "compilerOptions": {
-<<<<<<< Updated upstream
-    "lib": ["es2023"],
-    "moduleResolution": "Bundler",
-=======
     "lib": ["es2023", "dom"],
-    "module": "nodenext",
->>>>>>> Stashed changes
+    "moduleResolution": "Bundler",
+    "module": "preserve",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-<<<<<<< Updated upstream
     "rootDir": "./src",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
@@ -24,12 +19,7 @@
     }
 
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "jest.config.ts", "jest.setup.ts"]
-=======
-    "rootDir": "./"
-  },
-  "include": ["src/**/*", "jest.setup.ts"],
-  "exclude": ["node_modules", "dist", "jest.config.ts"]
->>>>>>> Stashed changes
+  "include": ["src/**/*", "jest.setup.ts",],
+  "exclude": ["node_modules", "dist", "jest.config.ts", "src/services/websocket.service.ts"],
+  "rootDir": "./"
 }

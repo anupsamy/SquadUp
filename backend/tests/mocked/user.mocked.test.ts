@@ -39,8 +39,12 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     });
 
     // Setup routes
-    app.post('/profile', (req, res, next) => userController.updateProfile(req, res, next));
-    app.delete('/profile', (req, res, next) => userController.deleteProfile(req, res, next));
+    app.post('/profile', (req, res, next) =>
+      userController.updateProfile(req, res, next)
+    );
+    app.delete('/profile', (req, res, next) =>
+      userController.deleteProfile(req, res, next)
+    );
   });
 
   beforeEach(() => {
@@ -54,9 +58,9 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     // Expected behavior: error is caught and handled gracefully
     // Expected output: error message
     it('should return 500 when database throws error', async () => {
-      jest.spyOn(userModel, 'update').mockRejectedValueOnce(
-        new Error('Database connection failed')
-      );
+      jest
+        .spyOn(userModel, 'update')
+        .mockRejectedValueOnce(new Error('Database connection failed'));
 
       const updateData = {
         name: 'Updated Name',
@@ -64,9 +68,7 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
         address: '456 Oak Ave',
       };
 
-      const res = await request(app)
-        .post('/profile')
-        .send(updateData);
+      const res = await request(app).post('/profile').send(updateData);
 
       expect(res.status).toBe(500);
       expect(res.body).toHaveProperty('message');
@@ -88,9 +90,7 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
         address: '456 Oak Ave',
       };
 
-      const res = await request(app)
-        .post('/profile')
-        .send(updateData);
+      const res = await request(app).post('/profile').send(updateData);
 
       expect(res.status).toBe(404);
       expect(res.body).toHaveProperty('message', 'User not found');
@@ -102,9 +102,9 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     // Expected behavior: validation error is caught and handled
     // Expected output: error message
     it('should return 500 when validation error occurs', async () => {
-      jest.spyOn(userModel, 'update').mockRejectedValueOnce(
-        new Error('Invalid email format')
-      );
+      jest
+        .spyOn(userModel, 'update')
+        .mockRejectedValueOnce(new Error('Invalid email format'));
 
       const updateData = {
         name: 'Valid Name',
@@ -112,9 +112,7 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
         address: '456 Oak Ave',
       };
 
-      const res = await request(app)
-        .post('/profile')
-        .send(updateData);
+      const res = await request(app).post('/profile').send(updateData);
 
       expect(res.status).toBe(500);
       expect(res.body.message).toContain('Invalid email format');
@@ -122,22 +120,24 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
 
     it('calls next(error) if a non-Error is thrown', async () => {
       const mockNext = jest.fn();
-    
+
       // Mock userModel.update or MediaService.deleteAllUserImages to throw a non-Error value
-      jest.spyOn(userModel, 'update').mockRejectedValueOnce('some string error');
-    
+      jest
+        .spyOn(userModel, 'update')
+        .mockRejectedValueOnce('some string error');
+
       const req = {
         user: { _id: '123' },
         body: { name: 'Test', transitType: 'driving', address: 'abc' },
       } as any;
-    
+
       const res = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
       } as any;
-    
+
       await userController.updateProfile(req, res, mockNext);
-    
+
       expect(mockNext).toHaveBeenCalledWith('some string error');
     });
   });
@@ -149,16 +149,21 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     // Expected behavior: error is caught and handled gracefully
     // Expected output: error message
     it('should return 500 when media deletion fails', async () => {
-      jest.spyOn(MediaService, 'deleteAllUserImages').mockRejectedValueOnce(
-        new Error('Failed to connect to storage service')
-      );
+      jest
+        .spyOn(MediaService, 'deleteAllUserImages')
+        .mockRejectedValueOnce(
+          new Error('Failed to connect to storage service')
+        );
 
-      const res = await request(app)
-        .delete('/profile');
+      const res = await request(app).delete('/profile');
 
       expect(res.status).toBe(500);
-      expect(res.body.message).toContain('Failed to connect to storage service');
-      expect(MediaService.deleteAllUserImages).toHaveBeenCalledWith(testUserId.toString());
+      expect(res.body.message).toContain(
+        'Failed to connect to storage service'
+      );
+      expect(MediaService.deleteAllUserImages).toHaveBeenCalledWith(
+        testUserId.toString()
+      );
     });
 
     // Mocked behavior: userModel.delete throws a database error
@@ -167,13 +172,14 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     // Expected behavior: error is caught and handled gracefully
     // Expected output: error message
     it('should return 500 when database deletion fails', async () => {
-      jest.spyOn(MediaService, 'deleteAllUserImages').mockResolvedValueOnce(undefined);
-      jest.spyOn(userModel, 'delete').mockRejectedValueOnce(
-        new Error('Database write failed')
-      );
+      jest
+        .spyOn(MediaService, 'deleteAllUserImages')
+        .mockResolvedValueOnce(undefined);
+      jest
+        .spyOn(userModel, 'delete')
+        .mockRejectedValueOnce(new Error('Database write failed'));
 
-      const res = await request(app)
-        .delete('/profile');
+      const res = await request(app).delete('/profile');
 
       expect(res.status).toBe(500);
       expect(res.body.message).toContain('Database write failed');
@@ -186,16 +192,19 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     // Expected behavior: both services are called in
     // Expected output: success message
     it('should delete user and media in correct order', async () => {
-      const mediaDeleteSpy = jest.spyOn(MediaService, 'deleteAllUserImages').mockResolvedValueOnce(undefined);
-      const userDeleteSpy = jest.spyOn(userModel, 'delete').mockResolvedValueOnce(undefined);
+      const mediaDeleteSpy = jest
+        .spyOn(MediaService, 'deleteAllUserImages')
+        .mockResolvedValueOnce(undefined);
+      const userDeleteSpy = jest
+        .spyOn(userModel, 'delete')
+        .mockResolvedValueOnce(undefined);
 
-      const res = await request(app)
-        .delete('/profile');
+      const res = await request(app).delete('/profile');
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('message', 'User deleted successfully');
       expect(mediaDeleteSpy).toHaveBeenCalled();
-      expect(userDeleteSpy).toHaveBeenCalled()
+      expect(userDeleteSpy).toHaveBeenCalled();
     });
 
     // Mocked behavior: MediaService succeeds but user deletion fails silently
@@ -204,13 +213,14 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     // Expected behavior: error is propagated
     // Expected output: error message
     it('should handle errors when media is deleted but user deletion fails', async () => {
-      jest.spyOn(MediaService, 'deleteAllUserImages').mockResolvedValueOnce(undefined);
-      jest.spyOn(userModel, 'delete').mockRejectedValueOnce(
-        new Error('Concurrent deletion attempted')
-      );
+      jest
+        .spyOn(MediaService, 'deleteAllUserImages')
+        .mockResolvedValueOnce(undefined);
+      jest
+        .spyOn(userModel, 'delete')
+        .mockRejectedValueOnce(new Error('Concurrent deletion attempted'));
 
-      const res = await request(app)
-        .delete('/profile');
+      const res = await request(app).delete('/profile');
 
       expect(res.status).toBe(500);
       expect(res.body.message).toContain('Concurrent deletion attempted');
@@ -220,47 +230,53 @@ describe('Mocked: User Endpoints (With Mocks)', () => {
     // Expected behavior: throws error
     // Expected output: "Failed to find user" error message
     it('should throw error when findByGoogleId fails', async () => {
-    // Pass an object instead of string to trigger MongoDB error
-    const invalidGoogleId = {} as any;
+      // Pass an object instead of string to trigger MongoDB error
+      const invalidGoogleId = {} as any;
 
-    await expect(userModel.findByGoogleId(invalidGoogleId)).rejects.toThrow('Failed to find user');
+      await expect(userModel.findByGoogleId(invalidGoogleId)).rejects.toThrow(
+        'Failed to find user'
+      );
     });
 
     // Input: invalid user ID format
     // Expected behavior: throws error
     // Expected output: "Failed to find user" error message
     it('should throw error when findById fails', async () => {
-    const invalidId = 'invalid-id' as any;
+      const invalidId = 'invalid-id' as any;
 
-    await expect(userModel.findById(invalidId)).rejects.toThrow('Failed to find user');
+      await expect(userModel.findById(invalidId)).rejects.toThrow(
+        'Failed to find user'
+      );
     });
 
     // Input: invalid user ID format
     // Expected behavior: throws error
     // Expected output: "Failed to delete user" error message
     it('should throw error when delete fails', async () => {
-    const invalidId = 'invalid-id' as any;
+      const invalidId = 'invalid-id' as any;
 
-    await expect(userModel.delete(invalidId)).rejects.toThrow('Failed to delete user');
+      await expect(userModel.delete(invalidId)).rejects.toThrow(
+        'Failed to delete user'
+      );
     });
 
     it('calls next(error) if deleteAllUserImages throws non-Error', async () => {
-  const mockNext = jest.fn();
+      const mockNext = jest.fn();
 
-  jest.spyOn(MediaService, 'deleteAllUserImages').mockRejectedValueOnce('fail');
+      jest
+        .spyOn(MediaService, 'deleteAllUserImages')
+        .mockRejectedValueOnce('fail');
 
-  const req = { user: { _id: '123' } } as any;
-  const res = {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn(),
-  } as any;
+      const req = { user: { _id: '123' } } as any;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as any;
 
-  await userController.deleteProfile(req, res, mockNext);
+      await userController.deleteProfile(req, res, mockNext);
 
-  expect(mockNext).toHaveBeenCalledWith('fail');
-});
-
-
+      expect(mockNext).toHaveBeenCalledWith('fail');
+    });
 
     // // Mocked behavior: error thrown is not an Error instance
     // // Input: valid user deletion request

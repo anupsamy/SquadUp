@@ -1,10 +1,10 @@
 import request from 'supertest';
 import express, { Express } from 'express';
-import { AuthController } from '../controllers/auth.controller';
-import { authService } from '../services/auth.service';
+import { AuthController } from '../../src/controllers/auth.controller';
+import { authService } from '../../src/services/auth.service';
 
-jest.mock('../utils/logger.util');
-jest.mock('../services/auth.service');
+jest.mock('../../src/utils/logger.util');
+jest.mock('../../src/services/auth.service');
 
 describe('Mocked: Auth Endpoints', () => {
   let app: Express;

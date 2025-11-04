@@ -1,10 +1,10 @@
-import { AuthService } from '../services/auth.service';
-import { userModel } from '../user.model';
+import { AuthService } from '../../src/services/auth.service';
+import { userModel } from '../../src/user.model';
 import * as jwt from 'jsonwebtoken';
 import * as googleAuthLibrary from 'google-auth-library';
 import mongoose from 'mongoose';
 
-jest.mock('../utils/logger.util');
+jest.mock('../../src/utils/logger.util');
 jest.mock('jsonwebtoken');
 jest.mock('google-auth-library');
 

@@ -122,7 +122,9 @@ describe('Unmocked: User Model', () => {
 
       const updateData = { name: '' };
 
-      await expect(userModel.update(testUser._id, updateData)).rejects.toThrow();
+      await expect(
+        userModel.update(testUser._id, updateData)
+      ).rejects.toThrow();
 
       // Cleanup
       await userModel.delete(testUser._id);
@@ -245,9 +247,15 @@ describe('Unmocked: User Controller', () => {
       }
       next();
     });
-    app.get('/profile',(req, res, next) => userController.getProfile(req, res));
-    app.post('/profile', (req, res, next) => userController.updateProfile(req, res, next));
-    app.delete('/profile', (req, res, next) => userController.deleteProfile(req, res, next));
+    app.get('/profile', (req, res, next) =>
+      userController.getProfile(req, res)
+    );
+    app.post('/profile', (req, res, next) =>
+      userController.updateProfile(req, res, next)
+    );
+    app.delete('/profile', (req, res, next) =>
+      userController.deleteProfile(req, res, next)
+    );
 
     const testUser = await userModel.create({
       googleId: `google-${Date.now()}`,
@@ -266,49 +274,52 @@ describe('Unmocked: User Controller', () => {
   });
 
   describe('GET /profile', () => {
-  // Input: valid authenticated user
-  // Expected status code: 200
-  // Expected behavior: user profile is returned
-  // Expected output: user data with all fields
-  it('should return 200 and user profile when authenticated', async () => {
-    const res = await request(app).get('/profile');
+    // Input: valid authenticated user
+    // Expected status code: 200
+    // Expected behavior: user profile is returned
+    // Expected output: user data with all fields
+    it('should return 200 and user profile when authenticated', async () => {
+      const res = await request(app).get('/profile');
 
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('message', 'Profile fetched successfully');
-    expect(res.body.data).toHaveProperty('user');
-    expect(res.body.data.user).toHaveProperty('_id');
-    expect(res.body.data.user).toHaveProperty('email');
-    expect(res.body.data.user).toHaveProperty('name');
-    expect(res.body.data.user).toHaveProperty('googleId');
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty(
+        'message',
+        'Profile fetched successfully'
+      );
+      expect(res.body.data).toHaveProperty('user');
+      expect(res.body.data.user).toHaveProperty('_id');
+      expect(res.body.data.user).toHaveProperty('email');
+      expect(res.body.data.user).toHaveProperty('name');
+      expect(res.body.data.user).toHaveProperty('googleId');
+    });
   });
-});
 
   describe('updateProfile', () => {
+    // Input: valid user update with name change
+    // Expected status code: 200
+    // Expected behavior: user is updated in database
+    // Expected output: updated user data
+    it('should update user profile and return 200', async () => {
+      const updateData = {
+        name: 'Updated Name',
+      };
 
-  // Input: valid user update with name change
-  // Expected status code: 200
-  // Expected behavior: user is updated in database
-  // Expected output: updated user data
-  it('should update user profile and return 200', async () => {
-    const updateData = {
-      name: 'Updated Name',
-    };
+      const res = await request(app).post('/profile').send(updateData);
 
-    const res = await request(app)
-      .post('/profile')
-      .send(updateData);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty(
+        'message',
+        'User info updated successfully'
+      );
+      expect(res.body.data.user.name).toBe('Updated Name');
 
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('message', 'User info updated successfully');
-    expect(res.body.data.user.name).toBe('Updated Name');
-
-    // Verify update persisted in database
-    const dbUser = await userModel.findById(testUserId);
-    expect(dbUser).toBeDefined();
-    if (dbUser) {
-      expect(dbUser.name).toBe('Updated Name');
-    }
-  });
+      // Verify update persisted in database
+      const dbUser = await userModel.findById(testUserId);
+      expect(dbUser).toBeDefined();
+      if (dbUser) {
+        expect(dbUser.name).toBe('Updated Name');
+      }
+    });
 
     // Input: attempt to update non-existent user
     // Expected status code: 404
@@ -331,7 +342,9 @@ describe('Unmocked: User Controller', () => {
         } as any;
         next();
       });
-      fakeApp.post('/profile', (req, res, next) => userController.updateProfile(req, res, next));
+      fakeApp.post('/profile', (req, res, next) =>
+        userController.updateProfile(req, res, next)
+      );
 
       const res = await request(fakeApp)
         .post('/profile')
@@ -346,15 +359,11 @@ describe('Unmocked: User Controller', () => {
     // Expected behavior: validation error is caught and handled
     // Expected output: error message
     it('should return 500 when update validation fails', async () => {
-      const res = await request(app)
-        .post('/profile')
-        .send({ name: '' });
+      const res = await request(app).post('/profile').send({ name: '' });
 
       expect(res.status).toBe(500);
       expect(res.body).toHaveProperty('message');
     });
-
-  
   });
 
   describe('deleteProfile', () => {
@@ -379,7 +388,9 @@ describe('Unmocked: User Controller', () => {
         } as any;
         next();
       });
-      fakeApp.delete('/profile', (req, res, next) => userController.deleteProfile(req, res, next));
+      fakeApp.delete('/profile', (req, res, next) =>
+        userController.deleteProfile(req, res, next)
+      );
 
       const res = await request(fakeApp).delete('/profile');
 
@@ -388,7 +399,6 @@ describe('Unmocked: User Controller', () => {
     });
   });
 });
-
 
 /*
 tests to add for user (non mocked)

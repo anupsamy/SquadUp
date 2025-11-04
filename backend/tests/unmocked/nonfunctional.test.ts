@@ -1,7 +1,7 @@
 import { GroupController } from '@/controllers/group.controller';
-import { LocationService } from '../services/location.service';
-import type { LocationInfo } from '../types/location.types';
-import type { TransitType } from '../types/transit.types';
+import { LocationService } from '../../src/services/location.service';
+import type { LocationInfo } from '../../src/types/location.types';
+import type { TransitType } from '../../src/types/transit.types';
 
 /**
  * Non-Functional Requirements Tests for Location Service

@@ -137,27 +137,6 @@ export class GroupModel {
       }
     }
 
-    async update(
-      groupId: mongoose.Types.ObjectId,
-      group: Partial<IGroup>
-    ): Promise<IGroup | null> {
-      try {
-        const validatedData = updateGroupSchema.parse(group);
-
-        const updatedGroup = await this.group.findByIdAndUpdate(
-          groupId,
-          validatedData,
-          {
-            new: true,
-          }
-        );
-
-        return updatedGroup;
-      } catch (error) {
-        //logger.error('Error updating group:', error);
-        throw new Error('Failed to update group');
-      }
-    }
 
     async updateGroupByJoinCode(
       joinCode: string,
@@ -206,21 +185,6 @@ export class GroupModel {
       } catch (error) {
         //logger.error('Error finding group by joinCode:', error);
         throw new Error('Failed to find group by joinCode');
-      }
-    }
-
-    async findById(_id: mongoose.Types.ObjectId): Promise<IGroup | null> { //NOTE: check if group by google id makes sesne
-      try {
-        const group = await this.group.findOne({ _id });
-
-        if (!group) {
-          return null;
-        }
-
-        return group;
-      } catch (error) {
-        console.error('Error finding group by Google ID:', error);
-        throw new Error('Failed to find group');
       }
     }
 

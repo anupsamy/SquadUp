@@ -205,6 +205,20 @@ describe('Unmocked: Group Controller', () => {
     expect(res.status).toBe(404);
     expect(res.body).toHaveProperty('message', 'No midpoint available for this group');
   });
+
+  it('should return 400 if joinCode is missing', async () => {
+    const res = await request(app).get('/group/activities');
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code is required');
+  });
+
+  it('should return 400 if joinCode is not a string', async () => {
+    const res = await request(app).get('/group/activities?joinCode=12345');
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code is required');
+  });
 });
 
 describe('POST /group/activities/select', () => {
@@ -308,6 +322,37 @@ describe('POST /group/activities/select', () => {
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty('message', 'Activity must have placeId and name');
   });
+
+  it('should return 400 if joinCode is missing', async () => {
+    const activity = {
+      name: "Selected Activity",
+      placeId: "place123",
+    };
+
+    const res = await request(app).post('/group/activities/select').send({ activity });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code and activity are required');
+  });
+
+  it('should return 400 if activity is missing', async () => {
+    const res = await request(app).post('/group/activities/select').send({ joinCode: 'test123' });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code and activity are required');
+  });
+
+  it('should return 400 if activity is missing required fields', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const res = await request(app).post('/group/activities/select').send({
+      joinCode: exampleJoinCode,
+      activity: { name: 'Invalid Activity' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Activity must have placeId and name');
+  });
+
 });
   
 });

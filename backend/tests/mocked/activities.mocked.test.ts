@@ -4,9 +4,9 @@ import { GroupController } from '../../src/controllers/group.controller';
 import { groupModel } from '../../src/group.model';
 import { locationService } from '../../src/services/location.service';
 
-jest.mock('../src/utils/logger.util'); // Mock logger
-jest.mock('../src/group.model'); // Mock group model
-jest.mock('../src/services/location.service'); // Mock location service
+jest.mock('../../src/utils/logger.util'); // Mock logger
+jest.mock('../../src/group.model'); // Mock group model
+jest.mock('../../src/services/location.service'); // Mock location service
 
 describe('Mocked: Activities Endpoints (With Mocks)', () => {
   let app: Express;

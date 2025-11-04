@@ -2,6 +2,7 @@ import request from 'supertest';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { GroupController } from '../../src/controllers/group.controller';
+import { getWebSocketService } from '../../src/services/websocket.service';
 import { groupModel } from '../../src/group.model';
 
 
@@ -674,6 +675,67 @@ describe('Unmocked: Group Controller', () => {
             expect(res.status).toBe(404);
             expect(res.body).toHaveProperty('message', 'Group not found');
         });
+
+        it('should transfer leadership when the leader leaves', async () => {
+            const exampleMeetingTime = "2026-11-02T12:30:00Z";
+            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+            const exampleGroupLeader = {
+                id: "leader-id",
+                name: "Leader",
+                email: "leader@example.com",
+            };
+            const exampleMember = {
+                id: "member-id",
+                name: "Member",
+                email: "member@example.com",
+            };
+
+            const testGroup = await groupModel.create({
+                joinCode: exampleJoinCode,
+                groupName: "Group With Leader",
+                groupLeaderId: exampleGroupLeader,
+                expectedPeople: 5,
+                groupMemberIds: [exampleGroupLeader, exampleMember],
+                meetingTime: exampleMeetingTime,
+                activityType: "CAFE",
+            });
+
+            const res = await request(app).post(`/group/leave/${exampleJoinCode}`).send({
+                userId: exampleGroupLeader.id,
+            });
+
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('message', 'Left group successfully');
+            expect(res.body.data.newLeader).toMatchObject(exampleMember);
+        });
+
+        it('should delete the group when the last member leaves', async () => {
+            const exampleMeetingTime = "2026-11-02T12:30:00Z";
+            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+            const exampleGroupLeader = {
+                id: "leader-id",
+                name: "Leader",
+                email: "leader@example.com",
+            };
+
+            const testGroup = await groupModel.create({
+                joinCode: exampleJoinCode,
+                groupName: "Group To Delete",
+                groupLeaderId: exampleGroupLeader,
+                expectedPeople: 1,
+                groupMemberIds: [exampleGroupLeader],
+                meetingTime: exampleMeetingTime,
+                activityType: "CAFE",
+            });
+
+            const res = await request(app).post(`/group/leave/${exampleJoinCode}`).send({
+                userId: exampleGroupLeader.id,
+            });
+
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('message', 'Group deleted successfully as no members remain');
+        });
+
     });
 });
 

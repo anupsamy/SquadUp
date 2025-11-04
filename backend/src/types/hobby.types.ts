@@ -5,4 +5,4 @@ export type GetAllHobbiesResponse = {
   data?: {
     hobbies: typeof HOBBIES;
   };
-};
+}

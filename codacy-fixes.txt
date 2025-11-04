@@ -1,0 +1,90 @@
+diff --git a/backend/src/controllers/news.controller.ts b/backend/src/controllers/news.controller.ts
+--- a/backend/src/controllers/news.controller.ts
++++ b/backend/src/controllers/news.controller.ts
+@@ -30,1 +30,1 @@
+-          const articles = response.data.articles.map((a: any) => ({
++          const articles = response.data.articles.map((a: unknown) => ({
+diff --git a/backend/src/controllers/group.controller.ts b/backend/src/controllers/group.controller.ts
+--- a/backend/src/controllers/group.controller.ts
++++ b/backend/src/controllers/group.controller.ts
+@@ -391,1 +391,1 @@
+-              lat: lat,
++              lat,
+@@ -392,1 +392,1 @@
+-              lng: lng,
++              lng,
+@@ -614,1 +614,1 @@
+-      const leavingUser = currentGroup.groupMemberIds?.find(member => member.id === userId) ??
++      const leavingUser = currentGroup.groupMemberIds.find(member => member.id === userId) ??
+diff --git a/backend/src/types/group.types.ts b/backend/src/types/group.types.ts
+--- a/backend/src/types/group.types.ts
++++ b/backend/src/types/group.types.ts
+@@ -155,1 +155,1 @@
+-};
++}
+diff --git a/backend/src/types/media.types.ts b/backend/src/types/media.types.ts
+--- a/backend/src/types/media.types.ts
++++ b/backend/src/types/media.types.ts
+@@ -5,1 +5,1 @@
+-};
++}
+diff --git a/backend/src/index.ts b/backend/src/index.ts
+--- a/backend/src/index.ts
++++ b/backend/src/index.ts
+@@ -4,1 +4,1 @@
+-import express from 'express';
++import express from 'express';
+@@ -5,1 +5,1 @@
+-import { createServer } from 'http';
++import { createServer } from 'http';
+@@ -7,1 +7,1 @@
+-import { connectDB } from './database';
++import { connectDB } from './database';
+@@ -8,1 +8,1 @@
+-import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
++import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
+@@ -9,1 +9,1 @@
+-import router from './routes';
++import router from './routes';
+@@ -10,1 +10,1 @@
+-import path from 'path';
++import path from 'path';
+diff --git a/backend/src/services/websocket.service.ts b/backend/src/services/websocket.service.ts
+--- a/backend/src/services/websocket.service.ts
++++ b/backend/src/services/websocket.service.ts
+@@ -74,1 +74,1 @@
+-  private handleMessage(ws: WebSocket, message: any) {
++  private handleMessage(ws: WebSocket, message: unknown) {
+diff --git a/backend/src/services/fcm.service.ts b/backend/src/services/fcm.service.ts
+--- a/backend/src/services/fcm.service.ts
++++ b/backend/src/services/fcm.service.ts
+@@ -14,1 +14,1 @@
+-    const serviceAccount: any = JSON.parse(keyJson);
++    const serviceAccount: unknown = JSON.parse(keyJson);
+@@ -20,1 +20,1 @@
+-      credential: admin.credential.cert(serviceAccount as any),
++      credential: admin.credential.cert(serviceAccount),
+@@ -33,1 +33,1 @@
+-};
++}
+diff --git a/backend/src/types/user.types.ts b/backend/src/types/user.types.ts
+--- a/backend/src/types/user.types.ts
++++ b/backend/src/types/user.types.ts
+@@ -47,1 +47,1 @@
+-};
++}
+diff --git a/backend/src/types/hobby.types.ts b/backend/src/types/hobby.types.ts
+--- a/backend/src/types/hobby.types.ts
++++ b/backend/src/types/hobby.types.ts
+@@ -8,1 +8,1 @@
+-};
++}
+diff --git a/backend/src/types/auth.types.ts b/backend/src/types/auth.types.ts
+--- a/backend/src/types/auth.types.ts
++++ b/backend/src/types/auth.types.ts
+@@ -16,1 +16,1 @@
+-export type AuthenticateUserResponse = {
++export interface AuthenticateUserResponse {
+@@ -23,1 +23,1 @@
+-export type AuthResult = {
++export interface AuthResult {

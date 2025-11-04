@@ -71,7 +71,7 @@ export class WebSocketService {
     });
   }
 
-  private handleMessage(ws: WebSocket, message: any) {
+  private handleMessage(ws: WebSocket, message: unknown) {
     const { type, userId, joinCode } = message;
 
     switch (type) {

@@ -330,8 +330,8 @@ export class GroupController {
         data: {
           midpoint: {
             location: {
-              lat,
-              lng,
+              lat: lat,
+              lng: lng,
             }
           },
           activities: activityList
@@ -388,8 +388,8 @@ async updateMidpointByJoinCode(
         data: {
           midpoint: {
             location: {
-              lat,
-              lng,
+              lat: lat,
+              lng: lng,
             }
           },
           activities: activityList,
@@ -611,7 +611,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       }
 
       // Find the user who is leaving
-      const leavingUser = currentGroup.groupMemberIds.find(member => member.id === userId) ??
+      const leavingUser = currentGroup.groupMemberIds?.find(member => member.id === userId) ||
                          (currentGroup.groupLeaderId.id === userId ? currentGroup.groupLeaderId : null);
 
       const result = await groupModel.leaveGroup(joinCode, userId);

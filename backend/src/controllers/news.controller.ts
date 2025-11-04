@@ -27,7 +27,7 @@ export class NewsController {
             },
           });
 
-          const articles = response.data.articles.map((a: any) => ({
+          const articles = response.data.articles.map((a: unknown) => ({
             title: a.title,
             url: a.url,
             source: a.source.name,

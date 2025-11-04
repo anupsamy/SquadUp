@@ -13,12 +13,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    services:
+      mongo:
+        image: mongo:7
+        ports: [27017:27017]
+        options: >-
+          --health-cmd "mongo --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -26,9 +33,17 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
+      - name: Set up environment
+        working-directory: ./backend
+        run: |
+          echo "MONGODB_URI=mongodb://localhost:27017/testdb" >> .env
+
       - name: Run tests
         working-directory: ./backend
+        env:
+          MONGODB_URI: mongodb://localhost:27017/testdb
         run: npm test
+        
   deploy: 
     needs: test #if tests fail will not deploy
     runs-on: ubuntu-latest

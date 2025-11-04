@@ -13,11 +13,6 @@ router.get(
     groupController.getActivities.bind(groupController)
 );
 
-router.get(
-    '/midpoints',
-    groupController.getMidpoints.bind(groupController)
-);
-
 router.post(
     '/activities/select',
     groupController.selectActivity.bind(groupController)
@@ -67,9 +62,9 @@ router.post(
 );
 
 // Test endpoint for WebSocket notifications
-router.post(
-    '/test-notification/:joinCode',
-    groupController.testWebSocketNotification.bind(groupController)
-);
+//router.post(
+  //  '/test-notification/:joinCode',
+    //groupController.testWebSocketNotification.bind(groupController)
+//);
 
 export default router;

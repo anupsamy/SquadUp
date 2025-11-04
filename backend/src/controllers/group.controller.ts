@@ -32,9 +32,9 @@ export class GroupController {
         meetingTime: meetingTime,  // Default to current time for now,
         activityType: activityType
       });
-      console.error('GroupController newGroup:', newGroup);
+      //console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
-        message: 'Group ${groupName} created successfully',
+        message: `Group ${groupName} created successfully`,
         data: {
           group: newGroup,
         }
@@ -78,7 +78,7 @@ export class GroupController {
 
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
-      console.error('GroupController getGroupByJoinCode:', group);
+      //console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({
@@ -382,7 +382,7 @@ async updateMidpointByJoinCode(
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
 
-      console.log("Activities List: " , activityList);
+      //console.log("Activities List: " , activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {

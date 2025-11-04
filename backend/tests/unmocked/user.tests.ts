@@ -1,12 +1,12 @@
 import request from 'supertest';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import { UserController } from '../src/controllers/user.controller';
-import { userModel } from '../src/user.model';
-import { GoogleUserInfo } from '../src/types/user.types';
+import { UserController } from '../../src/controllers/user.controller';
+import { userModel } from '../../src/user.model';
+import { GoogleUserInfo } from '../../src/types/user.types';
 
-jest.mock('../src/utils/logger.util');
-jest.mock('../src/services/media.service');
+jest.mock('../../src/utils/logger.util');
+jest.mock('../../src/services/media.service');
 
 describe('Unmocked: User Model', () => {
   describe('UserModel.create', () => {

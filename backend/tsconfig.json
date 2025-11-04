@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "lib": ["es2023"],
+    "lib": ["es2023", "dom"],
     "module": "nodenext",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "jest.setup.ts"],
+  "exclude": ["node_modules", "dist", "jest.config.ts"]
 }

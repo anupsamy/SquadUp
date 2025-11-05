@@ -84,9 +84,8 @@ export class GroupController {
     if (!validatedJoinCodeForFind) {
       res.status(400).json({
         message: 'Invalid joinCode',
-        data: null,
-        error: 'ValidationError',
-        details: null,
+        data: {} as any,
+        error: Error('ValidationError')
       });
       return;
     }
@@ -111,58 +110,6 @@ export class GroupController {
       logger.error('Failed to fetch group by joinCode:', error);
       res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + error });
       //next(error);
-    }
-  }
-
-
-  getGroup(req: Request, res: Response<GetGroupResponse>) {
-    const group = req.group;
-    if (!group) {
-      return res.status(404).json({
-        message: 'Group not found',
-      });
-    }
-    res.status(200).json({
-      message: 'Group fetched successfully',
-      data: { group },
-    });
-  }
-
-  async updateGroup(
-    req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
-  ) {
-    try {
-      const group = req.group;
-      if (!group) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
-
-      const updatedGroup = await groupModel.update(group._id, req.body as Partial<IGroup>);
-
-      if (!updatedGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
-
-      res.status(200).json({
-        message: 'Group info updated successfully',
-        data: { group: updatedGroup },
-      });
-    } catch (error) {
-      logger.error('Failed to update group info:', error);
-
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
-
-      next(error);
     }
   }
 
@@ -336,9 +283,7 @@ export class GroupController {
     if (!validatedJoinCodeForFind) {
       res.status(400).json({
         message: 'Invalid joinCode',
-        data: null,
-        error: 'ValidationError',
-        details: null,
+        error: 'ValidationError'
       });
       return;
     }
@@ -426,9 +371,7 @@ async updateMidpointByJoinCode(
     if (!validatedJoinCodeForFind) {
       res.status(400).json({
         message: 'Invalid joinCode',
-        data: null,
-        error: 'ValidationError',
-        details: null,
+        error: 'ValidationError'
       });
       return;
     }

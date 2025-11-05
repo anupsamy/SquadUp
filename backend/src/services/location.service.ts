@@ -1,4 +1,4 @@
-import { Client } from "@googlemaps/google-maps-services-js";
+import { Client, TravelMode } from "@googlemaps/google-maps-services-js";
 import type { LocationInfo, GeoLocation } from "../types/location.types";
 import { Activity } from "../types/group.types";
 
@@ -20,7 +20,7 @@ export class LocationService {
           origins: [`${origin.lat},${origin.lng}`],
           destinations: [`${destination.lat},${destination.lng}`],
           key: mapsApiKey,
-          mode: origin.transitType as unknown,
+          mode: origin.transitType as TravelMode,
         },
       });
 

@@ -314,7 +314,7 @@ These tests measure the API response time for fetching group information to ensu
 | The app confirms action success | Check that a dialog is opened with the message “Settings saved successfully!”. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![Update Expected People Logs](images/m4-logs/UG-expected-people.png)
 
 ---
 
@@ -334,7 +334,7 @@ These tests measure the API response time for fetching group information to ensu
 | App confirms action success | Check that a dialog is opened with the message “Settings saved successfully!”. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![Update Expected People Logs](images/m4-logs/UG-event-time.png)
 
 ---
 
@@ -352,7 +352,7 @@ These tests measure the API response time for fetching group information to ensu
 | App confirms action success | Check that a dialog is opened with “Settings saved successfully!”. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![Update Expected People Logs](images/m4-logs/UG-member-address.png)
 
 ---
 
@@ -369,7 +369,7 @@ These tests measure the API response time for fetching group information to ensu
 | App confirms action success | Check dialog shows “Settings saved successfully!”. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![Update Expected People Logs](images/m4-logs/UG-transit.png)
 
 ---
 
@@ -385,7 +385,7 @@ These tests measure the API response time for fetching group information to ensu
 | Screen updates with map and pins | Check map appears with location pins. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![Update Expected People Logs](images/m4-logs/UG-midpoint.png)
 
 ---
 
@@ -402,7 +402,7 @@ These tests measure the API response time for fetching group information to ensu
 | App confirms action success | Check dialog shows “Activity selected successfully!”. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![Update Expected People Logs](images/m4-logs/UG-select-activity.png)
 
 
 ---

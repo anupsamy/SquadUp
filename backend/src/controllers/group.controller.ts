@@ -590,7 +590,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
       const rawActivityName = activity.name;
       const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
-      
+
       // Send WebSocket notification
       wsService.notifyGroupUpdate(
         joinCode,
@@ -622,7 +622,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       const leaderId = updatedGroup.groupLeaderId?.id || '';
       const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
       const activityName = activity.name || 'an activity';
-      
+
       // Send WebSocket notification
       wsService.notifyGroupUpdate(
         joinCode,

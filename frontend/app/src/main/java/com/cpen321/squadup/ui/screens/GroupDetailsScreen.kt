@@ -33,6 +33,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
@@ -163,13 +164,20 @@ fun GroupDetailsScreen(
                         )
                         Text(
                             text = group.meetingTime,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.testTag("groupMeetingTime")
                         )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate(NavRoutes.MAIN) }){
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(
+                        onClick = { navController.navigate(NavRoutes.MAIN) },
+                        modifier = Modifier.testTag("backButtonGroupDetails")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 actions = {

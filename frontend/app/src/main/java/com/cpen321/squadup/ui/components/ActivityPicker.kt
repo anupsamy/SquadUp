@@ -28,12 +28,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.testTag
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.launch
 @Composable
 fun ActivityPicker(
@@ -59,7 +61,7 @@ fun ActivityPicker(
             Text(
                 text = "No activities found within the radius. Try a group with a new activity type",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     } else {
@@ -82,7 +84,8 @@ fun ActivityPicker(
                             priceLevel = activity.priceLevel,
                             type = activity.type,
                             isSelected = activity.placeId == selectedActivityId,
-                            onClick = { viewModel.selectActivity(activity.placeId) }
+                            onClick = { viewModel.selectActivity(activity.placeId)},
+                            modifier = Modifier.testTag("activityCard")
                         )
                     }
                 }

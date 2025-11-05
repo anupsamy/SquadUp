@@ -183,10 +183,10 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
                 };
 
                 // Mock findByJoinCode to return a group (so first check passes)
-                jest.spyOn(groupModel, 'findByJoinCode').mockResolvedValueOnce({ 
-                    joinCode, 
+                jest.spyOn(groupModel, 'findByJoinCode').mockResolvedValueOnce({
+                    joinCode,
                     groupName: 'Test Group',
-                    groupMemberIds: [] 
+                    groupMemberIds: []
                 } as any);
 
                 // Mock updateGroupByJoinCode to return null

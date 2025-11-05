@@ -165,8 +165,14 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.ui.automator)
+    //androidTestImplementation(libs.androidx.material3)
+    // Compose BOM - manages versions for all Compose dependencies
     androidTestImplementation(platform(libs.androidx.compose.bom))
+
+    // Test rules and transitive dependencies:
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
+    // Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }

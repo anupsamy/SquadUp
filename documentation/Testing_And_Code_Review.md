@@ -415,21 +415,126 @@ These tests measure the API response time for fetching group information to ensu
 
 ### 5.2. Unfixed Issues per Codacy Category
 
-_(Placeholder for screenshots of Codacy's Category Breakdown table in Overview)_
+![Codacy Categories](images/m4-codacy/codacy-cat.png)
 
 ### 5.3. Unfixed Issues per Codacy Code Pattern
-
-_(Placeholder for screenshots of Codacy's Issues page)_
+#### Detect CRLF Injection in Logs:
+![Codacy Issues](images/m4-codacy/codacy-crlf.png)
+#### Avoid Catching Too Generic Exceptions
+![Codacy Issues](images/m4-codacy/codacy-generic.png)
+#### Avoid long Methods
+![Codacy Issues](images/m4-codacy/codacy-long.png)
+#### Detect Non-Literal Filename in fs Calls:
+![Codacy Issues](images/m4-codacy/codacy-non-literal.png)
+#### Detect Object Injection:
+![Codacy Issues](images/m4-codacy/codacy-ob-inject.png)
+#### Others
+![Codacy Issues](images/m4-codacy/codacy-other.png)
 
 ### 5.4. Justifications for Unfixed Issues
 
-- **Code Pattern: [Usage of Deprecated Modules](#)**
+- **Code Pattern: Avoid Long Methods**
 
   1. **Issue**
+     
+     - UI composables have different structure (ActivityPicker, GroupListScreen, MemberActivityMapView, handleNavigationEvent).
+     - Splitting must respect state hoisting, recomposition boundaries, and preview support.
+     - Over-fragmenting can reduce readability and add unnecessary indirection.
 
-     - **Location in Git:** [`src/services/chatService.js#L31`](#)
-     - **Justification:** ...
+  2. **Justification**
+     
+     - **Functional correctness prioritized:** Focused on runtime issues (crashes, WebSocket, Google Sign-In). These are code quality warnings, not blocking bugs.
+     - **Refactoring requires careful testing:** Splitting composables can change recomposition behavior. UI tests and manual verification needed. Risk of regressions outweighs immediate benefits.
+     - **Natural cohesion:** Some screens (e.g., GroupListScreen at 132 lines) encapsulate related UI and state. Breaking them up may not improve clarity.
+     - **Technical debt acknowledgment:** Tracked for future refactoring sprints. Low priority relative to functionality and stability.
 
-  2. ...
+---
+
+- **Code Pattern: Detect Non-Literal Filename in fs Calls**
+
+  1. **Issue**
+     
+     - Dynamic paths are required for user uploads, temporary files, and media processing.
+     - Hardcoding paths would break these features.
+
+  2. **Justification**
+     
+     - **Validation appears in place:** Variables use validatedExistsPath, validatedUnlinkPath, validatedMkdirPathFinal.
+     - **Common, acceptable pattern when mitigated:** Many backend apps use dynamic paths; risk mitigated by robust validation.
+
+---
+
+- **Code Pattern: Avoid Catching Too Generic Exceptions**
+
+  1. **Issue**
+     
+     - MainActivity.kt (Line 81): Generic catch at top-level prevents app crashes.
+     - GroupRepositoryImpl.kt (Line 184): Repositories abstract multiple data sources which may throw various exceptions.
+
+  2. **Justification**
+     
+     - **Top-level safety and app stability:** Prevents hard crashes and preserves responsiveness.
+     - **Repository abstraction layer:** Generic catch encapsulates all data access errors, returns consistent error states (Result.Error or null), prevents exceptions from leaking into ViewModels/UI, and enables proper UI error messages.
+
+---
+
+- **Code Pattern: Detect Object Injection**
+
+  1. **Issue**
+     
+     - Backend array/object accesses use validatedIndex (e.g., travelTimes[validatedIndex], geoLocation[validatedIndex]).
+     - Dynamic access is required for functionality.
+
+  2. **Justification**
+     
+     - **Use of validatedIndex indicates prior validation:** Ensures indices are in bounds and string keys are safe (no __proto__, constructor, prototype injection).
+     - **Dynamic access is necessary:** Common pattern in backend services; mitigated by validation.
+
+---
+
+- **Code Pattern: Detect CRLF Injection in Logs**
+
+  1. **Issue**
+     
+     - Dynamic logging required (backend/src/utils/logger.util.ts: console.log(finalMessage, ...sanitizedArgs)).
+     - Restricting to literals would break debugging, monitoring, and auditing.
+
+  2. **Justification**
+     
+     - **Sanitization appears to be in place:** sanitizeInput.util.ts exists for CRLF removal. finalMessage and sanitizedArgs are pre-sanitized.
+     - **Input sanitization is correct defense:** Restricting logging is unnecessary if inputs are sanitized properly.
+
+---
+
+- **Code Pattern: Code Complexity — ActivityCard has too many parameters (MEDIUM)**
+
+  1. **Issue**
+     
+     - Flags functions with many parameters, reducing readability, testability, and maintainability.
+     - ActivityCard parameters: name, address, rating, userRatingsTotal, priceLevel, type, isSelected, onClick, modifier.
+
+  2. **Justification**
+     
+     - **Jetpack Compose composable pattern:** Multiple parameters define data, state, behavior, styling.
+     - **Recomposition optimization:** Separate parameters allow Compose to recompose only when specific values change.
+     - **API clarity:** Explicit parameters improve contract visibility and type safety.
+     - **Refactoring trade-offs:** Creating a data class would add indirection and reduce cohesion; current structure aligns with Compose best practices.
+
+---
+
+- **Code Pattern: Security / Unexpected Behaviour — Detect inappropriate function body content (CRITICAL)**
+
+  1. **Issue**
+     
+     - False positive flagged line: `mongoose.connection.on('error', (error: Error): void => {`
+     - Static analyzer interpreted error callback as problematic.
+
+  2. **Justification**
+     
+     - **False positive:** Standard, essential error handling for Mongoose connections.
+     - **Standard practice:** Listening for connection errors ensures application resilience, error logging, monitoring, and graceful degradation.
+     - **Critical functionality:** Removing handler reduces reliability; code is necessary and secure.
+     - **Tool limitation:** Static analyzer misinterpreted safe code. No security vulnerability exists.
+
 
 - ...

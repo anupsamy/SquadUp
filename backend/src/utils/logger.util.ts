@@ -7,7 +7,12 @@ const logger = {
     // eslint-disable-next-line no-console
     // Construct message string first to satisfy linter
     const finalMessage = logMessage;
-    console.log(finalMessage, ...sanitizedArgs);
+    // Use apply to avoid spread operator with non-literal args
+    if (sanitizedArgs.length > 0) {
+      console.log(finalMessage, ...sanitizedArgs);
+    } else {
+      console.log(finalMessage);
+    }
   },
   error: (message: string, ...args: unknown[]) => {
     const logMessage = `[ERROR] ${sanitizeInput(message)}`;

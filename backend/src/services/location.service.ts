@@ -69,12 +69,16 @@ async getActivityList(
   maxResults = 10
 ): Promise<Activity[]> {
   try {
+    const mapsApiKey = process.env.MAPS_API_KEY;
+    if (!mapsApiKey) {
+      throw new Error('MAPS_API_KEY environment variable is not set');
+    }
     const response = await this.mapsClient.placesNearby({
       params: {
         location: `${location.lat},${location.lng}`,
         radius,
         type,
-        key: process.env.MAPS_API_KEY!,
+        key: mapsApiKey,
       },
     });
 
@@ -175,13 +179,18 @@ async getActivityList(
         continue;
       }
       // Validate array element access to prevent object injection
-      const rawWeightValue = travelTimes[j];
+      // Ensure j is a valid number index before accessing array
+      const validatedIndex = typeof j === 'number' && j >= 0 && j < travelTimes.length && j < geoLocation.length ? j : -1;
+      if (validatedIndex === -1) {
+        continue;
+      }
+      const rawWeightValue = travelTimes[validatedIndex];
       const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
       const weight = isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       
       // Validate array element access to prevent object injection
-      const geoLocationItemValue = geoLocation[j];
+      const geoLocationItemValue = geoLocation[validatedIndex];
       const geoLocationItem = geoLocationItemValue;
       // TypeScript guarantees lat and lng exist on GeoLocation
       const rawLat = geoLocationItem.lat;

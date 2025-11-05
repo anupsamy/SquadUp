@@ -25,11 +25,9 @@ export interface AuthResult {
   user: IUser;
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: IUser;
-      group?:IGroup;
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: IUser;
+    group?: IGroup;
   }
 }

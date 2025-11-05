@@ -102,10 +102,12 @@ export class UserModel {
   ): Promise<IUser | null> {
     try {
       const validatedData = updateProfileSchema.parse(user);
+      // Type assertion for validated data
+      const typedValidatedData: Partial<IUser> = validatedData as Partial<IUser>;
 
       const updatedUser = await this.user.findByIdAndUpdate(
         userId,
-        validatedData,
+        typedValidatedData,
         {
           new: true,
         }

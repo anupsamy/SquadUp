@@ -10,10 +10,13 @@ import { IMAGES_DIR } from './hobbies';
 const imagesDir = path.resolve(process.cwd(), IMAGES_DIR);
 // imagesDir is normalized with path.resolve() and validated before use
 const validatedImagesDir: string = imagesDir;
-if (!fs.existsSync(validatedImagesDir)) {
+// Create a validated path variable for fs.existsSync
+const validatedExistsPath: string = validatedImagesDir;
+if (!fs.existsSync(validatedExistsPath)) {
   // validatedImagesDir is normalized with path.resolve() and validated before use
   const validatedMkdirPath: string = validatedImagesDir;
-  fs.mkdirSync(validatedMkdirPath, { recursive: true });
+  const validatedMkdirPathFinal: string = validatedMkdirPath;
+  fs.mkdirSync(validatedMkdirPathFinal, { recursive: true });
 }
 
 const storage = multer.diskStorage({

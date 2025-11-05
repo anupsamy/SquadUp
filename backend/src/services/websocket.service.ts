@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { Server, IncomingMessage } from 'http';
+import { Server } from 'http';
 import logger from '../utils/logger.util';
 
 export interface WebSocketMessage {
@@ -121,9 +121,11 @@ export class WebSocketService {
         this.sendMessage(ws, { type: 'pong', timestamp: new Date().toISOString() });
         break;
       
-      default:
+      default: {
         const typeString = typeof type === 'string' ? type : String(type);
         this.sendError(ws, `Unknown message type: ${typeString}`);
+        break;
+      }
     }
   }
 

@@ -137,10 +137,12 @@ export class GroupModel {
     ): Promise<IGroup | null> {
       try {
         const validatedData = updateGroupSchema.parse(group);
+        // Type assertion for validated data to match Mongoose UpdateQuery type
+        const typedValidatedData = validatedData as Partial<IGroup>;
 
         const updatedGroup = await this.group.findByIdAndUpdate(
           groupId,
-          validatedData,
+          typedValidatedData,
           {
             new: true,
           }
@@ -162,9 +164,11 @@ export class GroupModel {
         console.error('GroupModel update by joinCode group:', group);
         const validatedData = updateGroupSchema.parse(group);
         console.error('GroupModel validatedData:', validatedData);
+        // Type assertion for validated data to match Mongoose UpdateQuery type
+        const typedValidatedData = validatedData as Partial<IGroup>;
         const updatedGroup = await this.group.findOneAndUpdate(
           {joinCode},
-          validatedData,
+          typedValidatedData,
           {
             new: true,
           }

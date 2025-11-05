@@ -614,19 +614,21 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
     // Update the group with the selected activity
     // Validate activity type before passing to model
-    const validatedActivity: Activity = typeof activity === 'object' && activity !== null && 'placeId' in activity && 'name' in activity ? activity as Activity : {
-      placeId: '',
-      name: '',
-      address: '',
-      rating: 0,
-      userRatingsTotal: 0,
-      priceLevel: 0,
-      type: '',
-      latitude: 0,
-      longitude: 0,
-      businessStatus: '',
-      isOpenNow: false,
-    };
+    const validatedActivity: Activity = typeof activity === 'object' && activity !== null && 'placeId' in activity && 'name' in activity
+      ? (activity as Activity)
+      : {
+          placeId: '',
+          name: '',
+          address: '',
+          rating: 0,
+          userRatingsTotal: 0,
+          priceLevel: 0,
+          type: '',
+          latitude: 0,
+          longitude: 0,
+          businessStatus: '',
+          isOpenNow: false,
+        };
     const updatedGroup = await groupModel.updateSelectedActivity(joinCode, validatedActivity);
 
     // Send notifications to group members

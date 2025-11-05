@@ -16,6 +16,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.tasks.await
+import java.io.IOException
 
 import dagger.Module
 import dagger.Provides
@@ -53,7 +54,7 @@ class PlacesRepository @Inject constructor(
         return try {
             val response = placesClient.findAutocompletePredictions(request).await()
             response.autocompletePredictions
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             e.printStackTrace()
             emptyList()
         }
@@ -82,7 +83,7 @@ class PlacesRepository @Inject constructor(
                 lng = place.location?.longitude, // Used to be latLng
                 components = place.addressComponents?.asAddressComponents()
             )
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             e.printStackTrace()
             null
         }

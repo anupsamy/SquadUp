@@ -79,25 +79,49 @@ async getActivityList(
     // console.log("getting activities list", response.data.results);
     // console.log("First object details", response.data.results[0]);
 
-    return (response.data.results || [])
-      .map(place => {
-        const loc = place.geometry?.location;
-        if (!place.name || !loc) return null;
+    const results = response.data.results;
+    const resultsArray: unknown[] = Array.isArray(results) ? results : [];
+    
+    return resultsArray
+      .map((place: unknown): Activity | null => {
+        if (typeof place !== 'object' || place === null) return null;
+        
+        const placeObj = place as {
+          name?: unknown;
+          place_id?: unknown;
+          vicinity?: unknown;
+          rating?: unknown;
+          user_ratings_total?: unknown;
+          price_level?: unknown;
+          types?: unknown[];
+          opening_hours?: { open_now?: unknown };
+          business_status?: unknown;
+          geometry?: { location?: { lat?: unknown; lng?: unknown } };
+        };
+        
+        const loc = placeObj.geometry?.location;
+        if (!placeObj.name || typeof placeObj.name !== 'string' || !loc) return null;
+        
+        if (typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return null;
 
-        const primaryType = place.types?.[0] || "establishment";
-        const openNow = place.opening_hours?.open_now ?? false;
+        const primaryType = (Array.isArray(placeObj.types) && typeof placeObj.types[0] === 'string') 
+          ? placeObj.types[0] 
+          : "establishment";
+        const openNow = typeof placeObj.opening_hours?.open_now === 'boolean' 
+          ? placeObj.opening_hours.open_now 
+          : false;
 
         return {
-          name: place.name,
-          placeId: place.place_id,
-          address: place.vicinity,
-          rating: place.rating ?? 0,
-          userRatingsTotal: place.user_ratings_total ?? 0,
-          priceLevel: place.price_level ?? 0,
+          name: placeObj.name,
+          placeId: typeof placeObj.place_id === 'string' ? placeObj.place_id : '',
+          address: typeof placeObj.vicinity === 'string' ? placeObj.vicinity : '',
+          rating: typeof placeObj.rating === 'number' ? placeObj.rating : 0,
+          userRatingsTotal: typeof placeObj.user_ratings_total === 'number' ? placeObj.user_ratings_total : 0,
+          priceLevel: typeof placeObj.price_level === 'number' ? placeObj.price_level : 0,
           type: primaryType,
           latitude: loc.lat,
           longitude: loc.lng,
-          businessStatus: place.business_status ?? "UNKNOWN",
+          businessStatus: typeof placeObj.business_status === 'string' ? placeObj.business_status : "UNKNOWN",
           isOpenNow: openNow,
         };
       })
@@ -142,13 +166,21 @@ async getActivityList(
 
     for (let j = 0; j < geoLocation.length; j++) {
       //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
+      // Validate array access to prevent object injection: ensure index is in bounds
+      if (!Array.isArray(travelTimes) || j < 0 || j >= travelTimes.length) {
+        continue;
+      }
       const rawWeight = travelTimes[j];
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
       const weight = typeof rawWeight === 'number' && isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       
       // Validate lat and lng to prevent object injection: ensure they are finite numbers within valid ranges
-      const rawLat = geoLocation[j].lat;
-      const rawLng = geoLocation[j].lng;
+      const geoLocationItem = geoLocation[j];
+      if (typeof geoLocationItem !== 'object' || geoLocationItem === null || !('lat' in geoLocationItem) || !('lng' in geoLocationItem)) {
+        continue;
+      }
+      const rawLat = geoLocationItem.lat;
+      const rawLng = geoLocationItem.lng;
       const lat = typeof rawLat === 'number' && isFinite(rawLat) && rawLat >= -90 && rawLat <= 90 ? rawLat : 0;
       const lng = typeof rawLng === 'number' && isFinite(rawLng) && rawLng >= -180 && rawLng <= 180 ? rawLng : 0;
       

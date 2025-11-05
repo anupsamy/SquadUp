@@ -13,9 +13,7 @@ router.post(
   upload.single('media'),
   (req, res, next) => {
     mediaController.uploadImage(req, res, next).catch((error) => {
-      if (next) {
-        next(error);
-      }
+      next(error);
     });
   }
 );

@@ -15,19 +15,15 @@ router.post(
   '/profile',
   validateBody<UpdateProfileRequest>(updateProfileSchema),
   (req, res, next) => {
-    userController.updateProfile(req, res, next).catch((error) => {
-      if (next) {
-        next(error);
-      }
+    userController.updateProfile(req, res, next).catch((error: unknown) => {
+      next(error);
     });
   }
 );
 
 router.delete('/profile', (req, res, next) => {
-  userController.deleteProfile(req, res, next).catch((error) => {
-    if (next) {
-      next(error);
-    }
+  userController.deleteProfile(req, res, next).catch((error: unknown) => {
+    next(error);
   });
 });
 

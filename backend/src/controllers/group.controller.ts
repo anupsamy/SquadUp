@@ -197,10 +197,6 @@ export class GroupController {
           const memberId: string = typeof member.id === 'string' ? member.id : '';
           return memberId;
         });
-        const newMemberIds = validatedGroupMemberIds.map(member => {
-          const memberId: string = typeof member.id === 'string' ? member.id : '';
-          return memberId;
-        });
 
         // Find new members (users who joined)
         const joinedMembers = validatedGroupMemberIds.filter(member => {
@@ -219,7 +215,7 @@ export class GroupController {
             updatedGroup.groupName
           );
           // FCM topic notification (clients subscribe to topic == joinCode)
-          sendGroupJoinFCM(validatedJoinCode, memberName, updatedGroup.groupName, memberId).catch((error) => {
+          sendGroupJoinFCM(validatedJoinCode, memberName, updatedGroup.groupName, memberId).catch((error: unknown) => {
             logger.error('Failed to send group join FCM notification:', error);
           });
         });
@@ -580,7 +576,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
         updatedGroup.groupName,
         leaderId,
         activityDataStr
-      ).catch((error) => {
+      ).catch((error: unknown) => {
         logger.error('Failed to send activity selected FCM notification:', error);
       });
     }
@@ -678,7 +674,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
           currentGroup.groupName
         );
         // FCM topic notification (clients subscribe to topic == joinCode)
-        sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id).catch((error) => {
+        sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id).catch((error: unknown) => {
           logger.error('Failed to send group leave FCM notification:', error);
         });
       }

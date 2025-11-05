@@ -7,7 +7,11 @@ import logger from '../utils/logger.util';
 const router = Router();
 const groupController = new GroupController();
 
-router.get('/info', groupController.getAllGroups.bind(groupController));
+router.get('/info', (req, res, next) => {
+  groupController.getAllGroups(req, res, next).catch((error: unknown) => {
+    next(error);
+  });
+});
 
 router.get(
     '/activities',
@@ -22,7 +26,7 @@ router.get(
 router.post(
     '/activities/select',
     (req, res) => {
-      groupController.selectActivity(req, res).catch((error) => {
+      groupController.selectActivity(req, res).catch((error: unknown) => {
         // Error handling is done in the controller method
         logger.error('Unhandled error in selectActivity:', error);
       });
@@ -32,7 +36,9 @@ router.post(
 router.get(
     '/:joinCode', // Define the route parameter
     (req, res, next) => {
-      void groupController.getGroupByJoinCode(req, res, next);
+      groupController.getGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
     }
 );
 // Route to create a group
@@ -40,10 +46,8 @@ router.post( //have seperate endpoint for updating?
     '/create',
     validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
     (req, res, next) => {
-      groupController.createGroup(req, res, next).catch((error) => {
-        if (next) {
-          next(error);
-        }
+      groupController.createGroup(req, res, next).catch((error: unknown) => {
+        next(error);
       });
     }
 );
@@ -60,10 +64,8 @@ router.post(
     '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
     (req, res, next) => {
-      groupController.updateGroupByJoinCode(req, res, next).catch((error) => {
-        if (next) {
-          next(error);
-        }
+      groupController.updateGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
       });
     }
 );
@@ -71,10 +73,8 @@ router.post(
 router.delete(
     '/delete/:joinCode', // Define the route parameter
     (req, res, next) => {
-      groupController.deleteGroupByJoinCode(req, res, next).catch((error) => {
-        if (next) {
-          next(error);
-        }
+      groupController.deleteGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
       });
     }
 );
@@ -92,10 +92,8 @@ router.post(
 router.post(
     '/leave/:joinCode', // Define the route parameter
     (req, res, next) => {
-      groupController.leaveGroup(req, res, next).catch((error) => {
-        if (next) {
-          next(error);
-        }
+      groupController.leaveGroup(req, res, next).catch((error: unknown) => {
+        next(error);
       });
     }
 );

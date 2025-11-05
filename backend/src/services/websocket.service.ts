@@ -80,12 +80,24 @@ export class WebSocketService {
   }
 
   private handleMessage(ws: WebSocket, message: unknown) {
-    const { type, userId, joinCode } = message;
+    if (typeof message !== 'object' || message === null) {
+      this.sendError(ws, 'Invalid message format');
+      return;
+    }
+
+    const messageObj = message as Record<string, unknown>;
+    const { type, userId, joinCode } = messageObj;
 
     switch (type) {
       case 'subscribe':
         if (userId && joinCode) {
-          this.subscribeToGroup(ws, userId, joinCode);
+          const validatedUserId: string = typeof userId === 'string' ? userId : '';
+          const validatedJoinCode: string = typeof joinCode === 'string' ? joinCode : '';
+          if (validatedUserId && validatedJoinCode) {
+            this.subscribeToGroup(ws, validatedUserId, validatedJoinCode);
+          } else {
+            this.sendError(ws, 'Missing userId or joinCode for subscription');
+          }
         } else {
           this.sendError(ws, 'Missing userId or joinCode for subscription');
         }
@@ -93,7 +105,13 @@ export class WebSocketService {
       
       case 'unsubscribe':
         if (userId && joinCode) {
-          this.unsubscribeFromGroup(ws, userId, joinCode);
+          const validatedUserId: string = typeof userId === 'string' ? userId : '';
+          const validatedJoinCode: string = typeof joinCode === 'string' ? joinCode : '';
+          if (validatedUserId && validatedJoinCode) {
+            this.unsubscribeFromGroup(ws, validatedUserId, validatedJoinCode);
+          } else {
+            this.sendError(ws, 'Missing userId or joinCode for unsubscription');
+          }
         } else {
           this.sendError(ws, 'Missing userId or joinCode for unsubscription');
         }

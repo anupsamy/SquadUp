@@ -61,12 +61,12 @@ class MainActivity : ComponentActivity() {
         askNotificationPermission()
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
+            if (task.isSuccessful) {
+                val token = task.result
+                Log.d("FCM", "FCM Token: $token")
+            } else {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
-                return@addOnCompleteListener
             }
-            val token = task.result
-            Log.d("FCM", "FCM Token: $token")
         }
 
         // Initialize WebSocketManager

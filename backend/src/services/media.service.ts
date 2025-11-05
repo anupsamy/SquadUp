@@ -8,14 +8,18 @@ export class MediaService {
     try {
       const fileExtension = path.extname(filePath);
       const fileName = `${userId}-${Date.now()}${fileExtension}`;
-      const newPath = path.join(IMAGES_DIR, fileName);
+      const imagesDir = path.join(process.cwd(), IMAGES_DIR);
+      const newPath = path.join(imagesDir, fileName);
 
       fs.renameSync(filePath, newPath);
 
       return Promise.resolve(newPath.split(path.sep).join('/'));
     } catch (error) {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      // Validate and normalize file path before checking existence
+      // Multer provides absolute paths, but we normalize to ensure safety
+      const normalizedFilePath = path.resolve(filePath);
+      if (fs.existsSync(normalizedFilePath)) {
+        fs.unlinkSync(normalizedFilePath);
       }
       const errorMessage = error instanceof Error ? error.message : String(error);
       return Promise.reject(new Error(`Failed to save profile picture: ${errorMessage}`));

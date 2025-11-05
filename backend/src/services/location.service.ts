@@ -159,45 +159,6 @@ async getActivityList(
   return midpoint;
 }
 
-//   async findMultipleMeetingPoints(
-//   users: UserLocation[],
-//   transitType: string,
-//   k: number = 3,
-//   maxIterations: number = 20,
-//   epsilon: number = 1e-5
-// ): Promise<UserLocation[]> {
-
-//   if (users.length <= k) return users.map(u => ({ lat: u.lat, lng: u.lng }));
-//   let centroids: UserLocation[] = users.slice(0, k).map(u => ({ lat: u.lat, lng: u.lng }));
-
-//   for (let iter = 0; iter < maxIterations; iter++) {
-//     const clusters: UserLocation[][] = Array.from({ length: k }, () => []);
-
-//     for (const user of users) {
-//       const times = await Promise.all(centroids.map(c => this.getTravelTime(user, c, transitType)));
-//       const nearestIndex = times.indexOf(Math.min(...times));
-//       clusters[nearestIndex].push(user);
-//     }
-
-//     let converged = true;
-//     for (let i = 0; i < k; i++) {
-//       if (clusters[i].length === 0) continue;
-
-//       let newCentroid = await this.findOptimalMeetingPoint(clusters[i], transitType, 10, epsilon);
-//       const delta = Math.sqrt(
-//         (newCentroid.lat - centroids[i].lat) ** 2 + (newCentroid.lng - centroids[i].lng) ** 2
-//       );
-
-//       if (delta > epsilon) converged = false;
-//       centroids[i] = newCentroid;
-//     }
-
-//     if (converged) break;
-//   }
-
-//   return centroids;
-// }
-
 }
 
 export const locationService = new LocationService();

@@ -1,7 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
-
-import { HOBBIES } from './hobbies';
 import {
     BasicGroupInfo,
   basicGroupSchema,
@@ -127,8 +125,6 @@ export class GroupModel {
     async findAll(): Promise<IGroup[]> {
       try {
         const groups = await this.group.find(); // Fetch all groups
-        // console.error('GroupModel findAll 1:', groups[4].groupMemberIds);
-        // console.error('GroupModel findAll 2:', groups[4]);
         return groups;
       } catch (error) {
         logger.error('Error fetching all groups:', error);

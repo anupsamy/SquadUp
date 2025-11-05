@@ -57,7 +57,7 @@ android {
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
-                "\"401885055971-1jdbm4p5ferqrit0cbi73ie3664ejlpi.apps.googleusercontent.com\""
+                "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\""
             )
         }
 

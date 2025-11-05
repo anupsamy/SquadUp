@@ -72,41 +72,18 @@ class MainActivity : ComponentActivity() {
         // Initialize WebSocketManager
         // For local testing, use: ws://10.0.2.2:3000/ws (Android emulator)
         // For AWS staging, use: ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws
-        val wsUrl = if (BuildConfig.FLAVOR == "staging") {
-            "ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws"
-        } else {
-            "ws://10.0.2.2:3000/ws" // Local development
+        val wsUrl = try {
+            if (BuildConfig.FLAVOR == "staging") {
+                "ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws"
+            } else {
+                "ws://10.0.2.2:3000/ws" // Local development
+            }
+        } catch (e: Exception) {
+            Log.w("WebSocket", "Error reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
+            "ws://10.0.2.2:3000/ws"
         }
-        Log.d("WebSocket", "Connecting to: $wsUrl")
-        wsManager = WebSocketManager(wsUrl)
-
-        // Set listener callback to handle incoming messages
-        wsManager.setListener(object : WebSocketManager.WebSocketListenerCallback {
-            override fun onMessageReceived(message: String) {
-                Log.d("WebSocket", "Received message: $message")
-                
-                // Handle notifications through the notification manager
-                notificationManager.handleWebSocketMessage(message)
-                
-                // Also pass to chat view model for testing
-                chatViewModel.onNewMessage(message)
-            }
-
-            override fun onConnectionStateChanged(isConnected: Boolean) {
-                Log.d("WebSocket", "Connection state changed: $isConnected")
-                if (!isConnected) {
-                    Log.e("WebSocket", "WebSocket connection failed. Check:")
-                    Log.e("WebSocket", "1. AWS server is running")
-                    Log.e("WebSocket", "2. Security groups allow port 3000")
-                    Log.e("WebSocket", "3. WebSocket service is active on server")
-                }
-                chatViewModel.onConnectionStateChanged(isConnected)
-            }
-        })
-
-        // Start connection
-        wsManager.start()
-
+        Log.d("WebSocket", "Will connect to: $wsUrl")
+        
         setContent {
             UserManagementTheme {
                 UserManagementApp()
@@ -118,15 +95,63 @@ class MainActivity : ComponentActivity() {
                 // ChatScreen(viewModel = chatViewModel)
             }
         }
+        
+        // Initialize WebSocket AFTER UI is set up to avoid blocking onCreate
+        // Post to main thread to ensure UI is rendered first
+        window.decorView.post {
+            try {
+                wsManager = WebSocketManager(wsUrl)
+                
+                // Set listener callback to handle incoming messages
+                wsManager.setListener(object : WebSocketManager.WebSocketListenerCallback {
+                    override fun onMessageReceived(message: String) {
+                        Log.d("WebSocket", "Received message: $message")
+                        
+                        // Handle notifications through the notification manager
+                        try {
+                            if (::notificationManager.isInitialized) {
+                                notificationManager.handleWebSocketMessage(message)
+                            }
+                        } catch (e: Exception) {
+                            Log.e("WebSocket", "Error handling notification: ${e.message}")
+                        }
+                        
+                        // Also pass to chat view model for testing
+                        chatViewModel.onNewMessage(message)
+                    }
+
+                    override fun onConnectionStateChanged(isConnected: Boolean) {
+                        Log.d("WebSocket", "Connection state changed: $isConnected")
+                        if (!isConnected) {
+                            Log.e("WebSocket", "WebSocket connection failed. Check:")
+                            Log.e("WebSocket", "1. AWS server is running")
+                            Log.e("WebSocket", "2. Security groups allow port 80")
+                            Log.e("WebSocket", "3. WebSocket service is active on server")
+                        }
+                        chatViewModel.onConnectionStateChanged(isConnected)
+                    }
+                })
+
+                // Start connection
+                Log.d("WebSocket", "Starting WebSocket connection...")
+                wsManager.start()
+            } catch (e: Exception) {
+                Log.e("WebSocket", "Error initializing WebSocket: ${e.message}", e)
+            }
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         // Cleanly close the websocket when activity is destroyed
         try {
-            wsManager.stop()
+            if (::wsManager.isInitialized) {
+                wsManager.stop()
+            }
         } catch (e: IOException) {
             Log.w("WebSocket", "Error stopping websocket: ${e.message}")
+        } catch (e: Exception) {
+            Log.w("WebSocket", "Error in onDestroy: ${e.message}")
         }
     }
 

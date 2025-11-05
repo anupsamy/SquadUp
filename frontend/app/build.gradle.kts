@@ -59,6 +59,7 @@ android {
                 "GOOGLE_CLIENT_ID",
                 "\"401885055971-1jdbm4p5ferqrit0cbi73ie3664ejlpi.apps.googleusercontent.com\""
             )
+            buildConfigField("String", "FLAVOR", "\"local\"")
         }
 
         create("staging") {
@@ -79,6 +80,7 @@ android {
                 "GOOGLE_CLIENT_ID",
                 "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
             )
+            buildConfigField("String", "FLAVOR", "\"staging\"")
         }
     }
     compileOptions {

@@ -145,9 +145,16 @@ async getActivityList(
       const rawWeight = travelTimes[j];
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
       const weight = typeof rawWeight === 'number' && isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
+      
+      // Validate lat and lng to prevent object injection: ensure they are finite numbers within valid ranges
+      const rawLat = geoLocation[j].lat;
+      const rawLng = geoLocation[j].lng;
+      const lat = typeof rawLat === 'number' && isFinite(rawLat) && rawLat >= -90 && rawLat <= 90 ? rawLat : 0;
+      const lng = typeof rawLng === 'number' && isFinite(rawLng) && rawLng >= -180 && rawLng <= 180 ? rawLng : 0;
+      
       totalWeight += weight;
-      newLat += geoLocation[j].lat * weight;
-      newLng += geoLocation[j].lng * weight;
+      newLat += lat * weight;
+      newLng += lng * weight;
     }
     if (totalWeight === 0) {
           // Fallback to a simple geographic midpoint if weights are zero

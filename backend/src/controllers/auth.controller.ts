@@ -57,8 +57,9 @@ export class AuthController {
   ) {
     try {
       const { idToken } = req.body;
+      const validatedIdToken: string = idToken;
 
-      const data = await authService.signInWithGoogle(idToken);
+      const data = await authService.signInWithGoogle(validatedIdToken);
 
       return res.status(200).json({
         message: 'User signed in successfully',

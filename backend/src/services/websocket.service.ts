@@ -36,7 +36,7 @@ export class WebSocketService {
   }
 
   private setupWebSocketServer() {
-    this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+    this.wss.on('connection', (ws: WebSocket, _req: IncomingMessage) => {
       logger.info('New WebSocket connection established');
 
       ws.on('message', (data: WebSocket.Data) => {

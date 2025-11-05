@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { GroupController } from '../controllers/group.controller';
 import { validateBody } from '../middleware/validation.middleware';
 import { CreateGroupRequest, createGroupSchema, UpdateGroupRequest, updateGroupSchema } from '../types/group.types';
+import logger from '../utils/logger.util';
 
 const router = Router();
 const groupController = new GroupController();
@@ -20,8 +21,11 @@ router.get(
 
 router.post(
     '/activities/select',
-    (req, res, next) => {
-      void groupController.selectActivity(req, res);
+    (req, res) => {
+      groupController.selectActivity(req, res).catch((error) => {
+        // Error handling is done in the controller method
+        logger.error('Unhandled error in selectActivity:', error);
+      });
     }
 );
 
@@ -56,7 +60,11 @@ router.post(
     '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
     (req, res, next) => {
-      void groupController.updateGroupByJoinCode(req, res, next);
+      groupController.updateGroupByJoinCode(req, res, next).catch((error) => {
+        if (next) {
+          next(error);
+        }
+      });
     }
 );
 
@@ -84,7 +92,11 @@ router.post(
 router.post(
     '/leave/:joinCode', // Define the route parameter
     (req, res, next) => {
-      void groupController.leaveGroup(req, res, next);
+      groupController.leaveGroup(req, res, next).catch((error) => {
+        if (next) {
+          next(error);
+        }
+      });
     }
 );
 
@@ -92,7 +104,7 @@ router.post(
 router.post(
     '/test-notification/:joinCode',
     (req, res, next) => {
-      void groupController.testWebSocketNotification(req, res, next);
+      groupController.testWebSocketNotification(req, res, next);
     }
 );
 

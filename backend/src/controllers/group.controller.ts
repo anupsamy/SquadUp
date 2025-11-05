@@ -362,7 +362,7 @@ export class GroupController {
         });
       }
 
-      console.log("Activities List: " , activityList);
+      logger.debug('Activities List:', activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
@@ -421,7 +421,7 @@ async updateMidpointByJoinCode(
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
 
-      console.log("Activities List: " , activityList);
+      logger.debug('Activities List:', activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
@@ -557,7 +557,8 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     if (wsService && updatedGroup) {
       const leaderId = updatedGroup.groupLeaderId.id || '';
       const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
-      const activityName = activity.name || 'an activity';
+      const rawActivityName = activity.name;
+      const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
       
       // Send WebSocket notification
       wsService.notifyGroupUpdate(

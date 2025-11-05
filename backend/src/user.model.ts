@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
 
-import { HOBBIES } from './hobbies';
 import {
   createUserSchema,
   GoogleUserInfo,

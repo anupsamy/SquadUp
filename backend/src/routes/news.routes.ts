@@ -7,7 +7,7 @@ const router = Router();
 const newsController = new NewsController();
 
 router.post('/hobbies', (req, res) => {
-  newsController.getNewsByHobbies(req, res).catch((error) => {
+  newsController.getNewsByHobbies(req, res).catch((error: unknown) => {
     // Error handling is done in the controller method
     logger.error('Unhandled error in getNewsByHobbies:', error);
   });

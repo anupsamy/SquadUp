@@ -15,7 +15,11 @@ router.post(
   '/profile',
   validateBody<UpdateProfileRequest>(updateProfileSchema),
   (req, res, next) => {
-    void userController.updateProfile(req, res, next);
+    userController.updateProfile(req, res, next).catch((error) => {
+      if (next) {
+        next(error);
+      }
+    });
   }
 );
 

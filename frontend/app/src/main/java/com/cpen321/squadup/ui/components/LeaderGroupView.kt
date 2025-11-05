@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpen321.squadup.data.remote.dto.Activity
@@ -67,7 +68,7 @@ fun LeaderGroupView(
                     LeaderActivityMapView(
                         locations = locations,
                         activities = activities,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize().testTag("LeaderMapView")
                     )
                 }
 
@@ -121,6 +122,7 @@ fun LeaderGroupView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
+                    .testTag("ActivityPicker")
             )
         }
 

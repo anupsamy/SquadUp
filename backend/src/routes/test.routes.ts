@@ -11,7 +11,9 @@ router.get('/test', (req, res, next) => testController.check(req, res, next));
 // Public WebSocket test endpoint (no auth required) for AWS
 router.post(
   '/websocket-notification/:joinCode',
-  groupController.testWebSocketNotification.bind(groupController)
+  (req, res, next) => {
+    groupController.testWebSocketNotification(req, res, next);
+  }
 );
 
 export default router;

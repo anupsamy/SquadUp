@@ -1,7 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import z from 'zod';
+import { HOBBIES } from '../hobbies';
+import { UserModel, userModel } from '../user.model';
+import { GoogleUserInfo } from '../types/user.types';
 import {Address} from './address.types';
 import {TransitType, transitTypeSchema } from './transit.types';
+import { GeoLocation } from './location.types';
 
 // Group model
 // ------------------------------------------------------------
@@ -125,6 +129,22 @@ export const activityZodSchema = z.object({
   isOpenNow: z.boolean(),
 });
 
+//Activity model
+
+export interface Activity {
+  name: string;
+  placeId: string;
+  address: string;
+  rating: number;
+  userRatingsTotal: number;
+  priceLevel: number;
+  type: string;
+  latitude: number;
+  longitude: number;
+  businessStatus: string;
+  isOpenNow: boolean;
+}
+
 // Request types
 // ------------------------------------------------------------
 export interface GetGroupResponse {
@@ -132,14 +152,14 @@ export interface GetGroupResponse {
   data?: {
     group: IGroup;
   };
-}
+};
 
 export interface GetAllGroupsResponse {
   message: string;
   data?: {
     groups: IGroup[];
   };
-}
+};
 
 export type CreateGroupRequest = z.infer<typeof createGroupSchema>;
 export type UpdateGroupRequest = z.infer<typeof updateGroupSchema>;
@@ -154,7 +174,7 @@ export interface BasicGroupInfo {
     expectedPeople: number;
     groupMemberIds?: GroupUser[];
     activityType: string
-}
+};
 
 export interface CreateGroupInfo {
   groupName: string;
@@ -162,13 +182,13 @@ export interface CreateGroupInfo {
   groupLeaderId: GroupUser;
   expectedPeople: number;
   activityType: string;
-}
+};
 
 export interface UpdateInfo {
     joinCode: string;
     expectedPeople: number;
     groupMemberIds: GroupUser[];
-}
+};
 
 export interface GroupUser {
   id: string;

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.google.gson.GsonBuilder
+import java.io.IOException
 
 data class NewsUiState(
     val isLoading: Boolean = false,
@@ -48,7 +49,7 @@ class NewsViewModel : ViewModel() {
                     newsData = response.results,
                     jsonString = jsonString
                 )
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = e.message ?: "Unknown error occurred"

@@ -5,6 +5,7 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -111,7 +112,7 @@ class NotificationManager @Inject constructor() {
                     showNotification(notification)
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
             // If not JSON, ignore or handle as needed
         }
     }

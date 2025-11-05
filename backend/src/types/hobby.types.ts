@@ -1,8 +1,8 @@
 import { HOBBIES } from '../hobbies';
 
-export type GetAllHobbiesResponse = {
+export interface GetAllHobbiesResponse {
   message: string;
   data?: {
     hobbies: typeof HOBBIES;
   };
-};
+}

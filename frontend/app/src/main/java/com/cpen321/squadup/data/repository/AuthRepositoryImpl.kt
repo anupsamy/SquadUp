@@ -21,6 +21,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -207,7 +208,7 @@ class AuthRepositoryImpl @Inject constructor(
             val response = userInterface.deleteProfile("")
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception("Failed to delete account"))
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }

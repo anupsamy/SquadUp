@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { Server, IncomingMessage } from 'http';
+import { Server } from 'http';
 import logger from '../utils/logger.util';
 
 export interface WebSocketMessage {
@@ -10,13 +10,13 @@ export interface WebSocketMessage {
   userName: string;
   message: string;
   timestamp: string;
-  data?: any;
+  data?: unknown;
 }
 
 export class WebSocketService {
   private wss: WebSocket.Server;
-  private clients: Map<string, WebSocket> = new Map(); // userId -> WebSocket
-  private groupSubscriptions: Map<string, Set<string>> = new Map(); // joinCode -> Set<userId>
+  private clients = new Map<string, WebSocket>(); // userId -> WebSocket
+  private groupSubscriptions = new Map<string, Set<string>>(); // joinCode -> Set<userId>
 
   constructor(server: Server) {
     console.log('🔧 Creating WebSocket server...');
@@ -36,12 +36,20 @@ export class WebSocketService {
   }
 
   private setupWebSocketServer() {
-    this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+    this.wss.on('connection', (ws: WebSocket) => {
       logger.info('New WebSocket connection established');
 
       ws.on('message', (data: WebSocket.Data) => {
         try {
-          const message = JSON.parse(data.toString());
+          let messageString: string;
+          if (typeof data === 'string') {
+            messageString = data;
+          } else if (Buffer.isBuffer(data)) {
+            messageString = data.toString('utf8');
+          } else {
+            messageString = String(data);
+          }
+          const message = JSON.parse(messageString);
           this.handleMessage(ws, message);
         } catch (error: unknown) {
           logger.error('Error parsing WebSocket message:', error);
@@ -71,13 +79,25 @@ export class WebSocketService {
     });
   }
 
-  private handleMessage(ws: WebSocket, message: any) {
-    const { type, userId, joinCode } = message;
+  private handleMessage(ws: WebSocket, message: unknown) {
+    if (typeof message !== 'object' || message === null) {
+      this.sendError(ws, 'Invalid message format');
+      return;
+    }
+
+    const messageObj = message as Record<string, unknown>;
+    const { type, userId, joinCode } = messageObj;
 
     switch (type) {
       case 'subscribe':
         if (userId && joinCode) {
-          this.subscribeToGroup(ws, userId, joinCode);
+          const validatedUserId: string = typeof userId === 'string' ? userId : '';
+          const validatedJoinCode: string = typeof joinCode === 'string' ? joinCode : '';
+          if (validatedUserId && validatedJoinCode) {
+            this.subscribeToGroup(ws, validatedUserId, validatedJoinCode);
+          } else {
+            this.sendError(ws, 'Missing userId or joinCode for subscription');
+          }
         } else {
           this.sendError(ws, 'Missing userId or joinCode for subscription');
         }
@@ -85,7 +105,13 @@ export class WebSocketService {
       
       case 'unsubscribe':
         if (userId && joinCode) {
-          this.unsubscribeFromGroup(ws, userId, joinCode);
+          const validatedUserId: string = typeof userId === 'string' ? userId : '';
+          const validatedJoinCode: string = typeof joinCode === 'string' ? joinCode : '';
+          if (validatedUserId && validatedJoinCode) {
+            this.unsubscribeFromGroup(ws, validatedUserId, validatedJoinCode);
+          } else {
+            this.sendError(ws, 'Missing userId or joinCode for unsubscription');
+          }
         } else {
           this.sendError(ws, 'Missing userId or joinCode for unsubscription');
         }
@@ -95,8 +121,11 @@ export class WebSocketService {
         this.sendMessage(ws, { type: 'pong', timestamp: new Date().toISOString() });
         break;
       
-      default:
-        this.sendError(ws, `Unknown message type: ${type}`);
+      default: {
+        const typeString = typeof type === 'string' ? type : String(type);
+        this.sendError(ws, `Unknown message type: ${typeString}`);
+        break;
+      }
     }
   }
 
@@ -108,7 +137,7 @@ export class WebSocketService {
     if (!this.groupSubscriptions.has(joinCode)) {
       this.groupSubscriptions.set(joinCode, new Set());
     }
-    this.groupSubscriptions.get(joinCode)!.add(userId);
+    this.groupSubscriptions.get(joinCode)?.add(userId);
 
     logger.info(`User ${userId} subscribed to group ${joinCode}`);
   }
@@ -177,7 +206,7 @@ export class WebSocketService {
     logger.info(`Notified group ${joinCode} about user ${userName} leaving`);
   }
 
-  public notifyGroupUpdate(joinCode: string, message: string, data?: any) {
+  public notifyGroupUpdate(joinCode: string, message: string, data?: unknown) {
     const wsMessage: WebSocketMessage = {
       type: 'group_update',
       groupId: '',
@@ -228,7 +257,7 @@ export class WebSocketService {
     logger.info(`Broadcast to group ${joinCode}: ${successCount} success, ${failureCount} failures`);
   }
 
-  private sendMessage(ws: WebSocket, message: any) {
+  private sendMessage(ws: WebSocket, message: unknown) {
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
     }

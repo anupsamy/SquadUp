@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
@@ -213,7 +214,9 @@ fun CreateGroupScreen(
                             Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("createGroupButton"),
                     enabled = !uiState.isCreatingGroup
                 ) {
                     Text(text = if (uiState.isCreatingGroup) "Creating..." else "Create Group")

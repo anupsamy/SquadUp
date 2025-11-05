@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.testTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Group
@@ -85,11 +86,13 @@ fun MainScreen(
 
     // Keep WebSocket subscriptions in sync with groups the user belongs to
     LaunchedEffect(currentUserId, filteredGroups) {
-        val userId = currentUserId ?: return@LaunchedEffect
-        // Subscribe to all current groups (WebSocket + FCM topic)
-        filteredGroups.forEach { group ->
-            WebSocketManager.subscribeToGroup(userId, group.joinCode)
-            subscribeToGroupTopic(group.joinCode) // <-- FCM topic subscription
+        val userId = currentUserId
+        if (userId != null) {
+            // Subscribe to all current groups (WebSocket + FCM topic)
+            filteredGroups.forEach { group ->
+                WebSocketManager.subscribeToGroup(userId, group.joinCode)
+                subscribeToGroupTopic(group.joinCode) // <-- FCM topic subscription
+            }
         }
     }
 
@@ -339,6 +342,7 @@ private fun MainBody(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
+                        .testTag("groupButton")
                 ) {
                     Column {
                         Text(text = group.groupName, style = MaterialTheme.typography.bodyLarge)

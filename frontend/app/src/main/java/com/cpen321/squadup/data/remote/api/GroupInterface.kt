@@ -60,11 +60,11 @@ interface GroupInterface {
         @Body request: LeaveGroupRequest
     ): Response<Unit>
 
-    @GET("group/midpoints")
-    suspend fun getMidpoints(
-        @Header("Authorization") authHeader: String,
-        @Query("joinCode") joinCode: String
-    ): Response<ApiResponse<List<ActivityCoordinates>>>
+//    @GET("group/midpoints")
+//    suspend fun getMidpoints(
+//        @Header("Authorization") authHeader: String,
+//        @Query("joinCode") joinCode: String
+//    ): Response<ApiResponse<List<ActivityCoordinates>>>
 
     @GET("group/midpoint/{joinCode}")
     suspend fun getMidpointByJoinCode(

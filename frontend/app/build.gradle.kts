@@ -59,6 +59,7 @@ android {
                 "GOOGLE_CLIENT_ID",
                 "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\""
             )
+            buildConfigField("String", "FLAVOR", "\"local\"")
         }
 
         create("staging") {
@@ -79,6 +80,7 @@ android {
                 "GOOGLE_CLIENT_ID",
                 "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
             )
+            buildConfigField("String", "FLAVOR", "\"staging\"")
         }
     }
     compileOptions {
@@ -163,8 +165,14 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.ui.automator)
+    //androidTestImplementation(libs.androidx.material3)
+    // Compose BOM - manages versions for all Compose dependencies
     androidTestImplementation(platform(libs.androidx.compose.bom))
+
+    // Test rules and transitive dependencies:
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
+    // Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }

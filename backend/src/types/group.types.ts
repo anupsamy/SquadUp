@@ -4,7 +4,6 @@ import { UserModel, userModel } from '../user.model';
 import { GoogleUserInfo } from '../types/user.types';
 import {Address} from './address.types';
 import {TransitType, transitTypeSchema } from './transit.types';
-import { GeoLocation } from './location.types';
 
 // Group model
 // ------------------------------------------------------------
@@ -98,7 +97,7 @@ export interface Activity {
   longitude: number;
   businessStatus: string;
   isOpenNow: boolean;
-};
+}
 
 export const activitySchema = new Schema({
   name: { type: String, required: true },
@@ -128,44 +127,29 @@ export const activityZodSchema = z.object({
   isOpenNow: z.boolean(),
 });
 
-//Activity model
-
-export interface Activity {
-  name: string;
-  placeId: string;
-  address: string;
-  rating: number;
-  userRatingsTotal: number;
-  priceLevel: number;
-  type: string;
-  latitude: number;
-  longitude: number;
-  businessStatus: string;
-  isOpenNow: boolean;
-}
-
 // Request types
 // ------------------------------------------------------------
-export type GetGroupResponse = {
+export interface GetGroupResponse {
   message: string;
   data?: {
     group: IGroup;
   };
-};
+  error?: Error | string;
+}
 
-export type GetAllGroupsResponse = {
+export interface GetAllGroupsResponse {
   message: string;
   data?: {
     groups: IGroup[];
   };
-};
+}
 
 export type CreateGroupRequest = z.infer<typeof createGroupSchema>;
 export type UpdateGroupRequest = z.infer<typeof updateGroupSchema>;
 
 // Generic types
 // ------------------------------------------------------------
-export type BasicGroupInfo = {
+export interface BasicGroupInfo {
     joinCode: string;
     groupName: string;
     meetingTime: string;
@@ -173,23 +157,23 @@ export type BasicGroupInfo = {
     expectedPeople: number;
     groupMemberIds?: GroupUser[];
     activityType: string
-};
+}
 
-export type CreateGroupInfo = {
+export interface CreateGroupInfo {
   groupName: string;
   meetingTime: string;
   groupLeaderId: GroupUser;
   expectedPeople: number;
   activityType: string;
-};
+}
 
-export type UpdateInfo = {
+export interface UpdateInfo {
     joinCode: string;
     expectedPeople: number;
     groupMemberIds: GroupUser[];
-};
+}
 
-export type GroupUser = {
+export interface GroupUser {
   id: string;
   name: string;
   email: string;

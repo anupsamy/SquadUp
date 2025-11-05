@@ -1,13 +1,24 @@
 {
   "compilerOptions": {
-    "lib": ["es2023"],
-    "module": "nodenext",
+    "lib": ["es2023", "dom"],
+    "moduleResolution": "Bundler",
+    "module": "preserve",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "types": ["node", "jest"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "jest.setup.ts", "**/*.ts", "tests/**/*"],
+  "exclude": ["node_modules", "dist", "jest.config.ts", "src/services/websocket.service.ts"]
 }

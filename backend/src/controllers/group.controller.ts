@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
+import crypto from 'crypto';
 
-import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
-import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
 import { userModel } from '../user.model';
-import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity, GroupUser } from '../types/group.types';
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
@@ -19,22 +18,23 @@ export class GroupController {
   ) {
     try {
       const {groupName, meetingTime, groupLeaderId, expectedPeople, activityType} = req.body;
-      console.log(activityType);
-      const joinCode = Math.random().toString(36).slice(2, 8);
+      logger.debug('Creating group with activity type:', activityType);
+      const randomBytes = crypto.randomBytes(4);
+      const joinCode = randomBytes.readUInt32BE(0).toString(36).slice(0, 6).padStart(6, '0');
 
       // Use the GroupModel to create the group
       const newGroup = await groupModel.create({
         joinCode,
         groupName,
-        groupLeaderId: groupLeaderId,
+        groupLeaderId,
         expectedPeople,
         groupMemberIds: [groupLeaderId],
-        meetingTime: meetingTime,  // Default to current time for now,
-        activityType: activityType
+        meetingTime,  // Default to current time for now,
+        activityType
       });
-      console.error('GroupController newGroup:', newGroup);
+      //console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
-        message: 'Group ${groupName} created successfully',
+        message: `Group ${groupName} created successfully`,
         data: {
           group: newGroup,
         }
@@ -49,19 +49,24 @@ export class GroupController {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
-
-      const sanitizedGroups:IGroup[] = groups.map(group => ({
-      ...group.toObject(),
-      groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
-      }));
+      // console.error('GroupController getAllGroups:', groups);
+      // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
+      //   console.error('GroupController groups[4]:', groups[4]);
+      const sanitizedGroups: IGroup[] = groups.map((group) => {
+        const groupObj = group.toObject() as unknown as IGroup;
+        return {
+          ...groupObj,
+          groupMemberIds: group.groupMemberIds,
+        } as IGroup;
+      });
+      // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
       res.status(200).json({
         message: 'Groups fetched successfully',
         data: { groups: sanitizedGroups },
       });
     } catch (error) {
-      logger.error('Failed to fetch groups:', error);
-      next(error);
+        res.status(500).json({ message: 'Failed to fetch groups' });
     }
   }
 
@@ -74,7 +79,18 @@ export class GroupController {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
 
       // Query the database for the group with the given joinCode
-      const group = await groupModel.findByJoinCode(joinCode);
+      // Validate joinCode is a string before use
+    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    if (!validatedJoinCodeForFind) {
+      res.status(400).json({
+        message: 'Invalid joinCode',
+        data: {} as any,
+        error: Error('ValidationError')
+      });
+      return;
+    }
+    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
+      // console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({
@@ -87,54 +103,13 @@ export class GroupController {
         data: {
           group: {
             ...group.toObject(),
-            groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
+            groupMemberIds: group.groupMemberIds,
           },
-      }});
+        }});
     } catch (error) {
       logger.error('Failed to fetch group by joinCode:', error);
-      next(error);
-    }
-  }
-
-
-  getGroup(req: Request, res: Response<GetGroupResponse>) {
-    const group = req.group!;
-    res.status(200).json({
-      message: 'Group fetched successfully',
-      data: { group },
-    });
-  }
-
-  async updateGroup(
-    req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
-  ) {
-    try {
-      const group = req.group!;
-
-      const updatedGroup = await groupModel.update(group._id, req.body);
-
-      if (!updatedGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
-
-      res.status(200).json({
-        message: 'Group info updated successfully',
-        data: { group: updatedGroup },
-      });
-    } catch (error) {
-      logger.error('Failed to update group info:', error);
-
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
-
-      next(error);
+      res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + error });
+      //next(error);
     }
   }
 
@@ -146,16 +121,25 @@ export class GroupController {
     try {
       const {joinCode, expectedPeople, groupMemberIds} = req.body;
 
+      if (!joinCode || typeof joinCode !== 'string') {
+        return res.status(400).json({
+          message: 'Join code is required and must be a string',
+        });
+      }
+
+      // TypeScript now knows joinCode is a string
+      const validatedJoinCode: string = joinCode;
+
       // Get the current group to compare member changes
-      const currentGroup = await groupModel.findByJoinCode(joinCode);
+      const currentGroup = await groupModel.findByJoinCode(validatedJoinCode);
       if (!currentGroup) {
         return res.status(404).json({
           message: 'Group not found',
         });
       }
 
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
-        {joinCode, expectedPeople,
+      const updatedGroup = await groupModel.updateGroupByJoinCode(validatedJoinCode,
+        {joinCode: validatedJoinCode, expectedPeople,
         groupMemberIds: groupMemberIds || []});
 
       if (!updatedGroup) {
@@ -165,28 +149,36 @@ export class GroupController {
       }
 
       // Send WebSocket notifications for new members
-      const wsService = getWebSocketService();
+      /*const wsService = getWebSocketService();
       if (wsService) {
-        const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
-        const newMemberIds = (groupMemberIds || []).map(member => member.id);
+        const validatedGroupMemberIds: GroupUser[] = Array.isArray(groupMemberIds) ? groupMemberIds : [];
+        const currentMemberIds = currentGroup.groupMemberIds.map(member => {
+          const memberId: string = typeof member.id === 'string' ? member.id : '';
+          return memberId;
+        });
 
         // Find new members (users who joined)
-        const joinedMembers = (groupMemberIds || []).filter(member =>
-          !currentMemberIds.includes(member.id)
-        );
+        const joinedMembers = validatedGroupMemberIds.filter(member => {
+          const memberId: string = typeof member.id === 'string' ? member.id : '';
+          return !currentMemberIds.includes(memberId);
+        });
 
         // Send notifications for each new member
         joinedMembers.forEach(member => {
+          const memberName: string = typeof member.name === 'string' ? member.name : '';
+          const memberId: string = typeof member.id === 'string' ? member.id : '';
           wsService.notifyGroupJoin(
-            joinCode,
-            member.id,
-            member.name,
+            validatedJoinCode,
+            memberId,
+            memberName,
             updatedGroup.groupName
           );
           // FCM topic notification (clients subscribe to topic == joinCode)
-          void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
+          sendGroupJoinFCM(validatedJoinCode, memberName, updatedGroup.groupName, memberId).catch((error: unknown) => {
+            logger.error('Failed to send group join FCM notification:', error);
+          });
         });
-      }
+      }*/
 
       res.status(200).json({
         message: 'Group info updated successfully',
@@ -195,13 +187,14 @@ export class GroupController {
     } catch (error) {
       logger.error('Failed to update group info:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to update group info';
 
-      next(error);
+      return res.status(500).json({ message });
     }
   }
 
@@ -212,8 +205,15 @@ export class GroupController {
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds, meetingTime} = req.body;
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
-        {joinCode, expectedPeople,
+      // Validate joinCode is a string before use
+      const validatedJoinCode: string = typeof joinCode === 'string' ? joinCode : '';
+      if (!validatedJoinCode) {
+        return res.status(400).json({
+          message: 'Invalid joinCode',
+        });
+      }
+      const updatedGroup = await groupModel.updateGroupByJoinCode(validatedJoinCode,
+        {joinCode: validatedJoinCode, expectedPeople,
         groupMemberIds: groupMemberIds || [], meetingTime});
 
       if (!updatedGroup) {
@@ -229,13 +229,14 @@ export class GroupController {
     } catch (error) {
       logger.error('Failed to update group info:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to update group info';
 
-      next(error);
+      return res.status(500).json({ message });
     }
   }
 
@@ -254,13 +255,15 @@ export class GroupController {
     } catch (error) {
       logger.error('Failed to delete group:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to delete group',
-        });
-      }
 
-      next(error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to delete group';
+
+      return res.status(500).json({ message });
     }
   }
 
@@ -273,10 +276,21 @@ export class GroupController {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
 
       // Query the database for the group with the given joinCode
-      const group = await groupModel.findByJoinCode(joinCode);
+      // Validate joinCode is a string before use
+    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    if (!validatedJoinCodeForFind) {
+      res.status(400).json({
+        message: 'Invalid joinCode',
+        error: 'ValidationError'
+      });
+      return;
+    }
+    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
 
       if (!group) {
-        throw new Error("Group not found");
+        return res.status(404).json({
+          message: `Group with joinCode '${joinCode}' not found`,
+        });
       }
 
       if (group.midpoint) {
@@ -294,37 +308,42 @@ export class GroupController {
       }
 
       const locationInfo: LocationInfo[] = group.groupMemberIds
-      .filter(member => member.address && member.transitType)
-      .map(member => ({
-        address: member.address!,
-        transitType: member.transitType!,
-      }));
+      .filter(member => member.address != null && member.transitType != null)
+      .map(member => {
+        const address = member.address;
+        const transitType = member.transitType;
+        if (address == null || transitType == null) {
+          throw new Error('Address and transit type are required');
+        }
+        return {
+          address,
+          transitType,
+        };
+      });
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       const activityList: Activity[] = [];
-
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng
 
       const midpoint = lat.toString() + ' ' + lng.toString();
 
-      // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
+      if (!updatedGroup) {
+        return res.status(500).json({
+          message: 'Failed to update group midpoint',
+        });
+      }
 
-      console.log("Activities List: " , activityList);
+      logger.debug('Activities List:', activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
           midpoint: {
             location: {
-              lat: lat,
-              lng: lng,
+              lat,
+              lng,
             }
           },
           activities: activityList
@@ -344,27 +363,40 @@ async updateMidpointByJoinCode(
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
 
       // Query the database for the group with the given joinCode
-      const group = await groupModel.findByJoinCode(joinCode);
-
-      if (!group) {
-        throw new Error("Group not found");
-      }
-
-      const locationInfo: LocationInfo[] = group.groupMemberIds
-      .filter(member => member.address && member.transitType)
-      .map(member => ({
-        address: member.address!,
-        transitType: member.transitType!,
-      }));
-
-      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
-      const activityList: Activity[] = [];
+      // Validate joinCode is a string before use
+    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    if (!validatedJoinCodeForFind) {
+      res.status(400).json({
+        message: 'Invalid joinCode',
+        error: 'ValidationError'
+      });
+      return;
+    }
+    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
 
       if (!group) {
         return res.status(404).json({
           message: `Group with joinCode '${joinCode}' not found`,
         });
       }
+
+      const locationInfo: LocationInfo[] = group.groupMemberIds
+      .filter(member => member.address != null && member.transitType != null)
+      .map(member => {
+        const address = member.address;
+        const transitType = member.transitType;
+        if (address == null || transitType == null) {
+          throw new Error('Address and transit type are required');
+        }
+        return {
+          address,
+          transitType,
+        };
+      });
+
+      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
+      //const activityList = await locationService.getActivityList(optimizedPoint);
+      const activityList: Activity[] = [];
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng
@@ -373,15 +405,20 @@ async updateMidpointByJoinCode(
 
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
+      if (!updatedGroup) {
+        return res.status(500).json({
+          message: 'Failed to update group midpoint',
+        });
+      }
 
-      console.log("Activities List: " , activityList);
+      logger.debug('Activities List:', activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
           midpoint: {
             location: {
-              lat: lat,
-              lng: lng,
+              lat,
+              lng,
             }
           },
           activities: activityList,
@@ -407,7 +444,18 @@ async getActivities(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const group = await groupModel.findByJoinCode(joinCode);
+    // Validate joinCode is a string before use
+    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    if (!validatedJoinCodeForFind) {
+      res.status(400).json({
+        message: 'Invalid joinCode',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
 
     if (!group) {
       res.status(404).json({
@@ -469,6 +517,16 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    if (typeof joinCode !== 'string') {
+      res.status(400).json({
+        message: 'Join code must be a string',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+
     // Validate required activity fields
     if (!activity.placeId || !activity.name) {
       res.status(400).json({
@@ -481,7 +539,18 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     }
 
     // Verify the group exists
-    const group = await groupModel.findByJoinCode(joinCode);
+    // Validate joinCode is a string before use
+    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    if (!validatedJoinCodeForFind) {
+      res.status(400).json({
+        message: 'Invalid joinCode',
+        data: null,
+        error: 'ValidationError',
+        details: null,
+      });
+      return;
+    }
+    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
     if (!group) {
       res.status(404).json({
         message: 'Group not found',
@@ -493,15 +562,64 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     }
 
     // Update the group with the selected activity
-    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
+    // Validate activity type before passing to model
+    const validatedActivity: Activity = typeof activity === 'object' && activity !== null && 'placeId' in activity && 'name' in activity
+      ? (activity as Activity)
+      : {
+          placeId: '',
+          name: '',
+          address: '',
+          rating: 0,
+          userRatingsTotal: 0,
+          priceLevel: 0,
+          type: '',
+          latitude: 0,
+          longitude: 0,
+          businessStatus: '',
+          isOpenNow: false,
+        };
+    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, validatedActivity);
 
     // Send notifications to group members
     const wsService = getWebSocketService();
     if (wsService && updatedGroup) {
+      const leaderId = updatedGroup.groupLeaderId.id || '';
+      const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
+      const rawActivityName = activity.name;
+      const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
+
+      // Send WebSocket notification
+      wsService.notifyGroupUpdate(
+        joinCode,
+        `${leaderName} selected "${activityName}" for the group`,
+        {
+          type: 'activity_selected',
+          activity,
+          leaderId,
+          leaderName
+        }
+      );
+
+      // Send FCM notification (will be suppressed in foreground on client side)
+      const activityDataStr = JSON.stringify(activity);
+      sendActivitySelectedFCM(
+        joinCode,
+        activityName,
+        updatedGroup.groupName,
+        leaderId,
+        activityDataStr
+      ).catch((error: unknown) => {
+        logger.error('Failed to send activity selected FCM notification:', error);
+      });
+    }
+
+    // Send notifications to group members
+    /*const wsService = getWebSocketService();
+    if (wsService && updatedGroup) {
       const leaderId = updatedGroup.groupLeaderId?.id || '';
       const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
       const activityName = activity.name || 'an activity';
-      
+
       // Send WebSocket notification
       wsService.notifyGroupUpdate(
         joinCode,
@@ -523,7 +641,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
         leaderId,
         activityDataStr
       );
-    }
+    }*/
 
     res.status(200).json({
       message: 'Activity selected successfully',
@@ -542,47 +660,47 @@ async selectActivity(req: Request, res: Response): Promise<void> {
   }
 }
 
-async getMidpoints(req: Request, res: Response): Promise<void> {
-  try {
-    const joinCode = req.query.joinCode;
+// async getMidpoints(req: Request, res: Response): Promise<void> {
+//   try {
+//     const joinCode = req.query.joinCode;
 
-    if (!joinCode || typeof joinCode !== 'string') {
-      res.status(400).json({
-        success: false,
-        message: 'Join code is required',
-      });
-      return;
-    }
+//     if (!joinCode || typeof joinCode !== 'string') {
+//       res.status(400).json({
+//         success: false,
+//         message: 'Join code is required',
+//       });
+//       return;
+//     }
 
-    // Verify the group exists
-    const group = await groupModel.findByJoinCode(joinCode);
-    if (!group) {
-      res.status(404).json({
-        success: false,
-        message: 'Group not found',
-      });
-      return;
-    }
+//     // Verify the group exists
+//     const group = await groupModel.findByJoinCode(joinCode);
+//     if (!group) {
+//       res.status(404).json({
+//         success: false,
+//         message: 'Group not found',
+//       });
+//       return;
+//     }
 
-    // Return dummy midpoint data (3 locations in Vancouver area)
-    const midpoints = [
-      { latitude: 49.2827, longitude: -123.1207 },
-      { latitude: 49.2606, longitude: -123.2460 },
-      { latitude: 49.2488, longitude: -123.1163 }
-    ];
+//     // Return dummy midpoint data (3 locations in Vancouver area)
+//     const midpoints = [
+//       { latitude: 49.2827, longitude: -123.1207 },
+//       { latitude: 49.2606, longitude: -123.2460 },
+//       { latitude: 49.2488, longitude: -123.1163 }
+//     ];
 
-    res.status(200).json({
-      success: true,
-      data: midpoints,
-    });
-  } catch (error) {
-    logger.error('Error fetching midpoints:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch midpoints',
-    });
-  }
-}
+//     res.status(200).json({
+//       success: true,
+//       data: midpoints,
+//     });
+//   } catch (error) {
+//     logger.error('Error fetching midpoints:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to fetch midpoints',
+//     });
+//   }
+// }
 
 
 
@@ -603,13 +721,13 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       }
 
       // Find the user who is leaving
-      const leavingUser = currentGroup.groupMemberIds?.find(member => member.id === userId) ||
+      const leavingUser = currentGroup.groupMemberIds.find(member => member.id === userId) ??
                          (currentGroup.groupLeaderId.id === userId ? currentGroup.groupLeaderId : null);
 
       const result = await groupModel.leaveGroup(joinCode, userId);
 
       // Send WebSocket notification for user leaving
-      const wsService = getWebSocketService();
+      /*const wsService = getWebSocketService();
       if (wsService && leavingUser) {
         wsService.notifyGroupLeave(
           joinCode,
@@ -618,7 +736,9 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
           currentGroup.groupName
         );
         // FCM topic notification (clients subscribe to topic == joinCode)
-        void sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id);
+        sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id).catch((error: unknown) => {
+          logger.error('Failed to send group leave FCM notification:', error);
+        });
       }
 
       if (result.deleted) {
@@ -642,34 +762,37 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
             `${result.newLeader.name} is now the new group leader`,
             { newLeader: result.newLeader }
           );
-        }
+        }*/
 
         res.status(200).json({
           message: 'Left group successfully',
           data: result.newLeader ? { newLeader: result.newLeader } : undefined,
         });
-      }
+      //}
     } catch (error) {
       logger.error('Failed to leave group:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to leave group',
-        });
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to leave group';
 
-      next(error);
+      return res.status(500).json({ message });
     }
   }
 
   // Test endpoint for WebSocket notifications
-  async testWebSocketNotification(
+ /* async testWebSocketNotification(
     req: Request<{joinCode: string}>,
     res: Response,
     next: NextFunction) {
     try {
       const {joinCode} = req.params;
       const {message, type} = req.body;
+      // Validate message is a string before use
+      const validatedMessage: string = typeof message === 'string' ? message : 'Test notification from backend';
 
       const wsService = getWebSocketService();
       if (!wsService) {
@@ -681,7 +804,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       // Send a test notification
       wsService.notifyGroupUpdate(
         joinCode,
-        message || 'Test notification from backend',
+        validatedMessage,
         { type: type || 'test' }
       );
 
@@ -693,5 +816,5 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       logger.error('Failed to send test notification:', error);
       next(error);
     }
-  }
+  }*/
 }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpen321.squadup.data.remote.dto.Activity
@@ -112,7 +113,7 @@ fun MemberGroupView(
                     type = activity.type ?: "",
                     isSelected = true,
                     onClick = { /* optional click action */ },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag("SelectedActivityCard")
                 )
             }
         }

@@ -90,7 +90,7 @@ export class GroupController {
       return;
     }
     const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
-      console.error('GroupController getGroupByJoinCode:', group);
+      // console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({

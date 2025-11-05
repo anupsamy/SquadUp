@@ -15,6 +15,7 @@ const config: Config = {
     '!src/tests/**',
     '!src/services/websocket.service.ts',
     '!src/services/fcm.service.ts',
+    '!src/utils/**'
   ],
 };
 

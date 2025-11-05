@@ -137,7 +137,7 @@ async getActivityList(
       .slice(0, maxResults);
 
   } catch (err) {
-    console.error("Error fetching nearby places:", err);
+    //console.error("Error fetching nearby places:", err);
     return [];
   }
 }

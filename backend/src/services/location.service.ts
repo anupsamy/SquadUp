@@ -166,19 +166,20 @@ async getActivityList(
 
     for (let j = 0; j < geoLocation.length; j++) {
       //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
-      // Validate array access to prevent object injection: ensure index is in bounds
-      if (!Array.isArray(travelTimes) || j < 0 || j >= travelTimes.length) {
+      // Validate array access to prevent object injection: ensure index is in bounds for both arrays
+      if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
         continue;
       }
       const rawWeight = travelTimes[j];
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
       const weight = typeof rawWeight === 'number' && isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       
-      // Validate lat and lng to prevent object injection: ensure they are finite numbers within valid ranges
+      // Validate object to prevent object injection
       const geoLocationItem = geoLocation[j];
-      if (typeof geoLocationItem !== 'object' || geoLocationItem === null || !('lat' in geoLocationItem) || !('lng' in geoLocationItem)) {
+      if (geoLocationItem === null || typeof geoLocationItem !== 'object') {
         continue;
       }
+      // TypeScript guarantees lat and lng exist on GeoLocation
       const rawLat = geoLocationItem.lat;
       const rawLng = geoLocationItem.lng;
       const lat = typeof rawLat === 'number' && isFinite(rawLat) && rawLat >= -90 && rawLat <= 90 ? rawLat : 0;

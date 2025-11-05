@@ -89,9 +89,6 @@ class PlacesRepository @Inject constructor(
         }
     }
 
-    /**
-     * Helper extension to convert Google AddressComponents to our AddressComponents
-     */
     private fun com.google.android.libraries.places.api.model.AddressComponents.asAddressComponents() =
         AddressComponents(
             streetNumber = getComponent("street_number"),

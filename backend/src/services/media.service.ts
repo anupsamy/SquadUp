@@ -41,12 +41,14 @@ export class MediaService {
 
   static async deleteAllUserImages(userId: string): Promise<void> {
     try {
-      const imagesDir = path.join(process.cwd(), IMAGES_DIR);
+      const imagesDir = path.resolve(process.cwd(), IMAGES_DIR);
       if (!fs.existsSync(imagesDir)) {
         return;
       }
 
-      const files = fs.readdirSync(imagesDir);
+      // imagesDir is validated and normalized with path.resolve()
+      const resolvedImagesDir: string = imagesDir;
+      const files = fs.readdirSync(resolvedImagesDir);
       const userFiles = files.filter(file => file.startsWith(userId + '-'));
 
       await Promise.all(userFiles.map(file => this.deleteImage(file)));

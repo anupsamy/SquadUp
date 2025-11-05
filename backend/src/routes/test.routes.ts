@@ -12,7 +12,7 @@ router.get('/test', (req, res, next) => testController.check(req, res, next));
 router.post(
   '/websocket-notification/:joinCode',
   (req, res, next) => {
-    void groupController.testWebSocketNotification(req, res, next);
+    groupController.testWebSocketNotification(req, res, next);
   }
 );
 

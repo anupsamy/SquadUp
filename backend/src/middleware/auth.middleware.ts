@@ -33,7 +33,7 @@ const authenticateTokenAsync = async (
       id?: mongoose.Types.ObjectId;
     };
 
-    if (!decoded || !decoded.id) {
+    if (!decoded?.id) {
       res.status(401).json({
         error: 'Invalid token',
         message: 'Token verification failed',
@@ -76,7 +76,7 @@ const authenticateTokenAsync = async (
 };
 
 export const authenticateToken: RequestHandler = (req, res, next) => {
-  authenticateTokenAsync(req, res, next).catch((error) => {
+  authenticateTokenAsync(req, res, next).catch((error: unknown) => {
     next(error);
   });
 };

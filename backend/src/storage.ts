@@ -6,7 +6,7 @@ import path from 'path';
 
 import { IMAGES_DIR } from './hobbies';
 
-const imagesDir = path.join(process.cwd(), IMAGES_DIR);
+const imagesDir = path.resolve(process.cwd(), IMAGES_DIR);
 if (!fs.existsSync(imagesDir)) {
   fs.mkdirSync(imagesDir, { recursive: true });
 }
@@ -18,7 +18,8 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const randomBytes = crypto.randomBytes(4).readUInt32BE(0);
     const uniqueSuffix = Date.now() + '-' + randomBytes;
-    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
+    const originalName: string = typeof file.originalname === 'string' ? file.originalname : '';
+    cb(null, `${uniqueSuffix}${path.extname(originalName)}`);
   },
 });
 

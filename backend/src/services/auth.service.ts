@@ -46,9 +46,13 @@ export class AuthService {
     if (!jwtSecret) {
       throw new Error('JWT_SECRET environment variable is not set');
     }
-    return jwt.sign({ id: user._id }, jwtSecret, {
+    const token = jwt.sign({ id: user._id }, jwtSecret, {
       expiresIn: '19h',
     });
+    if (typeof token !== 'string') {
+      throw new Error('Failed to generate access token');
+    }
+    return token;
   }
 
   async signUpWithGoogle(idToken: string): Promise<AuthResult> {

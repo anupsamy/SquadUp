@@ -2,10 +2,8 @@ import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
 
 import {
-    BasicGroupInfo,
+  BasicGroupInfo,
   basicGroupSchema,
-  CreateGroupInfo,
-  createGroupSchema,
   IGroup,
   updateGroupSchema,
   activitySchema,

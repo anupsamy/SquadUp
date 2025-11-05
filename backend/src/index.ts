@@ -31,6 +31,5 @@ try {
 
 void connectDB();
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🔌 WebSocket server available at ws://localhost:${PORT}/ws`);
 });

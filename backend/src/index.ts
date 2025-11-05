@@ -8,7 +8,6 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.middlew
 import router from './routes';
 import { initializeWebSocketService } from './services/websocket.service';
 import logger from './utils/logger.util';
-
 dotenv.config();
 
 const app = express();
@@ -22,7 +21,6 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('*', notFoundHandler);
 app.use(errorHandler);
 
-// Initialize WebSocket service
 try {
   initializeWebSocketService(server);
   logger.info('✅ WebSocket service initialization attempted');

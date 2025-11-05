@@ -40,4 +40,5 @@ export interface getLocationResponse {
     };
     activities?: Activity[];
   };
+  error?: Error | string;
 }

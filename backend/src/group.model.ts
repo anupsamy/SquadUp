@@ -104,9 +104,10 @@ export class GroupModel {
 
     async create(groupInfo: BasicGroupInfo): Promise<IGroup> {
       try {
-        console.error('GroupModel BasicGroupInfo:', groupInfo);
+        //console.error('GroupModel BasicGroupInfo:', groupInfo);
+        //console.log('GroupModel.create - Input Data:', groupInfo);
         const validatedData = basicGroupSchema.parse(groupInfo);
-        console.error('GroupModel ValidatedData:', validatedData);
+        //console.error('GroupModel ValidatedData:', validatedData);
 
         return await this.group.create(validatedData);
       } catch (error) {
@@ -115,7 +116,7 @@ export class GroupModel {
           throw new Error('Invalid update data');
         }
         console.error('Error updating user:', error);
-        throw new Error('Failed to update user');
+        throw new Error('Failed to update group');
       }
     }
 
@@ -126,7 +127,7 @@ export class GroupModel {
         // console.error('GroupModel findAll 2:', groups[4]);
         return groups;
       } catch (error) {
-        logger.error('Error fetching all groups:', error);
+        //logger.error('Error fetching all groups:', error);
         throw new Error('Failed to fetch all groups');
       }
     }
@@ -160,11 +161,9 @@ export class GroupModel {
       group: Partial<IGroup>
     ): Promise<IGroup | null> {
       try {
-        console.error('GroupModel joinCode:', joinCode);
-        console.error('GroupModel update by joinCode group:', group);
+        //console.error('GroupModel joinCode:', joinCode);
+        //console.error('GroupModel update by joinCode group:', group);
         const validatedData = updateGroupSchema.parse(group);
-        console.error('GroupModel validatedData:', validatedData);
-        // Type assertion for validated data to match Mongoose UpdateQuery type
         const typedValidatedData = validatedData as Partial<IGroup>;
         const updatedGroup = await this.group.findOneAndUpdate(
           {joinCode},
@@ -175,7 +174,11 @@ export class GroupModel {
         );
         return updatedGroup;
       } catch (error) {
-        logger.error('Error updating group:', error);
+        if (error instanceof z.ZodError) {
+          //console.error('Validation error:', error.issues);
+          throw new Error('Invalid update data');
+        }
+        //logger.error('Error updating group:', error);
         throw new Error('Failed to update group');
       }
     }
@@ -187,34 +190,19 @@ export class GroupModel {
             throw new Error(`Group with joinCode '${joinCode}' not found`);
         }
       } catch (error) {
-        logger.error('Error deleting user:', error);
-        throw new Error('Failed to delete user');
+        //logger.error('Error deleting user:', error);
+        throw new Error('Failed to delete group');
       }
     }
 
     async findByJoinCode(joinCode: string): Promise<IGroup | null> {
       try {
         const group = await this.group.findOne({ joinCode }); // Query the database
-        console.error('GroupModel findByJoinCode:', group);
+        //console.error('GroupModel findByJoinCode:', group);
         return group;
       } catch (error) {
-        logger.error('Error finding group by joinCode:', error);
+        //logger.error('Error finding group by joinCode:', error);
         throw new Error('Failed to find group by joinCode');
-      }
-    }
-
-    async findById(_id: mongoose.Types.ObjectId): Promise<IGroup | null> { //NOTE: check if group by google id makes sesne
-      try {
-        const group = await this.group.findOne({ _id });
-
-        if (!group) {
-          return null;
-        }
-
-        return group;
-      } catch (error) {
-        console.error('Error finding group by Google ID:', error);
-        throw new Error('Failed to find group');
       }
     }
 
@@ -238,10 +226,10 @@ export class GroupModel {
         return updatedGroup;
       } catch (error) {
         if (error instanceof z.ZodError) {
-          logger.error('Validation error for activity:', error.issues);
+          //logger.error('Validation error for activity:', error.issues);
           throw new Error('Invalid activity data');
         }
-        logger.error('Error updating selected activity:', error);
+        //logger.error('Error updating selected activity:', error);
         throw new Error('Failed to update selected activity');
       }
     }
@@ -258,7 +246,7 @@ export class GroupModel {
         // Return hardcoded dummy data
         return this.getDefaultActivities();
       } catch (error) {
-        logger.error('Error getting activities:', error);
+        //logger.error('Error getting activities:', error);
         throw new Error('Failed to get activities');
       }
     }

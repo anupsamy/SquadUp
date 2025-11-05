@@ -22,15 +22,6 @@ router.get(
     }
 );
 
-router.get(
-    '/midpoints',
-    (req, res, next) => {
-      groupController.getMidpoints(req, res).catch((error: unknown) => {
-        next(error);
-      });
-    }
-);
-
 router.post(
     '/activities/select',
     (req, res) => {
@@ -117,11 +108,9 @@ router.post(
 );
 
 // Test endpoint for WebSocket notifications
-router.post(
-    '/test-notification/:joinCode',
-    (req, res, next) => {
-      groupController.testWebSocketNotification(req, res, next);
-    }
-);
+//router.post(
+  //  '/test-notification/:joinCode',
+    //groupController.testWebSocketNotification.bind(groupController)
+//);
 
 export default router;

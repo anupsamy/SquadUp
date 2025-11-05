@@ -132,6 +132,7 @@ export interface GetGroupResponse {
   data?: {
     group: IGroup;
   };
+  error?: Error | string;
 }
 
 export interface GetAllGroupsResponse {

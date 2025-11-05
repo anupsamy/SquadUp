@@ -4,7 +4,9 @@ import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 
-import { IMAGES_DIR } from './hobbies';
+export const IMAGES_DIR = 'uploads/images';
+
+//NOT INCLUDED IN TEST SUITE - config/setup code only
 
 // Construct and normalize the images directory path
 const imagesDir = path.resolve(process.cwd(), IMAGES_DIR);

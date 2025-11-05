@@ -41,13 +41,14 @@ export class MediaController {
     } catch (error) {
       logger.error('Error uploading profile picture:', error);
 
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to upload profile picture',
-        });
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Failed to upload profile picture';
 
-      next(error);
+      return res.status(500).json({ message });
     }
   }
 }

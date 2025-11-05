@@ -3,14 +3,49 @@ name: Deploy to EC2
 on:
   push:
     branches:
-       - codacy2
        - prod
     paths:
       - 'backend/**'
       - '.github/workflows/deploy.yml'
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping:1})' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Set up environment
+        working-directory: ./backend
+        run: |
+          echo "MONGODB_URI=mongodb://localhost:27017/testdb" >> .env
+
+      - name: Run tests
+        working-directory: ./backend
+        env:
+          MONGODB_URI: mongodb://localhost:27017/testdb
+        run: npm test
+
   deploy: 
+    needs: test #if tests fail will not deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

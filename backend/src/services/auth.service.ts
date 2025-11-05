@@ -81,6 +81,7 @@ export class AuthService {
   async signInWithGoogle(idToken: string): Promise<AuthResult> {
     try {
       const googleUserInfo = await this.verifyGoogleToken(idToken);
+      
 
       // Find existing user
       const user = await userModel.findByGoogleId(googleUserInfo.googleId);

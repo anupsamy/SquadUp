@@ -242,7 +242,7 @@ These tests measure the API response time for fetching group information to ensu
 | 3. User navigates between different views. | Click "See Details" button. Verify "Members" screen displayed. Press back button. Check "groupMeetingTime" still displayed. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![View Event Time Logs](images/m4-logs/GV-view-event-time.png)
 
 ---
 
@@ -257,7 +257,7 @@ These tests measure the API response time for fetching group information to ensu
 | 1a2. Prompt user to create new group/activity type. | Verify error message suggests creating a new group. User can navigate back or create a new group. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![View Current Midpoint Logs](images/m4-logs/GV-view-current-midpoint.png)
 
 ---
 
@@ -269,7 +269,7 @@ These tests measure the API response time for fetching group information to ensu
 | User views member list. | Check at least one member is visible. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![View Attendees Logs](images/m4-logs/GV-view-attendees.png)
 
 ---
 
@@ -281,7 +281,7 @@ These tests measure the API response time for fetching group information to ensu
 | User sees map with location pins and selected activity card. | Check activity box is present and loaded. Check activity is displayed and not empty. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![View Selected Activity Logs](images/m4-logs/GV-view-selected-activity.png)
 
 ---
 
@@ -293,12 +293,11 @@ These tests measure the API response time for fetching group information to ensu
 | User sees map with recommended activities list. | Check node with tag "ActivityPicker" or activities list is present and loaded. |
 
 **Test Logs:**  
-[Placeholder for Espresso test execution logs]
+![View Recommended Locations Logs](images/m4-logs/GV-view-rec-locs.png)
 
 
 ## Feature: Update Group
 
----
 
 ### Use Case: Update Expected People
 

@@ -247,14 +247,11 @@ private fun NewsArticleItem(article: NewsArticle) {
     }
 }
 private fun formatDate(dateString: String): String {
-    return try {
-        val parts = dateString.split("T")[0].split("-")
-        if (parts.size == 3) {
-            "${parts[1]}/${parts[2]}/${parts[0]}"
-        } else {
-            dateString
-        }
-    } catch (e: IndexOutOfBoundsException) {
+    val datePart = dateString.split("T").getOrElse(0) { dateString }
+    val parts = datePart.split("-")
+    return if (parts.size == 3) {
+        "${parts[1]}/${parts[2]}/${parts[0]}"
+    } else {
         dateString
     }
 }

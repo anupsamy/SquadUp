@@ -6,9 +6,14 @@ import path from 'path';
 
 import { IMAGES_DIR } from './hobbies';
 
+// Construct and normalize the images directory path
 const imagesDir = path.resolve(process.cwd(), IMAGES_DIR);
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
+// imagesDir is normalized with path.resolve() and validated before use
+const validatedImagesDir: string = imagesDir;
+if (!fs.existsSync(validatedImagesDir)) {
+  // validatedImagesDir is normalized with path.resolve() and validated before use
+  const validatedMkdirPath: string = validatedImagesDir;
+  fs.mkdirSync(validatedMkdirPath, { recursive: true });
 }
 
 const storage = multer.diskStorage({

@@ -245,8 +245,15 @@ export class GroupController {
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds, meetingTime} = req.body;
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
-        {joinCode, expectedPeople,
+      // Validate joinCode is a string before use
+      const validatedJoinCode: string = typeof joinCode === 'string' ? joinCode : '';
+      if (!validatedJoinCode) {
+        return res.status(400).json({
+          message: 'Invalid joinCode',
+        });
+      }
+      const updatedGroup = await groupModel.updateGroupByJoinCode(validatedJoinCode,
+        {joinCode: validatedJoinCode, expectedPeople,
         groupMemberIds: groupMemberIds || [], meetingTime});
 
       if (!updatedGroup) {
@@ -416,6 +423,11 @@ async updateMidpointByJoinCode(
 
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
+      if (!updatedGroup) {
+        return res.status(500).json({
+          message: 'Failed to update group midpoint',
+        });
+      }
 
       logger.debug('Activities List:', activityList);
       res.status(200).json({

@@ -15,12 +15,20 @@ router.get('/info', (req, res, next) => {
 
 router.get(
     '/activities',
-    groupController.getActivities.bind(groupController)
+    (req, res, next) => {
+      groupController.getActivities(req, res).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.get(
     '/midpoints',
-    groupController.getMidpoints.bind(groupController)
+    (req, res, next) => {
+      groupController.getMidpoints(req, res).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post(
@@ -56,7 +64,9 @@ router.post( //have seperate endpoint for updating?
     '/join',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
     (req, res, next) => {
-      void groupController.joinGroupByJoinCode(req, res, next);
+      groupController.joinGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
     }
 );
 
@@ -81,12 +91,20 @@ router.delete(
 
 router.get(
     '/midpoint/:joinCode',
-    groupController.getMidpointByJoinCode.bind(groupController)
+    (req, res, next) => {
+      groupController.getMidpointByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post(
     '/midpoint/:joinCode',
-    groupController.updateMidpointByJoinCode.bind(groupController)
+    (req, res, next) => {
+      groupController.updateMidpointByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post(

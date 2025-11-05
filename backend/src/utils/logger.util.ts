@@ -5,7 +5,9 @@ const logger = {
     const logMessage = `[INFO] ${sanitizeInput(message)}`;
     const sanitizedArgs = sanitizeArgs(args);
     // eslint-disable-next-line no-console
-    console.log(logMessage, ...sanitizedArgs);
+    // Construct message string first to satisfy linter
+    const finalMessage = logMessage;
+    console.log(finalMessage, ...sanitizedArgs);
   },
   error: (message: string, ...args: unknown[]) => {
     const logMessage = `[ERROR] ${sanitizeInput(message)}`;

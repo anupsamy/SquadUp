@@ -36,7 +36,7 @@ export class WebSocketService {
   }
 
   private setupWebSocketServer() {
-    this.wss.on('connection', (ws: WebSocket, _req: IncomingMessage) => {
+    this.wss.on('connection', (ws: WebSocket) => {
       logger.info('New WebSocket connection established');
 
       ws.on('message', (data: WebSocket.Data) => {
@@ -122,7 +122,8 @@ export class WebSocketService {
         break;
       
       default:
-        this.sendError(ws, `Unknown message type: ${type}`);
+        const typeString = typeof type === 'string' ? type : String(type);
+        this.sendError(ws, `Unknown message type: ${typeString}`);
     }
   }
 

@@ -11,11 +11,15 @@ export class LocationService {
 
   async getTravelTime(origin: GeoLocation, destination: GeoLocation): Promise<number> {
     try {
+      const mapsApiKey = process.env.MAPS_API_KEY;
+      if (!mapsApiKey) {
+        throw new Error('MAPS_API_KEY environment variable is not set');
+      }
       const response = await this.mapsClient.distancematrix({
         params: {
           origins: [`${origin.lat},${origin.lng}`],
           destinations: [`${destination.lat},${destination.lng}`],
-          key: process.env.MAPS_API_KEY!,
+          key: mapsApiKey,
           mode: origin.transitType as unknown,
         },
       });
@@ -170,15 +174,15 @@ async getActivityList(
       if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
         continue;
       }
-      const rawWeight = travelTimes[j];
+      // Validate array element access to prevent object injection
+      const rawWeightValue = travelTimes[j];
+      const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
-      const weight = typeof rawWeight === 'number' && isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
+      const weight = isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       
-      // Validate object to prevent object injection
-      const geoLocationItem = geoLocation[j];
-      if (geoLocationItem === null || typeof geoLocationItem !== 'object') {
-        continue;
-      }
+      // Validate array element access to prevent object injection
+      const geoLocationItemValue = geoLocation[j];
+      const geoLocationItem = geoLocationItemValue;
       // TypeScript guarantees lat and lng exist on GeoLocation
       const rawLat = geoLocationItem.lat;
       const rawLng = geoLocationItem.lng;

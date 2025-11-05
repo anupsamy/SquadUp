@@ -11,7 +11,7 @@ router.post(
   '/signup',
   validateBody<AuthenticateUserRequest>(authenticateUserSchema),
   (req, res, next) => {
-    authController.signUp(req, res, next).catch((error) => {
+    authController.signUp(req, res, next).catch((error: unknown) => {
       next(error);
     });
   }
@@ -21,7 +21,7 @@ router.post(
   '/signin',
   validateBody(authenticateUserSchema),
   (req, res, next) => {
-    authController.signIn(req, res, next).catch((error) => {
+    authController.signIn(req, res, next).catch((error: unknown) => {
       next(error);
     });
   }

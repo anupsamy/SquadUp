@@ -12,14 +12,23 @@
 
 ### 2.1. Locations of Back-end Tests and Instructions to Run Them
 
-#### 2.1.1. Tests
+| **Interface**                      | **Describe Group Location, No Mocks**     | **Describe Group Location, With Mocks**            | **Mocked Components**     |
+| ---------------------------------- | ----------------------------------------- | -------------------------------------------------- | ------------------------- |
+| **POST /auth/signup**              | N/A                                       | `tests/mocked/auth.controller.mocked.test.ts#L31`  | Authentication Service    |
+| **POST /auth/signin**              | N/A                                       | `tests/mocked/auth.controller.mocked.test.ts#L146` | Authentication Service    |
+| **GET /user/profile**              | `tests/unmocked/user.tests.ts#L276`       | N/A                                                | Authentication Service    |
+| **POST /user/profile**             | `tests/unmocked/user.tests.ts#L100`       | `tests/mocked/user.mocked.test.ts#L54`             | MongoDB, Media Service    |
+| **DELETE /user/profile**           | `tests/unmocked/user.tests.ts#L134`       | `tests/mocked/user.mocked.test.ts#L145`            | MongoDB, Media Service    |
+| **POST /group/create**             | `tests/unmocked/group.tests.ts#L476`      | `tests/mocked/group.mocked.test.ts#L169`           | MongoDB                   |
+| **GET /group/info**                | `tests/unmocked/group.tests.ts#L429`      | `tests/unmocked/group.tests.ts#L49`                | MongoDB                   |
+| **GET /group/:joinCode**           | `tests/unmocked/group.tests.ts#L443`      | `tests/unmocked/group.tests.ts#L77`                | MongoDB                   |
+| **POST /group/update**             | `tests/unmocked/group.tests.ts#L555`      | N/A                                                | MongoDB                   |
+| **DELETE /group/delete/:joinCode** | `tests/unmocked/group.tests.ts#L598`      | `tests/unmocked/group.tests.ts#L198`               | MongoDB                   |
+| **POST /group/join**               | `tests/unmocked/group.tests.ts#L443`      | `tests/unmocked/group.tests.ts#L77`                | MongoDB                   |
+| **POST /group/leave/:joinCode**    | `tests/unmocked/group.tests.ts#L506`      | `tests/unmocked/group.tests.ts#L102`               | MongoDB                   |
+| **GET /group/activities**          | `tests/unmocked/activities.tests.ts#L144` | `tests/mocked/activities.mocked.test.ts#L29`       | MongoDB, Location Service |
+| **POST /group/activities/select**  | `tests/unmocked/activities.tests.ts#L224` | `tests/mocked/activities.mocked.test.ts#L92`       | MongoDB, Location Service |
 
-| **Interface**                 | **Describe Group Location, No Mocks**                | **Describe Group Location, With Mocks**            | **Mocked Components**              |
-| ----------------------------- | ---------------------------------------------------- | -------------------------------------------------- | ---------------------------------- |
-| **POST /user/login**          | [`tests/unmocked/authenticationLogin.test.js#L1`](#) | [`tests/mocked/authenticationLogin.test.js#L1`](#) | Google Authentication API, User DB |
-| **POST /study-groups/create** | ...                                                  | ...                                                | Study Group DB                     |
-| ...                           | ...                                                  | ...                                                | ...                                |
-| ...                           | ...                                                  | ...                                                | ...                                |
 
 #### 2.1.2. Commit Hash Where Tests Run
 
@@ -29,12 +38,25 @@
 
 1. **Clone the Repository**:
 
-   - Open your terminal and run:
-     ```
-     git clone https://github.com/example/your-project.git
-     ```
+2. **Install Required Libraries**:
 
-2. **...**
+   - Ensure the following libraries are installed:
+
+   ```npm install --save-dev jest``` \
+   ```npm install --save-dev ts-jest``` \
+   ```npm install --save-dev @types/jest```
+
+3. **Navigate to the Back-end Directory**:
+
+   ```cd backend```
+
+4. **Run the Tests**:
+
+   ```npx jest```
+
+5. **Run the Tests with Coverage Report**:
+
+   ```npx jest --coverage```
 
 ### 2.2. GitHub Actions Configuration Location
 
@@ -42,15 +64,15 @@
 
 ### 2.3. Jest Coverage Report Screenshots for Tests Without Mocking
 
-_(Placeholder for Jest coverage screenshot without mocking)_
+![Coverage Report Without Mocking](images/test-no-mock.png)
 
 ### 2.4. Jest Coverage Report Screenshots for Tests With Mocking
 
-_(Placeholder for Jest coverage screenshot with mocking)_
+![Coverage Report With Mocking](images/test-mock.png)
 
 ### 2.5. Jest Coverage Report Screenshots for Both Tests With and Without Mocking
 
-_(Placeholder for Jest coverage screenshot both with and without mocking)_
+![Coverage Report With All Tests](images/test-all.png)
 
 ---
 
@@ -60,8 +82,19 @@ _(Placeholder for Jest coverage screenshot both with and without mocking)_
 
 | **Non-Functional Requirement**  | **Location in Git**                              |
 | ------------------------------- | ------------------------------------------------ |
-| **Performance (Response Time)** | [`tests/nonfunctional/response_time.test.js`](#) |
-| **Chat Data Security**          | [`tests/nonfunctional/chat_security.test.js`](#) |
+| **Location Service**            | tests/nonfunctional.test.ts#18                  |
+| **Group View Load Time**        | tests/nonfunctional.test.ts#297                 |
+
+### 3.2. Explanation of Non-Functional Requirement Tests
+
+**Location Service**:
+
+These tests measure the performance of the location optimization algorithm to ensure it meets the non-functional requirement of returning results within 2-5 seconds. The tests calculate midpoints for groups of varying sizes (2, 5, and 10 users) and also measure the combined response time when fetching both the optimal meeting point AND retrieving nearby activities/venues. By testing with different group sizes, the tests verify that the algorithm scales reasonably and doesn't degrade significantly as more users are added to the calculation.
+
+**Group View Load Time**:
+
+These tests measure the API response time for fetching group information to ensure it meets the requirement of loading group details within 2 seconds. The tests simulate various scenarios including fetching a single group by join code (with different member counts), fetching all groups at once, and calculating midpoints. By testing with different group member counts, these tests verify that the database queries and data serialization don't cause performance degradation, ensuring the UI can display group information to users quickly regardless of group size.
+
 
 ### 3.2. Test Verification and Logs
 

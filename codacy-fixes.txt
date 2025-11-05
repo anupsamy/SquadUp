@@ -1,0 +1,6 @@
+diff --git a/backend/src/controllers/group.controller.ts b/backend/src/controllers/group.controller.ts
+--- a/backend/src/controllers/group.controller.ts
++++ b/backend/src/controllers/group.controller.ts
+@@ -617,1 +617,1 @@
+-    const validatedActivity: Activity = typeof activity === 'object' && activity !== null && 'placeId' in activity && 'name' in activity ? activity as Activity : {
++    const validatedActivity: Activity = typeof activity === 'object' && activity !== null && 'placeId' in activity && 'name' in activity

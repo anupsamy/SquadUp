@@ -1,12 +1,12 @@
 import { Express } from 'express';
 
-export type UploadImageRequest = {
+export interface UploadImageRequest {
   file: Express.Multer.File;
-};
+}
 
-export type UploadImageResponse = {
+export interface UploadImageResponse {
   message: string;
   data?: {
     image: string;
   };
-};
+}

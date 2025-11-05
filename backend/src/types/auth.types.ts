@@ -13,23 +13,21 @@ export const authenticateUserSchema = z.object({
 // ------------------------------------------------------------
 export type AuthenticateUserRequest = z.infer<typeof authenticateUserSchema>;
 
-export type AuthenticateUserResponse = {
+export interface AuthenticateUserResponse {
   message: string;
   data?: AuthResult;
-};
+}
 
 // Generic types
 // ------------------------------------------------------------
-export type AuthResult = {
+export interface AuthResult {
   token: string;
   user: IUser;
-};
+}
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: IUser;
-      group?:IGroup;
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: IUser;
+    group?: IGroup;
   }
 }

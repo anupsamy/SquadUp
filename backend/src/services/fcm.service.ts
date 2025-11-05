@@ -11,13 +11,13 @@ export function initialize() {
       logger.warn('FIREBASE_SERVICE_ACCOUNT_KEY is not set; FCM disabled');
       return;
     }
-    const serviceAccount: any = JSON.parse(keyJson as string);
+    const serviceAccount: unknown = JSON.parse(keyJson);
     // Normalize private_key newlines if the JSON contains escaped \n sequences
-    if (typeof serviceAccount.private_key === 'string') {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    if (typeof serviceAccount === 'object' && serviceAccount !== null && 'private_key' in serviceAccount && typeof (serviceAccount as { private_key?: unknown }).private_key === 'string') {
+      (serviceAccount as { private_key: string }).private_key = (serviceAccount as { private_key: string }).private_key.replace(/\\n/g, '\n');
     }
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as any),
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
     initialized = true;
     logger.info('Firebase Admin initialized');
@@ -26,11 +26,11 @@ export function initialize() {
   }
 }
 
-export type FcmPayload = {
+export interface FcmPayload {
   title: string;
   body: string;
   data?: Record<string, string>;
-};
+}
 
 export async function sendToTokens(tokens: string[], payload: FcmPayload) {
   initialize();
@@ -113,7 +113,7 @@ export async function sendActivitySelectedFCM(joinCode: string, activityName: st
       groupName,
       timestamp: new Date().toISOString(),
       actingUserId: leaderId, // new field for filtering on frontend
-      activityData: activityData || '', // Optional activity data as JSON string
+      activityData: activityData ?? '', // Optional activity data as JSON string
     },
   });
 }

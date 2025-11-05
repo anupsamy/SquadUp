@@ -144,7 +144,7 @@ These tests measure the API response time for fetching group information to ensu
 
 **Test Logs:**
 
-TODO
+![Create Group Logs](images/m4-logs/GM-create-group-logs.png)
 
 ---
 
@@ -166,7 +166,7 @@ TODO
 
 **Test Logs:**
 
-
+![Join Group Logs](images/m4-logs/GM-join-group-logs.png)
 
 #### Use Case: View All Groups
 
@@ -178,7 +178,7 @@ TODO
 
 **Test Logs:**
 
-
+![View All Group Logs](images/m4-logs/GM-view-all-groups-logs.png)
 
 ---
 
@@ -196,7 +196,7 @@ TODO
 
 **Test Logs:**
 
-
+![View Specific Group Logs](images/m4-logs/GM-view-specific-group-logs.png)
 
 ---
 
@@ -212,7 +212,7 @@ TODO
 
 **Test Logs:**
 
-
+![Leave Group Logs](images/m4-logs/GM-leave-group-logs.png)
 
 ---
 
@@ -228,6 +228,8 @@ TODO
 | 6. Group removed from list. | Verify deleted group no longer appears. |
 
 **Test Logs:**
+
+![Delete Group Logs](images/m4-logs/GM-delete-group-logs.png)
 
 ## Feature: Group View
 

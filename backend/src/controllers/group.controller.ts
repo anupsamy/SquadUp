@@ -247,8 +247,6 @@ export class GroupController {
     try {
       const {joinCode} = req.params;
 
-      //await MediaService.deleteAllUserImages(user._id.toString());
-
       await groupModel.delete(joinCode); //NOTE: see if anything else needs to be removed first
 
       res.status(200).json({
@@ -324,7 +322,6 @@ export class GroupController {
       });
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
-      //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
 
       const lat = optimizedPoint.lat;

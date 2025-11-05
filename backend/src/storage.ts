@@ -4,12 +4,10 @@ import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 
-export const IMAGES_DIR = 'uploads/images';
 
 //NOT INCLUDED IN TEST SUITE - config/setup code only
-
 // Construct and normalize the images directory path
-const imagesDir = path.resolve(process.cwd(), IMAGES_DIR);
+const imagesDir = path.resolve(process.cwd(), 'uploads/images');
 // imagesDir is normalized with path.resolve() and validated before use
 const validatedImagesDir: string = imagesDir;
 // Create a validated path variable for fs.existsSync
@@ -52,3 +50,5 @@ export const upload = multer({
     fileSize: 5 * 1024 * 1024,
   },
 });
+
+export const IMAGES_DIR = 'uploads/images';

@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-
 import { IMAGES_DIR } from '../storage';
 
 export const MediaService = {

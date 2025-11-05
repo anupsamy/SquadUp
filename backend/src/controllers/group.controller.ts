@@ -32,7 +32,6 @@ export class GroupController {
         meetingTime,  // Default to current time for now,
         activityType
       });
-      //console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
         message: `Group ${groupName} created successfully`,
         data: {
@@ -49,9 +48,6 @@ export class GroupController {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
-      // console.error('GroupController getAllGroups:', groups);
-      // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
-      //   console.error('GroupController groups[4]:', groups[4]);
       const sanitizedGroups: IGroup[] = groups.map((group) => {
         const groupObj = group.toObject() as unknown as IGroup;
         return {
@@ -59,7 +55,6 @@ export class GroupController {
           groupMemberIds: group.groupMemberIds,
         } as IGroup;
       });
-      // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
       res.status(200).json({
         message: 'Groups fetched successfully',
@@ -90,7 +85,6 @@ export class GroupController {
       return;
     }
     const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
-      // console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({
@@ -109,7 +103,6 @@ export class GroupController {
     } catch (error) {
       logger.error('Failed to fetch group by joinCode:', error);
       res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + error });
-      //next(error);
     }
   }
 
@@ -147,38 +140,6 @@ export class GroupController {
           message: 'Group not found',
         });
       }
-
-      // Send WebSocket notifications for new members
-      /*const wsService = getWebSocketService();
-      if (wsService) {
-        const validatedGroupMemberIds: GroupUser[] = Array.isArray(groupMemberIds) ? groupMemberIds : [];
-        const currentMemberIds = currentGroup.groupMemberIds.map(member => {
-          const memberId: string = typeof member.id === 'string' ? member.id : '';
-          return memberId;
-        });
-
-        // Find new members (users who joined)
-        const joinedMembers = validatedGroupMemberIds.filter(member => {
-          const memberId: string = typeof member.id === 'string' ? member.id : '';
-          return !currentMemberIds.includes(memberId);
-        });
-
-        // Send notifications for each new member
-        joinedMembers.forEach(member => {
-          const memberName: string = typeof member.name === 'string' ? member.name : '';
-          const memberId: string = typeof member.id === 'string' ? member.id : '';
-          wsService.notifyGroupJoin(
-            validatedJoinCode,
-            memberId,
-            memberName,
-            updatedGroup.groupName
-          );
-          // FCM topic notification (clients subscribe to topic == joinCode)
-          sendGroupJoinFCM(validatedJoinCode, memberName, updatedGroup.groupName, memberId).catch((error: unknown) => {
-            logger.error('Failed to send group join FCM notification:', error);
-          });
-        });
-      }*/
 
       res.status(200).json({
         message: 'Group info updated successfully',
@@ -613,36 +574,6 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       });
     }
 
-    // Send notifications to group members
-    /*const wsService = getWebSocketService();
-    if (wsService && updatedGroup) {
-      const leaderId = updatedGroup.groupLeaderId?.id || '';
-      const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
-      const activityName = activity.name || 'an activity';
-
-      // Send WebSocket notification
-      wsService.notifyGroupUpdate(
-        joinCode,
-        `${leaderName} selected "${activityName}" for the group`,
-        {
-          type: 'activity_selected',
-          activity: activity,
-          leaderId: leaderId,
-          leaderName: leaderName
-        }
-      );
-
-      // Send FCM notification (will be suppressed in foreground on client side)
-      const activityDataStr = JSON.stringify(activity);
-      void sendActivitySelectedFCM(
-        joinCode,
-        activityName,
-        updatedGroup.groupName,
-        leaderId,
-        activityDataStr
-      );
-    }*/
-
     res.status(200).json({
       message: 'Activity selected successfully',
       data: updatedGroup,
@@ -659,50 +590,6 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     });
   }
 }
-
-// async getMidpoints(req: Request, res: Response): Promise<void> {
-//   try {
-//     const joinCode = req.query.joinCode;
-
-//     if (!joinCode || typeof joinCode !== 'string') {
-//       res.status(400).json({
-//         success: false,
-//         message: 'Join code is required',
-//       });
-//       return;
-//     }
-
-//     // Verify the group exists
-//     const group = await groupModel.findByJoinCode(joinCode);
-//     if (!group) {
-//       res.status(404).json({
-//         success: false,
-//         message: 'Group not found',
-//       });
-//       return;
-//     }
-
-//     // Return dummy midpoint data (3 locations in Vancouver area)
-//     const midpoints = [
-//       { latitude: 49.2827, longitude: -123.1207 },
-//       { latitude: 49.2606, longitude: -123.2460 },
-//       { latitude: 49.2488, longitude: -123.1163 }
-//     ];
-
-//     res.status(200).json({
-//       success: true,
-//       data: midpoints,
-//     });
-//   } catch (error) {
-//     logger.error('Error fetching midpoints:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to fetch midpoints',
-//     });
-//   }
-// }
-
-
 
   async leaveGroup(
     req: Request<{joinCode: string}, unknown, {userId: string}>,
@@ -726,44 +613,6 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
       const result = await groupModel.leaveGroup(joinCode, userId);
 
-      // Send WebSocket notification for user leaving
-      /*const wsService = getWebSocketService();
-      if (wsService && leavingUser) {
-        wsService.notifyGroupLeave(
-          joinCode,
-          leavingUser.id,
-          leavingUser.name,
-          currentGroup.groupName
-        );
-        // FCM topic notification (clients subscribe to topic == joinCode)
-        sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id).catch((error: unknown) => {
-          logger.error('Failed to send group leave FCM notification:', error);
-        });
-      }
-
-      if (result.deleted) {
-        // Notify about group deletion
-        if (wsService) {
-          wsService.notifyGroupUpdate(
-            joinCode,
-            `Group "${currentGroup.groupName}" has been deleted as no members remain`,
-            { deleted: true }
-          );
-        }
-
-        res.status(200).json({
-          message: 'Group deleted successfully as no members remain',
-        });
-      } else {
-        // Notify about leadership transfer if applicable
-        if (wsService && result.newLeader) {
-          wsService.notifyGroupUpdate(
-            joinCode,
-            `${result.newLeader.name} is now the new group leader`,
-            { newLeader: result.newLeader }
-          );
-        }*/
-
         res.status(200).json({
           message: 'Left group successfully',
           data: result.newLeader ? { newLeader: result.newLeader } : undefined,
@@ -782,39 +631,4 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       return res.status(500).json({ message });
     }
   }
-
-  // Test endpoint for WebSocket notifications
- /* async testWebSocketNotification(
-    req: Request<{joinCode: string}>,
-    res: Response,
-    next: NextFunction) {
-    try {
-      const {joinCode} = req.params;
-      const {message, type} = req.body;
-      // Validate message is a string before use
-      const validatedMessage: string = typeof message === 'string' ? message : 'Test notification from backend';
-
-      const wsService = getWebSocketService();
-      if (!wsService) {
-        return res.status(500).json({
-          message: 'WebSocket service not available',
-        });
-      }
-
-      // Send a test notification
-      wsService.notifyGroupUpdate(
-        joinCode,
-        validatedMessage,
-        { type: type || 'test' }
-      );
-
-      res.status(200).json({
-        message: 'Test notification sent successfully',
-        data: wsService.getStats(),
-      });
-    } catch (error) {
-      logger.error('Failed to send test notification:', error);
-      next(error);
-    }
-  }*/
 }

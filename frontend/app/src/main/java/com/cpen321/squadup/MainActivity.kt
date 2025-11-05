@@ -90,9 +90,6 @@ class MainActivity : ComponentActivity() {
                 
                 // Global notification overlay - shows notifications from WebSocket
                 GlobalNotificationOverlay(notificationManager = notificationManager)
-                
-                // Uncomment the line below to show ChatScreen for testing WebSocket notifications
-                // ChatScreen(viewModel = chatViewModel)
             }
         }
         

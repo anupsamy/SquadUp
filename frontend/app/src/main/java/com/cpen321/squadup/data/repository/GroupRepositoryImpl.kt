@@ -251,34 +251,6 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-    //midpoints unused
-//
-//    override suspend fun getMidpoints(joinCode: String): Result<List<LatLng>> {
-//        return try {
-//            val response = groupInterface.getMidpoints(
-//                "", // Auth header handled by interceptor
-//                joinCode
-//            )
-//
-//            val data = response.body()?.data
-//            if (response.isSuccessful && data != null) {
-//                // Convert the response data to LatLng objects
-//                val latLngList = data
-//                Result.success(latLngList.map { LatLng(it.latitude, it.longitude) })
-//            } else {
-//                Log.e(TAG, "Failed to fetch midpoints: ${response.message()}")
-//                Result.success(emptyList())
-//            }
-//        } catch (e: Exception) {
-//            Log.e(TAG, "Error fetching midpoints", e)
-//            Result.success(emptyList())
-//        }
-//    }
-
-
-
-    //activities
-
     override suspend fun leaveGroup(joinCode: String, userId: String): Result<Unit> {
         return try {
             val authToken = tokenManager.getToken() ?: ""

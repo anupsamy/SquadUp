@@ -177,7 +177,17 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while updating group", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while updating group", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while updating group", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while updating group: ${e.code()}", e)
             Result.failure(e)
         }
     }

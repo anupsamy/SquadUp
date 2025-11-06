@@ -78,7 +78,10 @@ class MainActivity : ComponentActivity() {
             } else {
                 "ws://10.0.2.2:3000/ws" // Local development
             }
-        } catch (e: Exception) {
+        } catch (e: NoSuchFieldError) {
+            Log.w("WebSocket", "Error reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
+            "ws://10.0.2.2:3000/ws"
+        } catch (e: RuntimeException) {
             Log.w("WebSocket", "Error reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
             "ws://10.0.2.2:3000/ws"
         }

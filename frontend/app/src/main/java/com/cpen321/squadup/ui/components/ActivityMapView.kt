@@ -30,35 +30,14 @@ fun LeaderActivityMapView(
 ) {
     val cameraPositionState = rememberCameraPositionState()
 
-    // Combine all coordinates
     val allPoints = remember(locations, activities) {
-        (locations + activities.map { LatLng(it.latitude, it.longitude) })
-            .filter { isValidCoordinate(it.latitude, it.longitude) } // avoid invalid coords
+        buildAllPoints(locations, activities)
     }
 
     // Move camera to fit all markers once map is ready
     LaunchedEffect(allPoints) {
         if (allPoints.isNotEmpty()) {
-            try {
-                val boundsBuilder = LatLngBounds.builder()
-                allPoints.forEach { boundsBuilder.include(it) }
-                val bounds = boundsBuilder.build()
-                val padding = 150 // pixels — adjust to taste
-                // Move after map is fully ready
-                cameraPositionState.animate(
-                    update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
-                    durationMs = 1000
-                )
-            } catch (e: IllegalStateException) {
-                // If bounds can't be built (no valid points), use default zoom
-                if (allPoints.isNotEmpty()) {
-                    val firstPoint = allPoints.first()
-                    cameraPositionState.animate(
-                        update = CameraUpdateFactory.newLatLngZoom(firstPoint, 14f),
-                        durationMs = 1000
-                    )
-                }
-            }
+            animateCameraToFit(cameraPositionState, allPoints)
         }
     }
 
@@ -67,26 +46,7 @@ fun LeaderActivityMapView(
         cameraPositionState = cameraPositionState,
         onMapLoaded = {
             if (allPoints.isNotEmpty()) {
-                if (allPoints.size == 1) {
-                    // ✅ Single marker: center and zoom out manually
-                    val singlePoint = allPoints.first()
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(singlePoint, 14f) // smaller number = zoomed out
-                    )
-                } else {
-                    // ✅ Multiple markers: fit bounds normally
-                    try {
-                        val boundsBuilder = LatLngBounds.builder()
-                        allPoints.forEach { point -> boundsBuilder.include(point) }
-                        val bounds = boundsBuilder.build()
-                        val padding = 150
-                        cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
-                    } catch (e: IllegalStateException) {
-                        // Fallback to single point zoom if bounds can't be built
-                        val firstPoint = allPoints.first()
-                        cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(firstPoint, 14f))
-                    }
-                }
+                onMapLoadedMoveCamera(cameraPositionState, allPoints)
             }
         }
     ) {
@@ -110,6 +70,51 @@ fun LeaderActivityMapView(
         }
     }
 }
+
+private fun buildAllPoints(locations: List<LatLng>, activities: List<Activity>): List<LatLng> =
+    (locations + activities.map { LatLng(it.latitude, it.longitude) })
+        .filter { isValidCoordinate(it.latitude, it.longitude) }
+
+private suspend fun animateCameraToFit(cameraState: CameraPositionState, points: List<LatLng>) {
+    try {
+        val boundsBuilder = LatLngBounds.builder()
+        points.forEach { boundsBuilder.include(it) }
+        val bounds = boundsBuilder.build()
+        val padding = 150
+        cameraState.animate(
+            update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
+            durationMs = 1000
+        )
+    } catch (e: IllegalStateException) {
+        // Fallback: center on first point
+        if (points.isNotEmpty()) {
+            val firstPoint = points.first()
+            cameraState.animate(
+                update = CameraUpdateFactory.newLatLngZoom(firstPoint, 14f),
+                durationMs = 1000
+            )
+        }
+    }
+}
+
+private fun onMapLoadedMoveCamera(cameraState: CameraPositionState, allPoints: List<LatLng>) {
+    if (allPoints.size == 1) {
+        val singlePoint = allPoints.first()
+        cameraState.move(CameraUpdateFactory.newLatLngZoom(singlePoint, 14f))
+    } else {
+        try {
+            val boundsBuilder = LatLngBounds.builder()
+            allPoints.forEach { boundsBuilder.include(it) }
+            val bounds = boundsBuilder.build()
+            val padding = 150
+            cameraState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+        } catch (e: IllegalStateException) {
+            val firstPoint = allPoints.first()
+            cameraState.move(CameraUpdateFactory.newLatLngZoom(firstPoint, 14f))
+        }
+    }
+}
+
 @Composable
 fun MemberActivityMapView(
     midpoint: LatLng?,

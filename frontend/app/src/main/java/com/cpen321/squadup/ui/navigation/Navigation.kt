@@ -91,76 +91,47 @@ private fun handleNavigationEvent(
     mainViewModel: MainViewModel,
     groupViewModel: GroupViewModel
 ) {
+    fun nav(route: String, popToRoot: Boolean = false) {
+        navController.navigate(route) {
+            if (popToRoot) popUpTo(0) { inclusive = true }
+        }
+        navigationStateManager.clearNavigationEvent()
+    }
+
+    fun navWithMessage(setter: (String) -> Unit, message: String, route: String, popToRoot: Boolean = false) {
+        setter(message)
+        nav(route, popToRoot)
+    }
+
     when (navigationEvent) {
-        is NavigationEvent.NavigateToAuth -> {
-            navController.navigate(NavRoutes.AUTH) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToAuthWithMessage -> {
-            authViewModel.setSuccessMessage(navigationEvent.message)
-            navController.navigate(NavRoutes.AUTH) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToCreateGroup -> {
-            navController.navigate(NavRoutes.CREATE_GROUP)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToMain -> {
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToMainWithMessage -> {
-            mainViewModel.setSuccessMessage(navigationEvent.message)
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToProfileCompletion -> {
-            navController.navigate(NavRoutes.PROFILE_COMPLETION) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToProfile -> {
-            navController.navigate(NavRoutes.PROFILE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToManageProfile -> {
-            navController.navigate(NavRoutes.MANAGE_PROFILE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToManageHobbies -> {
-            navController.navigate(NavRoutes.MANAGE_HOBBIES)
-            navigationStateManager.clearNavigationEvent()
-        }
-
+        is NavigationEvent.NavigateToAuth ->
+            nav(NavRoutes.AUTH, popToRoot = true)
+        is NavigationEvent.NavigateToAuthWithMessage ->
+            navWithMessage(authViewModel::setSuccessMessage, navigationEvent.message, NavRoutes.AUTH, popToRoot = true)
+        is NavigationEvent.NavigateToCreateGroup ->
+            nav(NavRoutes.CREATE_GROUP)
+        is NavigationEvent.NavigateToMain ->
+            nav(NavRoutes.MAIN, popToRoot = true)
+        is NavigationEvent.NavigateToMainWithMessage ->
+            navWithMessage(mainViewModel::setSuccessMessage, navigationEvent.message, NavRoutes.MAIN, popToRoot = true)
+        is NavigationEvent.NavigateToProfileCompletion ->
+            nav(NavRoutes.PROFILE_COMPLETION, popToRoot = true)
+        is NavigationEvent.NavigateToProfile ->
+            nav(NavRoutes.PROFILE)
+        is NavigationEvent.NavigateToManageProfile ->
+            nav(NavRoutes.MANAGE_PROFILE)
+        is NavigationEvent.NavigateToManageHobbies ->
+            nav(NavRoutes.MANAGE_HOBBIES)
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
             navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.ClearBackStack -> {
             navController.popBackStack(navController.graph.startDestinationId, false)
             navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NoNavigation -> {
-            // Do nothing
+            // no-op
         }
     }
 }

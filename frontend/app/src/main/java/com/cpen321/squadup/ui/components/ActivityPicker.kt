@@ -132,67 +132,94 @@ fun ActivityCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val containerColor = if (isSelected)
+        MaterialTheme.colorScheme.primaryContainer
+    else
+        MaterialTheme.colorScheme.surface
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surface
-        ),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
         onClick = onClick
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-
-        Text(
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
                 text = name,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = address,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = rating.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    StarRating(rating = rating)
-                }
-                Text(
-                    text = "($userRatingsTotal)",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "$".repeat(priceLevel),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = type,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+
+            ActivityMetaRow(
+                rating = rating,
+                userRatingsTotal = userRatingsTotal,
+                priceLevel = priceLevel,
+                type = type
+            )
         }
     }
 }
+
+@Composable
+private fun ActivityMetaRow(
+    rating: Double,
+    userRatingsTotal: Int,
+    priceLevel: Int,
+    type: String
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RatingBlock(rating = rating)
+        Text(
+            text = "($userRatingsTotal)",
+            style = MaterialTheme.typography.bodySmall
+        )
+        PriceLevelText(priceLevel = priceLevel)
+        Text(
+            text = type,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun RatingBlock(rating: Double) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = rating.toString(),
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold
+        )
+        StarRating(rating = rating)
+    }
+}
+
+@Composable
+private fun PriceLevelText(priceLevel: Int) {
+    Text(
+        text = "$".repeat(priceLevel.coerceAtLeast(0)),
+        style = MaterialTheme.typography.bodySmall
+    )
+}
+
 @Composable
 fun StarRating(
     rating: Double,

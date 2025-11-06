@@ -3,12 +3,11 @@ import crypto from 'crypto';
 
 import logger from '../utils/logger.util';
 import { groupModel } from '../group.model';
-import { userModel } from '../user.model';
-import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity, GroupUser } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity } from '../types/group.types';
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
-import { sendGroupJoinFCM, sendGroupLeaveFCM, sendActivitySelectedFCM } from '../services/fcm.service';
+import { sendActivitySelectedFCM } from '../services/fcm.service';
 
 export class GroupController {
   async createGroup(
@@ -203,8 +202,7 @@ export class GroupController {
 
   async deleteGroupByJoinCode(
     req: Request<{joinCode: string}>,
-    res: Response,
-    next: NextFunction) {
+    res: Response) {
     try {
       const {joinCode} = req.params;
 
@@ -606,10 +604,6 @@ async selectActivity(req: Request, res: Response): Promise<void> {
           message: 'Group not found',
         });
       }
-
-      // Find the user who is leaving
-      const leavingUser = currentGroup.groupMemberIds.find(member => member.id === userId) ??
-                         (currentGroup.groupLeaderId.id === userId ? currentGroup.groupLeaderId : null);
 
       const result = await groupModel.leaveGroup(joinCode, userId);
 

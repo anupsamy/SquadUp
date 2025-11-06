@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { IMAGES_DIR } from '../storage';
+
+const IMAGES_DIR = path.join(process.cwd(), 'uploads', 'images');
 
 // Validate file path is within allowed directory to prevent directory traversal
 function validateFilePath(filePath: string, allowedDir: string): boolean {

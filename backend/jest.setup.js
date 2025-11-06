@@ -7,7 +7,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 beforeAll(async () => {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/squadup';
+    const mongoUri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017/squadup';
     try {
         await mongoose_1.default.connect(mongoUri);
         console.log('✓ MongoDB connected for tests');

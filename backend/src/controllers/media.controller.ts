@@ -8,9 +8,8 @@ import { sanitizeInput } from '../utils/sanitizeInput.util';
 export class MediaController {
   async uploadImage(
     req: Request<unknown, unknown, UploadImageRequest>,
-    res: Response<UploadImageResponse>,
-    next: NextFunction
-  ) {
+    res: Response<UploadImageResponse>
+    ) {
     try {
       if (!req.file) {
         return res.status(400).json({

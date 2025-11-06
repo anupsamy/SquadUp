@@ -29,219 +29,134 @@ import com.cpen321.squadup.data.remote.dto.ActivityType
 @Composable
 fun CreateGroupScreen(
     navController: NavController,
-    groupViewModel: GroupViewModel = hiltViewModel(), // Use Hilt to inject the ViewModel
+    groupViewModel: GroupViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by groupViewModel.uiState.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        profileViewModel.loadProfile()
-    }
+    LaunchedEffect(Unit) { profileViewModel.loadProfile() }
 
-    // State variables for input fields
     var groupName by remember { mutableStateOf("") }
-    var groupLeaderId by remember { mutableStateOf("") }
-    var meetingDate by remember { mutableStateOf("") }
-    var meetingTime by remember { mutableStateOf("") }
+    var meetingDateTime by remember { mutableStateOf("") }
     var expectedPeople by remember { mutableStateOf("") }
     var selectedActivity by remember { mutableStateOf<ActivityType?>(null) }
-    var expanded by remember { mutableStateOf(false) }
-
-    // State for the combined date-time string
-    var meetingDateTime by remember { mutableStateOf("") }
-
-    val TAG = "CreateGroupScreen"
-
-
-    // Get the current user's user ID
-    val currentUserId = profileUiState.user
-    Log.d(TAG, "profileUiState: ${currentUserId}")
-
-    var dateObject:Date
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Create Group") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )},
+        topBar = { TopAppBar(title = { Text("Create Group") }, navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        })},
         content = { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Input for Group Name
                 TextField(
                     value = groupName,
                     onValueChange = { groupName = it },
                     label = { Text("Group Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(16.dp))
 
-                // Date Picker for Meeting Date
-                Button(
-                    onClick = {
-                        val calendar = Calendar.getInstance()
-                        DatePickerDialog(
-                            context,
-                            { _, year, month, dayOfMonth ->
-                                meetingDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
-                            },
-                            calendar.get(Calendar.YEAR),
-                            calendar.get(Calendar.MONTH),
-                            calendar.get(Calendar.DAY_OF_MONTH)
-                        ).show()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = if (meetingDate.isEmpty()) "Select Meeting Date" else "Date: $meetingDate")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+                DateTimePickerSection(context) { dateTime -> meetingDateTime = dateTime }
 
-                // Time Picker for Meeting Time
-                Button(
-                    onClick = {
-                        val calendar = Calendar.getInstance()
-                        TimePickerDialog(
-                            context,
-                            { _, hourOfDay, minute ->
-                                meetingTime = String.format("%02d:%02d", hourOfDay, minute)
-                            },
-                            calendar.get(Calendar.HOUR_OF_DAY),
-                            calendar.get(Calendar.MINUTE),
-                            true // Use 24-hour format
-                        ).show()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = if (meetingTime.isEmpty()) "Select Meeting Time" else "Time: $meetingTime")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+                ExpectedPeopleInput(expectedPeople) { expectedPeople = it }
 
-                // Combine Date and Time into ISO 8601 String
-                Button(
-                    onClick = {
-                        if (meetingDate.isNotEmpty() && meetingTime.isNotEmpty()) {
-                            meetingDateTime = "${meetingDate}T${meetingTime}:00Z"
-                            Toast.makeText(context, "Meeting Date-Time: $meetingDateTime", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Please select both date and time", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Confirm Date-Time")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+                ActivityDropdown(selectedActivity) { selectedActivity = it }
 
-                // Input for Expected People
-                TextField(
-                    value = expectedPeople,
-                    onValueChange = { expectedPeople = it },
-                    label = { Text("Expected People") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number
-                    )
+                CreateGroupButton(
+                    groupName, meetingDateTime, expectedPeople, selectedActivity,
+                    profileUiState.user, groupViewModel, uiState.isCreatingGroup, navController
                 )
-                Spacer(modifier = Modifier.height(16.dp))
 
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    TextField(
-                        value = selectedActivity?.displayName ?: "Select Activity Type",
-                        onValueChange = {}, // Required but we don’t allow typing
-                        readOnly = true,   // Prevent keyboard input
-                        label = { Text("Activity Type") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .menuAnchor() // Important! Anchors the dropdown properly
-                            .fillMaxWidth()
-                            .clickable { expanded = true } // Allow clicking to expand
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        ActivityType.values().forEach { type ->
-                            DropdownMenuItem(
-                                text = { Text(type.displayName) },
-                                onClick = {
-                                    selectedActivity = type
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Create Group Button
-                Button(
-                    onClick = {
-                        if (meetingDateTime.isNotEmpty() && currentUserId!= null) {
-                            val groupLeaderUser = GroupUser(
-                                id = currentUserId._id,
-                                name = currentUserId.name,
-                                email = currentUserId.email,
-                                address = currentUserId.address,
-                                transitType = currentUserId.transitType
-                            )
-                            groupViewModel.createGroup(
-                                groupName = groupName,
-                                meetingTime = meetingDateTime,
-                                groupLeaderId = groupLeaderUser,
-                                expectedPeople = expectedPeople.toIntOrNull() ?: 0,
-                                activityType = selectedActivity?.storedValue ?: ""
-                            )
-                        } else {
-                            Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("createGroupButton"),
-                    enabled = !uiState.isCreatingGroup
-                ) {
-                    Text(text = if (uiState.isCreatingGroup) "Creating..." else "Create Group")
-                }
-
-                // Observe the success message and navigate to the success screen
-                LaunchedEffect(uiState.successMessage) {
-                    //val joinCode = uiState.data?.group.joinCode
-                    uiState.responseData?.let { respData ->
-                        //val joinCode = message.substringAfter("Join Code: ").trim() // Extract joinCode from the message
-                        val joinCode = respData["joinCode"]
-                        val gName = respData["groupName"]
-                        navController.navigate("group_success/$gName/$joinCode")
-                        groupViewModel.clearMessages() // Clear the success message after navigation
-                    }
-                }
-
-                // Display success or error messages
-                uiState.successMessage?.let { message ->
-                    Text(text = message, color = MaterialTheme.colorScheme.primary)
-                }
-                uiState.errorMessage?.let { message ->
-                    Text(text = message, color = MaterialTheme.colorScheme.error)
-                }
+                uiState.successMessage?.let { Text(text = it, color = MaterialTheme.colorScheme.primary) }
+                uiState.errorMessage?.let { Text(text = it, color = MaterialTheme.colorScheme.error) }
             }
         }
     )
+}
+
+@Composable
+fun DateTimePickerSection(context: Context, onDateTimeSelected: (String) -> Unit) {
+    var meetingDate by remember { mutableStateOf("") }
+    var meetingTime by remember { mutableStateOf("") }
+
+    val calendar = Calendar.getInstance()
+
+    Button(onClick = {
+        DatePickerDialog(context, { _, y, m, d -> meetingDate = String.format("%04d-%02d-%02d", y, m+1, d) },
+            calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }, modifier = Modifier.fillMaxWidth()) { Text(if (meetingDate.isEmpty()) "Select Meeting Date" else "Date: $meetingDate") }
+
+    Button(onClick = {
+        TimePickerDialog(context, { _, h, min -> meetingTime = String.format("%02d:%02d", h, min) },
+            calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true
+        ).show()
+    }, modifier = Modifier.fillMaxWidth()) { Text(if (meetingTime.isEmpty()) "Select Meeting Time" else "Time: $meetingTime") }
+
+    Button(onClick = {
+        if (meetingDate.isNotEmpty() && meetingTime.isNotEmpty()) {
+            val dt = "${meetingDate}T${meetingTime}:00Z"
+            onDateTimeSelected(dt)
+            Toast.makeText(context, "Meeting Date-Time: $dt", Toast.LENGTH_SHORT).show()
+        } else Toast.makeText(context, "Please select both date and time", Toast.LENGTH_SHORT).show()
+    }, modifier = Modifier.fillMaxWidth()) { Text("Confirm Date-Time") }
+}
+
+@Composable
+fun ExpectedPeopleInput(value: String, onValueChange: (String) -> Unit) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text("Expected People") },
+        modifier = Modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+    )
+}
+
+@Composable
+fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+        TextField(
+            value = selected?.displayName ?: "Select Activity Type",
+            onValueChange = {}, readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true }
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ActivityType.values().forEach { type ->
+                DropdownMenuItem(text = { Text(type.displayName) }, onClick = { onSelect(type); expanded = false })
+            }
+        }
+    }
+}
+
+@Composable
+fun CreateGroupButton(
+    groupName: String, meetingDateTime: String, expectedPeople: String, selectedActivity: ActivityType?,
+    currentUser: User?, groupViewModel: GroupViewModel, isCreating: Boolean, navController: NavController
+) {
+    val context = LocalContext.current
+    Button(
+        onClick = {
+            if (meetingDateTime.isEmpty() || currentUser == null) {
+                Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+            val groupLeader = GroupUser(currentUser._id, currentUser.name, currentUser.email, currentUser.address, currentUser.transitType)
+            groupViewModel.createGroup(groupName, meetingDateTime, groupLeader, expectedPeople.toIntOrNull() ?: 0, selectedActivity?.storedValue ?: "")
+        },
+        modifier = Modifier.fillMaxWidth().testTag("createGroupButton"),
+        enabled = !isCreating
+    ) { Text(if (isCreating) "Creating..." else "Create Group") }
 }

@@ -43,7 +43,7 @@ export class GroupController {
     }
   }
 
-  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>, next: NextFunction) {
+  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>) {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
@@ -66,8 +66,7 @@ export class GroupController {
 
   async getGroupByJoinCode(
     req: Request<{ joinCode: string }>, // Define the route parameter type
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    res: Response<GetGroupResponse>
   ) {
     try {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
@@ -101,14 +100,14 @@ export class GroupController {
         }});
     } catch (error) {
       logger.error('Failed to fetch group by joinCode:', error);
-      res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + error });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + errorMessage });
     }
   }
 
   async joinGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    res: Response<GetGroupResponse>
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds} = req.body;
@@ -160,8 +159,7 @@ export class GroupController {
 
   async updateGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    res: Response<GetGroupResponse>
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds, meetingTime} = req.body;
@@ -591,8 +589,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
   async leaveGroup(
     req: Request<{joinCode: string}, unknown, {userId: string}>,
-    res: Response,
-    next: NextFunction) {
+    res: Response) {
     try {
       const {joinCode} = req.params;
       const {userId} = req.body;

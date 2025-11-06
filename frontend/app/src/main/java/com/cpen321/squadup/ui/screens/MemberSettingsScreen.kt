@@ -26,14 +26,106 @@ import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 import androidx.compose.ui.platform.LocalContext
+import android.content.Context
 import android.app.TimePickerDialog
 import android.app.DatePickerDialog
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MemberSettingsTopBar(
+    navController: NavController,
+    joinCode: String
+) {
+    TopAppBar(
+        title = { 
+            Text(
+                "Member Settings", 
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+            ) 
+        },
+        navigationIcon = {
+            IconButton(onClick = { navController.navigate("${NavRoutes.GROUP_DETAILS}/$joinCode") }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        }
+    )
+}
+
+@Composable
+private fun MemberSettingsBottomBar(
+    navController: NavController,
+    joinCode: String
+) {
+    NavigationBar {
+        NavigationBarItem(
+            selected = false,
+            onClick = { navController.navigate("${NavRoutes.GROUP_LIST}/$joinCode") },
+            icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Squads") },
+            label = { Text("Squads") }
+        )
+        NavigationBarItem(
+            selected = true,
+            onClick = { },
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+            label = { Text("Settings") }
+        )
+    }
+}
+
+@Composable
+private fun MemberSettingsContent(
+    group: GroupDataDetailed,
+    currentUserId: String?,
+    address: Address?,
+    transitType: TransitType?,
+    meetingTime: String,
+    expectedPeople: String,
+    meetingTimeError: String?,
+    expectedPeopleError: String?,
+    addressPickerViewModel: AddressPickerViewModel,
+    existingMemberInfo: GroupUser?,
+    groupViewModel: GroupViewModel,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope,
+    onAddressChange: (Address?) -> Unit,
+    onTransitTypeChange: (TransitType?) -> Unit,
+    onMeetingTimeChange: (String, String?) -> Unit,
+    onExpectedPeopleChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AddressPickerSection(addressPickerViewModel, address) { selected ->
+            onAddressChange(selected)
+        }
+        TransitTypeDropdown(selectedType = transitType, onTypeSelected = onTransitTypeChange)
+        if (group.groupLeaderId?.id == currentUserId) {
+            MeetingTimePickerButton(
+                context, meetingTime, meetingTimeError, onMeetingTimeChange
+            )
+            ExpectedPeopleField(expectedPeople, expectedPeopleError, onExpectedPeopleChange)
+        }
+        SaveSettingsButton(
+            address, transitType, meetingTime, expectedPeople, meetingTimeError,
+            existingMemberInfo, addressPickerViewModel, group, currentUserId,
+            groupViewModel, snackbarHostState, coroutineScope
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,74 +145,44 @@ fun MemberSettingsScreen(
     var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
     var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
-
-    var addressError by remember { mutableStateOf<String?>(null) }
     var expectedPeopleError by remember { mutableStateOf<String?>(null) }
     var meetingTimeError by remember { mutableStateOf<String?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
     val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Member Settings", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate("${NavRoutes.GROUP_DETAILS}/${group.joinCode}") }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}") },
-                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Squads") },
-                    label = { Text("Squads") }
-                )
-                NavigationBarItem(
-                    selected = true,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") }
-                )
-            }
-        },
+        topBar = { MemberSettingsTopBar(navController, group.joinCode) },
+        bottomBar = { MemberSettingsBottomBar(navController, group.joinCode) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AddressPickerSection(addressPickerViewModel, address) { selected ->
-                    address = selected
-                    addressError = null
-                }
-                TransitTypeDropdown(selectedType = transitType) { transitType = it }
-                if (group.groupLeaderId?.id == currentUserId) {
-                    MeetingTimePickerButton(
-                        context, meetingTime, meetingTimeError
-                    ) { newTime, error ->
-                        meetingTime = newTime
-                        meetingTimeError = error
-                    }
-                    ExpectedPeopleField(expectedPeople, expectedPeopleError) { expectedPeople = it; expectedPeopleError = null }
-                }
-                SaveSettingsButton(
-                    address, transitType, meetingTime, expectedPeople, meetingTimeError,
-                    existingMemberInfo, addressPickerViewModel, group, currentUserId,
-                    groupViewModel, snackbarHostState, coroutineScope
-                )
-            }
+            MemberSettingsContent(
+                group = group,
+                currentUserId = currentUserId,
+                address = address,
+                transitType = transitType,
+                meetingTime = meetingTime,
+                expectedPeople = expectedPeople,
+                meetingTimeError = meetingTimeError,
+                expectedPeopleError = expectedPeopleError,
+                addressPickerViewModel = addressPickerViewModel,
+                existingMemberInfo = existingMemberInfo,
+                groupViewModel = groupViewModel,
+                snackbarHostState = snackbarHostState,
+                coroutineScope = coroutineScope,
+                onAddressChange = { address = it },
+                onTransitTypeChange = { transitType = it },
+                onMeetingTimeChange = { newTime, error ->
+                    meetingTime = newTime
+                    meetingTimeError = error
+                },
+                onExpectedPeopleChange = { 
+                    expectedPeople = it
+                    expectedPeopleError = null
+                },
+                modifier = Modifier.padding(paddingValues)
+            )
         }
     )
 }

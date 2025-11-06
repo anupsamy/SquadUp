@@ -141,20 +141,46 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
     }
 }
 
+data class GroupForm(
+    val name: String,
+    val meetingDateTime: String,
+    val expectedPeople: String,
+    val selectedActivity: ActivityType?
+)
+
+data class UserInfo(
+    val user: User?
+)
+
 @Composable
 fun CreateGroupButton(
-    groupName: String, meetingDateTime: String, expectedPeople: String, selectedActivity: ActivityType?,
-    currentUser: User?, groupViewModel: GroupViewModel, isCreating: Boolean, navController: NavController
+    groupForm: GroupForm,
+    userInfo: UserInfo,
+    groupViewModel: GroupViewModel,
+    isCreating: Boolean,
+    navController: NavController
 ) {
     val context = LocalContext.current
     Button(
         onClick = {
-            if (meetingDateTime.isEmpty() || currentUser == null) {
+            if (groupForm.meetingDateTime.isEmpty() || userInfo.user == null) {
                 Toast.makeText(context, "Please confirm the meeting date and time", Toast.LENGTH_SHORT).show()
                 return@Button
             }
-            val groupLeader = GroupUser(currentUser._id, currentUser.name, currentUser.email, currentUser.address, currentUser.transitType)
-            groupViewModel.createGroup(groupName, meetingDateTime, groupLeader, expectedPeople.toIntOrNull() ?: 0, selectedActivity?.storedValue ?: "")
+            val groupLeader = GroupUser(
+                userInfo.user._id,
+                userInfo.user.name,
+                userInfo.user.email,
+                userInfo.user.address,
+                userInfo.user.transitType
+            )
+            groupViewModel.createGroup(
+                groupForm.name,
+                groupForm.meetingDateTime,
+                groupLeader,
+                groupForm.expectedPeople.toIntOrNull() ?: 0,
+                groupForm.selectedActivity?.storedValue ?: ""
+            )
         },
         modifier = Modifier.fillMaxWidth().testTag("createGroupButton"),
         enabled = !isCreating

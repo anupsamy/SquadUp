@@ -128,30 +128,30 @@ export class GroupModel {
         throw new Error('Failed to fetch all groups');
       }
     }
+//unused
+    // async update(
+    //   groupId: mongoose.Types.ObjectId,
+    //   group: Partial<IGroup>
+    // ): Promise<IGroup | null> {
+    //   try {
+    //     const validatedData = updateGroupSchema.parse(group);
+    //     // Type assertion for validated data to match Mongoose UpdateQuery type
+    //     const typedValidatedData = validatedData as Partial<IGroup>;
 
-    async update(
-      groupId: mongoose.Types.ObjectId,
-      group: Partial<IGroup>
-    ): Promise<IGroup | null> {
-      try {
-        const validatedData = updateGroupSchema.parse(group);
-        // Type assertion for validated data to match Mongoose UpdateQuery type
-        const typedValidatedData = validatedData as Partial<IGroup>;
+    //     const updatedGroup = await this.group.findByIdAndUpdate(
+    //       groupId,
+    //       typedValidatedData,
+    //       {
+    //         new: true,
+    //       }
+    //     );
 
-        const updatedGroup = await this.group.findByIdAndUpdate(
-          groupId,
-          typedValidatedData,
-          {
-            new: true,
-          }
-        );
-
-        return updatedGroup;
-      } catch (error) {
-        logger.error('Error updating group:', error);
-        throw new Error('Failed to update group');
-      }
-    }
+    //     return updatedGroup;
+    //   } catch (error) {
+    //     logger.error('Error updating group:', error);
+    //     throw new Error('Failed to update group');
+    //   }
+    // }
 
     async updateGroupByJoinCode(
       joinCode: string,

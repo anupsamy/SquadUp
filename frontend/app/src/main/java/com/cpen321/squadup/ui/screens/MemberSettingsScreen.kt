@@ -78,18 +78,23 @@ private fun MemberSettingsBottomBar(
     }
 }
 
+data class MemberSettingsState(
+    val group: GroupDataDetailed,
+    val currentUserId: String?,
+    val address: Address?,
+    val transitType: TransitType?,
+    val meetingTime: String,
+    val expectedPeople: String,
+    val meetingTimeError: String?,
+    val expectedPeopleError: String?,
+    val existingMemberInfo: GroupUser?
+)
+
+// --- Shorter, safer composable signature ---
 @Composable
 private fun MemberSettingsContent(
-    group: GroupDataDetailed,
-    currentUserId: String?,
-    address: Address?,
-    transitType: TransitType?,
-    meetingTime: String,
-    expectedPeople: String,
-    meetingTimeError: String?,
-    expectedPeopleError: String?,
+    state: MemberSettingsState,
     addressPickerViewModel: AddressPickerViewModel,
-    existingMemberInfo: GroupUser?,
     groupViewModel: GroupViewModel,
     snackbarHostState: SnackbarHostState,
     coroutineScope: CoroutineScope,
@@ -100,7 +105,7 @@ private fun MemberSettingsContent(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -109,20 +114,44 @@ private fun MemberSettingsContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AddressPickerSection(addressPickerViewModel, address) { selected ->
+        // Address picker section (unchanged behavior)
+        AddressPickerSection(addressPickerViewModel, state.address) { selected ->
             onAddressChange(selected)
         }
-        TransitTypeDropdown(selectedType = transitType, onTypeSelected = onTransitTypeChange)
-        if (group.groupLeaderId?.id == currentUserId) {
+
+        // Transit dropdown (unchanged behavior)
+        TransitTypeDropdown(selectedType = state.transitType, onTypeSelected = onTransitTypeChange)
+
+        // Only the group leader can edit meeting time & expected people
+        if (state.group.groupLeaderId?.id == state.currentUserId) {
             MeetingTimePickerButton(
-                context, meetingTime, meetingTimeError, onMeetingTimeChange
+                context = context,
+                meetingTime = state.meetingTime,
+                meetingTimeError = state.meetingTimeError,
+                onMeetingTimeChange = onMeetingTimeChange
             )
-            ExpectedPeopleField(expectedPeople, expectedPeopleError, onExpectedPeopleChange)
+
+            ExpectedPeopleField(
+                value = state.expectedPeople,
+                error = state.expectedPeopleError,
+                onValueChange = onExpectedPeopleChange
+            )
         }
+
+        // Save button (keeps same dependencies)
         SaveSettingsButton(
-            address, transitType, meetingTime, expectedPeople, meetingTimeError,
-            existingMemberInfo, addressPickerViewModel, group, currentUserId,
-            groupViewModel, snackbarHostState, coroutineScope
+            address = state.address,
+            transitType = state.transitType,
+            meetingTime = state.meetingTime,
+            expectedPeople = state.expectedPeople,
+            meetingTimeError = state.meetingTimeError,
+            existingMemberInfo = state.existingMemberInfo,
+            addressPickerViewModel = addressPickerViewModel,
+            group = state.group,
+            currentUserId = state.currentUserId,
+            groupViewModel = groupViewModel,
+            snackbarHostState = snackbarHostState,
+            coroutineScope = coroutineScope
         )
     }
 }
@@ -255,41 +284,61 @@ fun AddressPickerSection(
     AddressPicker(viewModel, initialValue, onAddressSelected)
 }
 
+private fun validateSettings(
+    state: MemberSettingsState,
+    addressPickerQuery: String,
+): Boolean {
+    // query must match the selected address formatted string
+    if (addressPickerQuery != (state.address as? Address)?.formatted) return false
+    // expected people must be a positive integer
+    if (state.expectedPeople.toIntOrNull()?.let { it <= 0 } == true) return false
+    // meetingTimeError blocks saving
+    if (state.meetingTimeError != null) return false
+    return true
+}
+
 @Composable
 fun SaveSettingsButton(
-    address: Any?, transitType: Any?, meetingTime: String, expectedPeople: String, meetingTimeError: String?,
-    existingMemberInfo: Any?, addressPickerViewModel: AddressPickerViewModel,
-    group: GroupDataDetailed, currentUserId: String?,
-    groupViewModel: GroupViewModel, snackbarHostState: SnackbarHostState, coroutineScope: CoroutineScope
+    state: MemberSettingsState,
+    addressPickerViewModel: AddressPickerViewModel,
+    groupViewModel: GroupViewModel,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope
 ) {
     Button(
         onClick = {
-            var isValid = true
-            if (addressPickerViewModel.query != (address as? Address)?.formatted || addressPickerViewModel.query.isBlank()) {
-                isValid = false
-            }
-            if (expectedPeople.toIntOrNull()?.let { it <= 0 } == true) isValid = false
-            if (meetingTimeError != null) isValid = false
-            if (!isValid) return@Button
+            // validate form
+            if (!validateSettings(state, addressPickerViewModel.query)) return@Button
 
-            val updatedMembers = group.groupMemberIds?.map { member ->
-                if (member.id == currentUserId) member.copy(address = address, transitType = transitType) else member
+            // build updated members list
+            val updatedMembers = state.group.groupMemberIds?.map { member ->
+                if (member.id == state.currentUserId) {
+                    member.copy(address = state.address, transitType = state.transitType)
+                } else member
             } ?: emptyList()
 
+            // perform update
             groupViewModel.updateMember(
-                joinCode = group.joinCode,
+                joinCode = state.group.joinCode,
                 updatedMembers = updatedMembers,
-                meetingTime = meetingTime,
-                expectedPeople = expectedPeople.toInt(),
+                meetingTime = state.meetingTime,
+                expectedPeople = state.expectedPeople.toInt(),
                 onSuccess = { coroutineScope.launch { snackbarHostState.showSnackbar("Settings saved successfully!") } },
                 onError = { coroutineScope.launch { snackbarHostState.showSnackbar("Error saving!") } }
             )
-            if ((existingMemberInfo as? GroupMember)?.address != address || (existingMemberInfo as? GroupMember)?.transitType != transitType) {
-                groupViewModel.updateMidpoint(joinCode = group.joinCode)
+
+            // update midpoint if address/transit changed for the current user
+            val existingAddr = (state.existingMemberInfo as? GroupMember)?.address
+            val existingTransit = (state.existingMemberInfo as? GroupMember)?.transitType
+            if (existingAddr != state.address || existingTransit != state.transitType) {
+                groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
             }
         },
-        enabled = address != null && transitType != null
-    ) { Text("Save") }
+        enabled = state.address != null && state.transitType != null
+    ) {
+        Text("Save")
+    }
 }
+
 
 

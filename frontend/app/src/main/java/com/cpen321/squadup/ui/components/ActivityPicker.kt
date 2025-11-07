@@ -152,15 +152,20 @@ fun ActivityPicker(
         }
     }
 }
+
+data class ActivityInfo(
+    val name: String,
+    val address: String,
+    val rating: Double,
+    val userRatingsTotal: Int,
+    val priceLevel: Int,
+    val type: String
+)
+
 @Composable
 fun ActivityCard(
-    name: String,
-    address: String,
-    rating: Double,
-    userRatingsTotal: Int,
-    priceLevel: Int,
-    type: String,
-    isSelected: Boolean,
+    activity: ActivityInfo,
+    isSelected: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -179,7 +184,7 @@ fun ActivityCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = name,
+                text = activity.name,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -187,7 +192,7 @@ fun ActivityCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = address,
+                text = activity.address,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -195,10 +200,10 @@ fun ActivityCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             ActivityMetaRow(
-                rating = rating,
-                userRatingsTotal = userRatingsTotal,
-                priceLevel = priceLevel,
-                type = type
+                rating = activity.rating,
+                userRatingsTotal = activity.userRatingsTotal,
+                priceLevel = activity.priceLevel,
+                type = activity.type
             )
         }
     }

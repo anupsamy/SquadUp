@@ -159,37 +159,43 @@ private fun JoinGroupSection(
     }
 }
 
+data class MainContentState(
+    val uiState: MainUiState,
+    val groups: List<GroupDataDetailed>,
+    val snackBarHostState: SnackbarHostState,
+    val navController: NavController
+)
+
+data class MainContentActions(
+    val onProfileClick: () -> Unit,
+    val onCreateGroupClick: () -> Unit,
+    val onSuccessMessageShown: () -> Unit,
+    val onGroupClick: (String) -> Unit
+)
+
 @Composable
 private fun MainContent(
-    uiState: MainUiState,
-    groups: List<GroupDataDetailed>,
-    snackBarHostState: SnackbarHostState,
-    onProfileClick: () -> Unit,
-    onCreateGroupClick: () -> Unit, 
-    onSuccessMessageShown: () -> Unit,
-    onGroupClick: (String) -> Unit,
-    modifier: Modifier,
-    navController: NavController
+    state: MainContentState,
+    actions: MainContentActions,
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = {
-            MainTopBar(onProfileClick = onProfileClick)
-        },
+        topBar = { MainTopBar(onProfileClick = actions.onProfileClick) },
         snackbarHost = {
             MainSnackbarHost(
-                hostState = snackBarHostState,
-                successMessage = uiState.successMessage,
-                onSuccessMessageShown = onSuccessMessageShown
+                hostState = state.snackBarHostState,
+                successMessage = state.uiState.successMessage,
+                onSuccessMessageShown = actions.onSuccessMessageShown
             )
         }
     ) { paddingValues ->
         MainBody(
             paddingValues = paddingValues,
-            onCreateGroupClick = onCreateGroupClick,
-            groups = groups,
-            onGroupClick = onGroupClick,
-            navController = navController
+            onCreateGroupClick = actions.onCreateGroupClick,
+            groups = state.groups,
+            onGroupClick = actions.onGroupClick,
+            navController = state.navController
         )
     }
 }

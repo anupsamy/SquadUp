@@ -58,7 +58,7 @@ export class MediaService {
     }
   }
 
-  static async deleteAllUserImages(userId: string): Promise<void> {
+  static deleteAllUserImages(userId: string): void {
     try {
       if (!fs.existsSync(IMAGES_DIR)) {
         return;

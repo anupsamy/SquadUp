@@ -77,7 +77,6 @@ export class GroupController {
     if (!validatedJoinCodeForFind) {
       res.status(400).json({
         message: 'Invalid joinCode',
-        data: {} as any,
         error: Error('ValidationError')
       });
       return;

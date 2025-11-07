@@ -6,7 +6,7 @@ import { UploadImageRequest, UploadImageResponse } from '../types/media.types';
 import { sanitizeInput } from '../utils/sanitizeInput.util';
 
 export class MediaController {
-  async uploadImage(
+  uploadImage(
     req: Request<unknown, unknown, UploadImageRequest>,
     res: Response<UploadImageResponse>
     ) {

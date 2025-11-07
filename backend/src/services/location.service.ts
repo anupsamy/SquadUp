@@ -84,9 +84,6 @@ async getActivityList(
 
     if (response.data.status !== "OK") return [];
 
-    // console.log("getting activities list", response.data.results);
-    // console.log("First object details", response.data.results[0]);
-
     const results = response.data.results;
     const resultsArray: unknown[] = Array.isArray(results) ? results : [];
     
@@ -137,7 +134,6 @@ async getActivityList(
       .slice(0, maxResults);
 
   } catch (err) {
-    //console.error("Error fetching nearby places:", err);
     return [];
   }
 }
@@ -173,7 +169,6 @@ async getActivityList(
     let newLat = 0; let newLng = 0;
 
     for (let j = 0; j < geoLocation.length; j++) {
-      //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
       // Validate array access to prevent object injection: ensure index is in bounds for both arrays
       if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
         continue;
@@ -184,13 +179,29 @@ async getActivityList(
       if (validatedIndex === -1) {
         continue;
       }
+      if (
+        typeof validatedIndex !== "string" ||
+        !Object.prototype.hasOwnProperty.call(travelTimes, validatedIndex)
+      ) {
+        throw new Error("Invalid key for travel times.");
+      }
       const rawWeightValue = travelTimes[validatedIndex];
       const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
       const weight = isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       
       // Validate array element access to prevent object injection
+      if (
+        !Array.isArray(geoLocation) ||
+        typeof validatedIndex !== "number" ||
+        validatedIndex < 0 ||
+        validatedIndex >= geoLocation.length
+      ) {
+        throw new Error("Invalid index for geoLocation array.");
+      }
+
       const geoLocationItemValue = geoLocation[validatedIndex];
+
       const geoLocationItem = geoLocationItemValue;
       // TypeScript guarantees lat and lng exist on GeoLocation
       const rawLat = geoLocationItem.lat;

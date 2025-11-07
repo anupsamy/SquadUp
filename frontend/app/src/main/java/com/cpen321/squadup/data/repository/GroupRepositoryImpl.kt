@@ -177,7 +177,17 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while updating group", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while updating group", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while updating group", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while updating group: ${e.code()}", e)
             Result.failure(e)
         }
     }
@@ -194,7 +204,11 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch group by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
+        // Network or connection issues
+        Result.failure(e)
+        } catch (e: HttpException) {
+            // Retrofit HTTP protocol issues (non-2xx responses)
             Result.failure(e)
         }
     }
@@ -211,8 +225,14 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to update midpoint by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        } catch (e: IOException) {
+            Result.failure(IOException("Network error while updating midpoint: ${e.message}", e))
+        } catch (e: HttpException) {
+            Result.failure(HttpException(e.response() ?: throw e))
+        } catch (e: JsonParseException) {
+            Result.failure(JsonParseException("Error parsing server response: ${e.message}"))
+        } catch (e: IllegalStateException) {
+            Result.failure(IllegalStateException("Unexpected state while updating midpoint: ${e.message}", e))
         }
     }
 
@@ -224,7 +244,7 @@ class GroupRepositoryImpl @Inject constructor(
             val activities = response.body()?.data ?: emptyList()
 
             Result.success(activities)
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e(TAG, "Error fetching activities", e)
             Result.success(emptyList())
         }
@@ -245,39 +265,11 @@ class GroupRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to select activity: ${response.message()}")
                 Result.failure(Exception("Failed to select activity"))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e(TAG, "Error selecting activity", e)
             Result.failure(e)
         }
     }
-
-    //midpoints unused
-//
-//    override suspend fun getMidpoints(joinCode: String): Result<List<LatLng>> {
-//        return try {
-//            val response = groupInterface.getMidpoints(
-//                "", // Auth header handled by interceptor
-//                joinCode
-//            )
-//
-//            val data = response.body()?.data
-//            if (response.isSuccessful && data != null) {
-//                // Convert the response data to LatLng objects
-//                val latLngList = data
-//                Result.success(latLngList.map { LatLng(it.latitude, it.longitude) })
-//            } else {
-//                Log.e(TAG, "Failed to fetch midpoints: ${response.message()}")
-//                Result.success(emptyList())
-//            }
-//        } catch (e: Exception) {
-//            Log.e(TAG, "Error fetching midpoints", e)
-//            Result.success(emptyList())
-//        }
-//    }
-
-
-
-    //activities
 
     override suspend fun leaveGroup(joinCode: String, userId: String): Result<Unit> {
         return try {
@@ -297,7 +289,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to leave group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }

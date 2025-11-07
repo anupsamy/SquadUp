@@ -78,8 +78,11 @@ class MainActivity : ComponentActivity() {
             } else {
                 "ws://10.0.2.2:3000/ws" // Local development
             }
-        } catch (e: Exception) {
+        } catch (e: NoSuchFieldError) {
             Log.w("WebSocket", "Error reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
+            "ws://10.0.2.2:3000/ws"
+        } catch (e: IllegalStateException) {
+            Log.w("WebSocket", "Illegal state while reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
             "ws://10.0.2.2:3000/ws"
         }
         Log.d("WebSocket", "Will connect to: $wsUrl")
@@ -90,9 +93,6 @@ class MainActivity : ComponentActivity() {
                 
                 // Global notification overlay - shows notifications from WebSocket
                 GlobalNotificationOverlay(notificationManager = notificationManager)
-                
-                // Uncomment the line below to show ChatScreen for testing WebSocket notifications
-                // ChatScreen(viewModel = chatViewModel)
             }
         }
         
@@ -112,8 +112,14 @@ class MainActivity : ComponentActivity() {
                             if (::notificationManager.isInitialized) {
                                 notificationManager.handleWebSocketMessage(message)
                             }
-                        } catch (e: Exception) {
-                            Log.e("WebSocket", "Error handling notification: ${e.message}")
+                        } catch (e: JSONException) {
+                            Log.e("WebSocket", "JSON error handling notification: ${e.message}", e)
+                        } catch (e: JsonSyntaxException) {
+                            Log.e("WebSocket", "Gson parse error handling notification: ${e.message}", e)
+                        } catch (e: IOException) {
+                            Log.e("WebSocket", "I/O error handling notification: ${e.message}", e)
+                        } catch (e: IllegalStateException) {
+                            Log.e("WebSocket", "Illegal state while handling notification: ${e.message}", e)
                         }
                         
                         // Also pass to chat view model for testing
@@ -135,8 +141,10 @@ class MainActivity : ComponentActivity() {
                 // Start connection
                 Log.d("WebSocket", "Starting WebSocket connection...")
                 wsManager.start()
-            } catch (e: Exception) {
-                Log.e("WebSocket", "Error initializing WebSocket: ${e.message}", e)
+            } catch (e: IOException) {
+                Log.e("WebSocket", "I/O error initializing WebSocket: ${e.message}", e)
+            } catch (e: IllegalStateException) {
+                Log.e("WebSocket", "Illegal state during WebSocket initialization: ${e.message}", e)
             }
         }
     }
@@ -150,8 +158,6 @@ class MainActivity : ComponentActivity() {
             }
         } catch (e: IOException) {
             Log.w("WebSocket", "Error stopping websocket: ${e.message}")
-        } catch (e: Exception) {
-            Log.w("WebSocket", "Error in onDestroy: ${e.message}")
         }
     }
 

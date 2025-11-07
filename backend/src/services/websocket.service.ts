@@ -1,7 +1,6 @@
 import { Server } from 'http';
 import logger from '../utils/logger.util';
-import WebSocket from 'ws';
-import type { Server as WebSocketServer } from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 
 export interface WebSocketMessage {
   type: 'group_join' | 'group_leave' | 'group_update' | 'error';
@@ -22,7 +21,7 @@ export class WebSocketService {
   constructor(server: Server) {
     console.log('🔧 Creating WebSocket server...');
     try {
-      this.wss = new (WebSocket as any).Server({ 
+      this.wss = new WebSocketServer({ 
         server,
         path: '/ws'
       });

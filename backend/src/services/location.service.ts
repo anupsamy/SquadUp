@@ -84,9 +84,6 @@ async getActivityList(
 
     if (response.data.status !== "OK") return [];
 
-    // console.log("getting activities list", response.data.results);
-    // console.log("First object details", response.data.results[0]);
-
     const results = response.data.results;
     const resultsArray: unknown[] = Array.isArray(results) ? results : [];
     
@@ -137,7 +134,6 @@ async getActivityList(
       .slice(0, maxResults);
 
   } catch (err) {
-    //console.error("Error fetching nearby places:", err);
     return [];
   }
 }
@@ -170,7 +166,6 @@ async getActivityList(
     let newLat = 0; let newLng = 0;
 
     for (let j = 0; j < geoLocation.length; j++) {
-      //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
       // Validate array access to prevent object injection: ensure index is in bounds for both arrays
       //impossible to hit - will always be array and within bounds
       // if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
@@ -181,6 +176,17 @@ async getActivityList(
       // const validatedIndex = typeof j === 'number' && j >= 0 && j < travelTimes.length && j < geoLocation.length ? j : -1;
       // if (validatedIndex === -1) {
       //   continue;
+      // }
+      // Ensure j is a valid number index before accessing array
+      const validatedIndex = typeof j === 'number' && j >= 0 && j < travelTimes.length && j < geoLocation.length ? j : -1;
+      if (validatedIndex === -1) {
+        continue;
+      }
+      // if (
+      //   typeof validatedIndex !== "string" ||
+      //   !Object.prototype.hasOwnProperty.call(travelTimes, validatedIndex)
+      // ) {
+      //   throw new Error("Invalid key for travel times.");
       // }
       const rawWeightValue = travelTimes[j];
       const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;

@@ -129,21 +129,32 @@ private data class ProfileFieldsData(
 )
 
 @Composable
-fun ManageProfileScreen(
-    profileViewModel: ProfileViewModel,
-    onBackClick: () -> Unit
+private fun initializeProfileFormState(
+    user: User?,
+    onFormStateChange: (ProfileFormState) -> Unit
 ) {
-    val uiState by profileViewModel.uiState.collectAsState()
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    var showImagePickerDialog by remember { mutableStateOf(false) }
-
-    // Form state
-    var formState by remember {
-        mutableStateOf(ProfileFormState())
+    LaunchedEffect(user) {
+        user?.let {
+            onFormStateChange(
+                ProfileFormState(
+                    name = it.name,
+                    originalName = it.name,
+                    email = it.email,
+                    address = it.address,
+                    originalAddress = it.address,
+                    transitType = it.transitType,
+                    originalTransitType = it.transitType
+                )
+            )
+        }
     }
+}
 
-    // Side effects
+@Composable
+private fun setupProfileScreenEffects(
+    uiState: ProfileUiState,
+    profileViewModel: ProfileViewModel
+) {
     LaunchedEffect(Unit) {
         profileViewModel.clearSuccessMessage()
         profileViewModel.clearError()
@@ -152,63 +163,66 @@ fun ManageProfileScreen(
         }
     }
 
-    LaunchedEffect(uiState.user) {
-        uiState.user?.let { user ->
-            formState = ProfileFormState(
-                name = user.name,
-                originalName = user.name,
-                email = user.email,
-                address = user.address,
-                originalAddress = user.address,
-                transitType = user.transitType,
-                originalTransitType = user.transitType
-            )
-        }
-    }
-
     LaunchedEffect(uiState.successMessage) {
         if (uiState.successMessage != null) {
-            // Reload profile after successful save to get updated data
             profileViewModel.loadProfile()
         }
     }
+}
 
-    // Also update the existing LaunchedEffect(uiState.user) to handle null transit type:
-    LaunchedEffect(uiState.user) {
-        uiState.user?.let { user ->
-            formState = ProfileFormState(
-                name = user.name,
-                originalName = user.name,
-                email = user.email,
-                address = user.address,
-                originalAddress = user.address,
-                transitType = user.transitType, // This should now properly include the saved value
-                originalTransitType = user.transitType
-            )
-        }
-    }
-
-    val actions = ManageProfileScreenActions(
+@Composable
+private fun createManageProfileActions(
+    profileViewModel: ProfileViewModel,
+    formState: ProfileFormState,
+    showImagePickerDialog: Boolean,
+    onBackClick: () -> Unit,
+    onFormStateChange: (ProfileFormState) -> Unit,
+    onShowImagePickerChange: (Boolean) -> Unit
+): ManageProfileScreenActions {
+    return ManageProfileScreenActions(
         onBackClick = onBackClick,
-        onNameChange = { formState = formState.copy(name = it) },
-        onAddressChange = { newAddress: Address? ->
-            formState = formState.copy(address = newAddress)
+        onNameChange = { onFormStateChange(formState.copy(name = it)) },
+        onAddressChange = { newAddress ->
+            onFormStateChange(formState.copy(address = newAddress))
         },
-        onTransitChange = { newTransit: TransitType? ->
-            formState = formState.copy(transitType = newTransit)
+        onTransitChange = { newTransit ->
+            onFormStateChange(formState.copy(transitType = newTransit))
         },
-        onEditPictureClick = { showImagePickerDialog = true },
+        onEditPictureClick = { onShowImagePickerChange(true) },
         onSaveClick = {
             profileViewModel.updateProfile(formState.name, formState.address, formState.transitType)
         },
-        onImagePickerDismiss = { showImagePickerDialog = false },
+        onImagePickerDismiss = { onShowImagePickerChange(false) },
         onImageSelected = { uri ->
-            showImagePickerDialog = false
+            onShowImagePickerChange(false)
             profileViewModel.uploadProfilePicture(uri)
         },
         onLoadingPhotoChange = profileViewModel::setLoadingPhoto,
         onSuccessMessageShown = profileViewModel::clearSuccessMessage,
         onErrorMessageShown = profileViewModel::clearError
+    )
+}
+
+@Composable
+fun ManageProfileScreen(
+    profileViewModel: ProfileViewModel,
+    onBackClick: () -> Unit
+) {
+    val uiState by profileViewModel.uiState.collectAsState()
+    val snackBarHostState = remember { SnackbarHostState() }
+    var showImagePickerDialog by remember { mutableStateOf(false) }
+    var formState by remember { mutableStateOf(ProfileFormState()) }
+
+    setupProfileScreenEffects(uiState, profileViewModel)
+    initializeProfileFormState(uiState.user) { formState = it }
+
+    val actions = createManageProfileActions(
+        profileViewModel = profileViewModel,
+        formState = formState,
+        showImagePickerDialog = showImagePickerDialog,
+        onBackClick = onBackClick,
+        onFormStateChange = { formState = it },
+        onShowImagePickerChange = { showImagePickerDialog = it }
     )
 
     ManageProfileContent(

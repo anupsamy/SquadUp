@@ -3,12 +3,11 @@ import crypto from 'crypto';
 
 import logger from '../utils/logger.util';
 import { groupModel } from '../group.model';
-import { userModel } from '../user.model';
-import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity, GroupUser } from '../types/group.types';
+import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity } from '../types/group.types';
 import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
-import { sendGroupJoinFCM, sendGroupLeaveFCM, sendActivitySelectedFCM } from '../services/fcm.service';
+import { sendActivitySelectedFCM } from '../services/fcm.service';
 
 export class GroupController {
   async createGroup(
@@ -32,7 +31,6 @@ export class GroupController {
         meetingTime,  // Default to current time for now,
         activityType
       });
-      //console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
         message: `Group ${groupName} created successfully`,
         data: {
@@ -45,13 +43,10 @@ export class GroupController {
     }
   }
 
-  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>, next: NextFunction) {
+  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>) {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
-      // console.error('GroupController getAllGroups:', groups);
-      // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
-      //   console.error('GroupController groups[4]:', groups[4]);
       const sanitizedGroups: IGroup[] = groups.map((group) => {
         const groupObj = group.toObject() as unknown as IGroup;
         return {
@@ -59,7 +54,6 @@ export class GroupController {
           groupMemberIds: group.groupMemberIds,
         } as IGroup;
       });
-      // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
       res.status(200).json({
         message: 'Groups fetched successfully',
@@ -71,9 +65,8 @@ export class GroupController {
   }
 
   async getGroupByJoinCode(
-    req: Request<{ joinCode: string }>, // always a string
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    req: Request<{ joinCode: string }>, // Define the route parameter type
+    res: Response<GetGroupResponse>
   ) {
     try {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
@@ -108,15 +101,14 @@ export class GroupController {
         }});
     } catch (error) {
       logger.error('Failed to fetch group by joinCode:', error);
-      res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + error });
-      //next(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ message: 'Failed to fetch group by joinCode: ' + errorMessage });
     }
   }
 
   async joinGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    res: Response<GetGroupResponse>
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds} = req.body;
@@ -148,38 +140,6 @@ export class GroupController {
         });
       }
 
-      // Send WebSocket notifications for new members
-      /*const wsService = getWebSocketService();
-      if (wsService) {
-        const validatedGroupMemberIds: GroupUser[] = Array.isArray(groupMemberIds) ? groupMemberIds : [];
-        const currentMemberIds = currentGroup.groupMemberIds.map(member => {
-          const memberId: string = typeof member.id === 'string' ? member.id : '';
-          return memberId;
-        });
-
-        // Find new members (users who joined)
-        const joinedMembers = validatedGroupMemberIds.filter(member => {
-          const memberId: string = typeof member.id === 'string' ? member.id : '';
-          return !currentMemberIds.includes(memberId);
-        });
-
-        // Send notifications for each new member
-        joinedMembers.forEach(member => {
-          const memberName: string = typeof member.name === 'string' ? member.name : '';
-          const memberId: string = typeof member.id === 'string' ? member.id : '';
-          wsService.notifyGroupJoin(
-            validatedJoinCode,
-            memberId,
-            memberName,
-            updatedGroup.groupName
-          );
-          // FCM topic notification (clients subscribe to topic == joinCode)
-          sendGroupJoinFCM(validatedJoinCode, memberName, updatedGroup.groupName, memberId).catch((error: unknown) => {
-            logger.error('Failed to send group join FCM notification:', error);
-          });
-        });
-      }*/
-
       res.status(200).json({
         message: 'Group info updated successfully',
         data: { group: updatedGroup },
@@ -200,8 +160,7 @@ export class GroupController {
 
   async updateGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    res: Response<GetGroupResponse>
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds, meetingTime} = req.body;
@@ -242,8 +201,7 @@ export class GroupController {
 
   async deleteGroupByJoinCode(
     req: Request<{joinCode: string}>,
-    res: Response,
-    next: NextFunction) {
+    res: Response) {
     try {
       const {joinCode} = req.params;
 
@@ -648,54 +606,9 @@ async selectActivity(req: Request, res: Response): Promise<void> {
   }
 }
 
-// async getMidpoints(req: Request, res: Response): Promise<void> {
-//   try {
-//     const joinCode = req.query.joinCode;
-
-//     if (!joinCode || typeof joinCode !== 'string') {
-//       res.status(400).json({
-//         success: false,
-//         message: 'Join code is required',
-//       });
-//       return;
-//     }
-
-//     // Verify the group exists
-//     const group = await groupModel.findByJoinCode(joinCode);
-//     if (!group) {
-//       res.status(404).json({
-//         success: false,
-//         message: 'Group not found',
-//       });
-//       return;
-//     }
-
-//     // Return dummy midpoint data (3 locations in Vancouver area)
-//     const midpoints = [
-//       { latitude: 49.2827, longitude: -123.1207 },
-//       { latitude: 49.2606, longitude: -123.2460 },
-//       { latitude: 49.2488, longitude: -123.1163 }
-//     ];
-
-//     res.status(200).json({
-//       success: true,
-//       data: midpoints,
-//     });
-//   } catch (error) {
-//     logger.error('Error fetching midpoints:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to fetch midpoints',
-//     });
-//   }
-// }
-
-
-
   async leaveGroup(
     req: Request<{joinCode: string}, unknown, {userId: string}>,
-    res: Response,
-    next: NextFunction) {
+    res: Response) {
     try {
       const {joinCode} = req.params;
       const {userId} = req.body;
@@ -708,49 +621,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
         });
       }
 
-      // Find the user who is leaving
-      const leavingUser = currentGroup.groupMemberIds.find(member => member.id === userId) ??
-                         (currentGroup.groupLeaderId.id === userId ? currentGroup.groupLeaderId : null);
-
       const result = await groupModel.leaveGroup(joinCode, userId);
-
-      // Send WebSocket notification for user leaving
-      /*const wsService = getWebSocketService();
-      if (wsService && leavingUser) {
-        wsService.notifyGroupLeave(
-          joinCode,
-          leavingUser.id,
-          leavingUser.name,
-          currentGroup.groupName
-        );
-        // FCM topic notification (clients subscribe to topic == joinCode)
-        sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id).catch((error: unknown) => {
-          logger.error('Failed to send group leave FCM notification:', error);
-        });
-      }
-
-      if (result.deleted) {
-        // Notify about group deletion
-        if (wsService) {
-          wsService.notifyGroupUpdate(
-            joinCode,
-            `Group "${currentGroup.groupName}" has been deleted as no members remain`,
-            { deleted: true }
-          );
-        }
-
-        res.status(200).json({
-          message: 'Group deleted successfully as no members remain',
-        });
-      } else {
-        // Notify about leadership transfer if applicable
-        if (wsService && result.newLeader) {
-          wsService.notifyGroupUpdate(
-            joinCode,
-            `${result.newLeader.name} is now the new group leader`,
-            { newLeader: result.newLeader }
-          );
-        }*/
 
         res.status(200).json({
           message: 'Left group successfully',
@@ -770,39 +641,4 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       return res.status(500).json({ message });
     }
   }
-
-  // Test endpoint for WebSocket notifications
- /* async testWebSocketNotification(
-    req: Request<{joinCode: string}>,
-    res: Response,
-    next: NextFunction) {
-    try {
-      const {joinCode} = req.params;
-      const {message, type} = req.body;
-      // Validate message is a string before use
-      const validatedMessage: string = typeof message === 'string' ? message : 'Test notification from backend';
-
-      const wsService = getWebSocketService();
-      if (!wsService) {
-        return res.status(500).json({
-          message: 'WebSocket service not available',
-        });
-      }
-
-      // Send a test notification
-      wsService.notifyGroupUpdate(
-        joinCode,
-        validatedMessage,
-        { type: type || 'test' }
-      );
-
-      res.status(200).json({
-        message: 'Test notification sent successfully',
-        data: wsService.getStats(),
-      });
-    } catch (error) {
-      logger.error('Failed to send test notification:', error);
-      next(error);
-    }
-  }*/
 }

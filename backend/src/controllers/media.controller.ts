@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
@@ -6,11 +6,10 @@ import { UploadImageRequest, UploadImageResponse } from '../types/media.types';
 import { sanitizeInput } from '../utils/sanitizeInput.util';
 
 export class MediaController {
-  async uploadImage(
+  uploadImage(
     req: Request<unknown, unknown, UploadImageRequest>,
-    res: Response<UploadImageResponse>,
-    next: NextFunction
-  ) {
+    res: Response<UploadImageResponse>
+    ) {
     try {
       if (!req.file) {
         return res.status(400).json({
@@ -27,7 +26,7 @@ export class MediaController {
       const rawFilePath = req.file.path;
       const filePath: string = typeof rawFilePath === 'string' ? rawFilePath : '';
       const sanitizedFilePath = sanitizeInput(filePath);
-      const image = await MediaService.saveImage(
+      const image = MediaService.saveImage(
         sanitizedFilePath,
         user._id.toString()
       );

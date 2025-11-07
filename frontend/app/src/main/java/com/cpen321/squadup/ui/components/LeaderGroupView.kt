@@ -18,9 +18,6 @@ import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.google.android.gms.maps.model.LatLng
 
-/**
- * Extracts LatLng locations from a SquadGoal midpoint
- */
 private fun extractMidpointLocations(
     midpoint: com.cpen321.squadup.data.remote.dto.SquadGoal?
 ): List<LatLng> {

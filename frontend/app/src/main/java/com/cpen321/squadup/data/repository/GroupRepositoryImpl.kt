@@ -204,7 +204,14 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch group by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
+        } catch (e: IOException) {
+        // Network or connection issues
+        Result.failure(e)
+        } catch (e: HttpException) {
+            // Retrofit HTTP protocol issues (non-2xx responses)
+            Result.failure(e)
         } catch (e: Exception) {
+            // Unexpected issues — keep as last resort for safety
             Result.failure(e)
         }
     }

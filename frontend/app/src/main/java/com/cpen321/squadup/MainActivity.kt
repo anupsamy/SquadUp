@@ -81,8 +81,11 @@ class MainActivity : ComponentActivity() {
         } catch (e: NoSuchFieldError) {
             Log.w("WebSocket", "Error reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
             "ws://10.0.2.2:3000/ws"
-        } catch (e: RuntimeException) {
-            Log.w("WebSocket", "Error reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
+        } catch (e: IllegalStateException) {
+            Log.w("WebSocket", "Illegal state while reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
+            "ws://10.0.2.2:3000/ws"
+        } catch (e: NullPointerException) {
+            Log.w("WebSocket", "Null value for BuildConfig.FLAVOR: ${e.message}, defaulting to local")
             "ws://10.0.2.2:3000/ws"
         }
         Log.d("WebSocket", "Will connect to: $wsUrl")
@@ -112,8 +115,14 @@ class MainActivity : ComponentActivity() {
                             if (::notificationManager.isInitialized) {
                                 notificationManager.handleWebSocketMessage(message)
                             }
-                        } catch (e: Exception) {
-                            Log.e("WebSocket", "Error handling notification: ${e.message}")
+                        } catch (e: JSONException) {
+                            Log.e("WebSocket", "JSON error handling notification: ${e.message}", e)
+                        } catch (e: JsonSyntaxException) {
+                            Log.e("WebSocket", "Gson parse error handling notification: ${e.message}", e)
+                        } catch (e: IOException) {
+                            Log.e("WebSocket", "I/O error handling notification: ${e.message}", e)
+                        } catch (e: IllegalStateException) {
+                            Log.e("WebSocket", "Illegal state while handling notification: ${e.message}", e)
                         }
                         
                         // Also pass to chat view model for testing

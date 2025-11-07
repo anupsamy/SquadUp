@@ -2,9 +2,7 @@ package com.cpen321.squadup.di
 
 import com.cpen321.squadup.data.remote.api.ActivityInterface
 import com.cpen321.squadup.data.remote.api.AuthInterface
-import com.cpen321.squadup.data.remote.api.HobbyInterface
 import com.cpen321.squadup.data.remote.api.ImageInterface
-import com.cpen321.squadup.data.remote.api.NewsInterface
 import com.cpen321.squadup.data.remote.api.RetrofitClient
 import com.cpen321.squadup.data.remote.api.UserInterface
 import com.cpen321.squadup.data.remote.api.GroupInterface
@@ -40,18 +38,6 @@ object NetworkModule {
     @Singleton
     fun provideMediaService(): ImageInterface {
         return RetrofitClient.imageInterface
-    }
-
-    @Provides
-    @Singleton
-    fun provideHobbyService(): HobbyInterface {
-        return RetrofitClient.hobbyInterface
-    }
-
-    @Provides
-    @Singleton
-    fun provideNewsService(): NewsInterface {
-        return RetrofitClient.newsInterface
     }
 
     @Provides

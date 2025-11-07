@@ -8,11 +8,11 @@ import mongoose from 'mongoose';
 import { GroupModel } from '@/group.model';
 /**
  * Non-Functional Requirements Tests for Location Service
- * 
+ *
  * Requirement: Location Optimization Response Time
  * The system shall return location optimization results (midpoint calculation and venue suggestions)
  * within 2 to 5 seconds of the Squad Leader triggering the algorithm.
- * 
+ *
  * Upper bound: 5 seconds
  * Target: 3 seconds
  * Lower acceptable bound: 2 seconds

@@ -36,7 +36,6 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getGroupByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl getGroupByJoinCode response: ${response.body()!!.data!!.group}")
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!.group) // Return GroupDataDetailed directly
             } else {
@@ -54,7 +53,7 @@ class GroupRepositoryImpl @Inject constructor(
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getGroups("Bearer $authToken") // Ensure this is the correct endpoint
             val groupsDataAll = response.body()?.data
-            Log.d(TAG, "GroupRepImpl getGroups response: ${groupsDataAll}")
+
             if (response.isSuccessful && groupsDataAll != null) {
                 val groups = groupsDataAll.groups // Directly use the list of GroupDataDetailed
                 Log.d(TAG, "GroupRepImpl getGroups response 2: ${groups}")
@@ -85,9 +84,6 @@ class GroupRepositoryImpl @Inject constructor(
                 activityType = activityType
             )
             val response = groupInterface.createGroup("", request)
-            //:Response<ApiResponse<GroupData>>
-            Log.d(TAG, "GroupRepImpl response: ${response.body()}")
-            Log.d(TAG, "GroupRepImpl groupdata: ${response.body()!!.data}")
 
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!)
@@ -136,12 +132,12 @@ class GroupRepositoryImpl @Inject constructor(
                 expectedPeople = expectedPeople,
                 groupMemberIds = updatedMembers
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
+
             val response = groupInterface.joinGroup(
                 authHeader = "Bearer $authToken",
                 request = request
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest response ${response}")
+
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -168,12 +164,12 @@ class GroupRepositoryImpl @Inject constructor(
                 groupMemberIds = updatedMembers,
                 meetingTime = meetingTime
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
+
             val response = groupInterface.updateGroup(
                 authHeader = "Bearer $authToken",
                 request = request
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest response ${response}")
+            
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -190,7 +186,7 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getMidpointByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data}")
+            
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
             } else {
@@ -207,7 +203,7 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.updateMidpointByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl updateMidpointByJoinCode response: ${response.body()!!.data}")
+            
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
             } else {
@@ -227,8 +223,6 @@ class GroupRepositoryImpl @Inject constructor(
             val response = activityInterface.getActivities("", joinCode)
             val activities = response.body()?.data ?: emptyList()
 
-            Log.d(TAG, "Fetched activities: $activities")
-            Log.d(TAG, "response body: $response.body()")
             Result.success(activities)
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching activities", e)
@@ -289,13 +283,13 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val request = LeaveGroupRequest(userId = userId)
-            Log.d(TAG, "GroupRepImpl leaveGroupRequest ${request}")
+    
             val response = groupInterface.leaveGroup(
                 authHeader = "Bearer $authToken",
                 joinCode = joinCode,
                 request = request
             )
-            Log.d(TAG, "GroupRepImpl leaveGroupRequest response ${response}")
+
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {

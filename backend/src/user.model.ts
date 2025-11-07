@@ -1,6 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
-
 import {
   createUserSchema,
   GoogleUserInfo,

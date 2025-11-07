@@ -126,7 +126,7 @@ describe('Unmocked: Group Model', () => {
             expectedPeople: 1,
             groupLeaderId: exampleGroupLeader,
             groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime, 
+            meetingTime: exampleMeetingTime,
         };
 
         await expect(groupModel.create(invalidGroupData as any)).rejects.toThrow(
@@ -154,7 +154,7 @@ describe('Unmocked: Group Model', () => {
             expectedPeople: 1,
             groupLeaderId: exampleGroupLeader,
             groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_1, 
+            meetingTime: exampleMeetingTime_1,
             activityType: exampleActivityType_1
         };
 
@@ -166,7 +166,7 @@ describe('Unmocked: Group Model', () => {
             expectedPeople: 2,
             groupLeaderId: exampleGroupLeader,
             groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_2, 
+            meetingTime: exampleMeetingTime_2,
             activityType: exampleActivityType_2
         };
 
@@ -195,7 +195,7 @@ describe('Unmocked: Group Model', () => {
             expectedPeople: 1,
             groupLeaderId: exampleGroupLeader,
             groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_1, 
+            meetingTime: exampleMeetingTime_1,
             activityType: exampleActivityType_1
         };
 
@@ -205,7 +205,7 @@ describe('Unmocked: Group Model', () => {
             expectedPeople: 2,
             groupLeaderId: exampleGroupLeader,
             groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_2, 
+            meetingTime: exampleMeetingTime_2,
             activityType: exampleActivityType_2
         };
         await groupModel.create(exampleGroupData_1 as any);
@@ -273,7 +273,7 @@ describe('Unmocked: Group Model', () => {
             expectedPeople: 1,
             groupLeaderId: exampleGroupLeader,
             groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime, 
+            meetingTime: exampleMeetingTime,
             activityType: exampleActivityType
         };
         await groupModel.create(exampleGroupData as any);

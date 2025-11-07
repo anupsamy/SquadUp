@@ -36,7 +36,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.testTag
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Composable
@@ -61,17 +61,20 @@ private fun ActivitiesList(
 ) {
     LazyColumn(
         modifier = Modifier
-            .weight(1f)
+            .fillMaxSize()
             .padding(16.dp)
     ) {
         items(activities) { activity ->
-            ActivityCard(
+            val activityInfo = ActivityInfo(
                 name = activity.name,
                 address = activity.address,
                 rating = activity.rating,
                 userRatingsTotal = activity.userRatingsTotal,
                 priceLevel = activity.priceLevel,
-                type = activity.type,
+                type = activity.type
+            )
+            ActivityCard(
+                activity = activityInfo,
                 isSelected = activity.placeId == selectedActivityId,
                 onClick = { onActivityClick(activity.placeId)},
                 modifier = Modifier.testTag("activityCard")
@@ -115,7 +118,7 @@ fun ActivityPicker(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val handleSelectClick = {
+    val handleSelectClick: () -> Unit = {
         viewModel.confirmSelection(joinCode)
         coroutineScope.launch {
             snackbarHostState.showSnackbar(
@@ -123,6 +126,7 @@ fun ActivityPicker(
                 duration = SnackbarDuration.Short
             )
         }
+        Unit
     }
 
     if (activities.isEmpty()) {

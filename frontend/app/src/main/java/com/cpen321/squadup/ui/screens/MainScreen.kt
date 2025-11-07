@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.R
+import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
@@ -92,11 +93,11 @@ fun MainScreen(
     }
 }
 
-private fun List<Group>.filterUserGroups(userId: String?) = filter { group ->
+private fun List<GroupDataDetailed>.filterUserGroups(userId: String?) = filter { group ->
     group.groupLeaderId?.id == userId || group.groupMemberIds?.any { it.id == userId } == true
 }
 
-private fun subscribeToUserGroups(userId: String?, groups: List<Group>) {
+private fun subscribeToUserGroups(userId: String?, groups: List<GroupDataDetailed>) {
     userId ?: return
     groups.forEach { group ->
         WebSocketManager.subscribeToGroup(userId, group.joinCode)

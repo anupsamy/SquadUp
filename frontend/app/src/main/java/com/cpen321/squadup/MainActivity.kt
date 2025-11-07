@@ -84,9 +84,6 @@ class MainActivity : ComponentActivity() {
         } catch (e: IllegalStateException) {
             Log.w("WebSocket", "Illegal state while reading BuildConfig.FLAVOR: ${e.message}, defaulting to local")
             "ws://10.0.2.2:3000/ws"
-        } catch (e: NullPointerException) {
-            Log.w("WebSocket", "Null value for BuildConfig.FLAVOR: ${e.message}, defaulting to local")
-            "ws://10.0.2.2:3000/ws"
         }
         Log.d("WebSocket", "Will connect to: $wsUrl")
         

@@ -210,9 +210,6 @@ class GroupRepositoryImpl @Inject constructor(
         } catch (e: HttpException) {
             // Retrofit HTTP protocol issues (non-2xx responses)
             Result.failure(e)
-        } catch (e: Exception) {
-            // Unexpected issues — keep as last resort for safety
-            Result.failure(e)
         }
     }
 

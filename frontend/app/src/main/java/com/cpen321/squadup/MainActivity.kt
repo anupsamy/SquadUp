@@ -27,6 +27,8 @@ import com.cpen321.squadup.utils.WebSocketManager
 import com.cpen321.squadup.ui.viewmodels.ChatViewModel
 import com.cpen321.squadup.ui.notifications.NotificationManager
 import com.cpen321.squadup.ui.notifications.GlobalNotificationOverlay
+import com.google.gson.JsonSyntaxException
+import org.json.JSONException
 import javax.inject.Inject
 import java.io.IOException
 

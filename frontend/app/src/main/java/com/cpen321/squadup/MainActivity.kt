@@ -141,8 +141,10 @@ class MainActivity : ComponentActivity() {
                 // Start connection
                 Log.d("WebSocket", "Starting WebSocket connection...")
                 wsManager.start()
-            } catch (e: Exception) {
-                Log.e("WebSocket", "Error initializing WebSocket: ${e.message}", e)
+            } catch (e: IOException) {
+                Log.e("WebSocket", "I/O error initializing WebSocket: ${e.message}", e)
+            } catch (e: IllegalStateException) {
+                Log.e("WebSocket", "Illegal state during WebSocket initialization: ${e.message}", e)
             }
         }
     }

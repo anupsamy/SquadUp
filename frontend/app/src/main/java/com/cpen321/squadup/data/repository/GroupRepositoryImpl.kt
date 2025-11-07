@@ -225,8 +225,14 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to update midpoint by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        } catch (e: IOException) {
+            Result.failure(IOException("Network error while updating midpoint: ${e.message}", e))
+        } catch (e: HttpException) {
+            Result.failure(HttpException(e.response() ?: throw e))
+        } catch (e: JsonParseException) {
+            Result.failure(JsonParseException("Error parsing server response: ${e.message}"))
+        } catch (e: IllegalStateException) {
+            Result.failure(IllegalStateException("Unexpected state while updating midpoint: ${e.message}", e))
         }
     }
 

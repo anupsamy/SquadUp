@@ -35,7 +35,9 @@ private fun NotificationContent(
     message: String
 ) {
     Column(
-        modifier = Modifier.weight(1f)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         Text(
             text = title,

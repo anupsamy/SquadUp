@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
@@ -76,6 +77,7 @@ private fun HandleGroupNavigation(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroupListTopBar(
     navController: NavController,
@@ -145,7 +147,7 @@ private fun SearchBar(searchQuery: String, onQueryChange: (String) -> Unit) {
 }
 
 @Composable
-private fun MemberList(members: List<GroupMember>, searchQuery: String) {
+private fun MemberList(members: List<GroupUser>, searchQuery: String) {
     val filteredMembers = members.filter { it.name?.contains(searchQuery, ignoreCase = true) == true }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(filteredMembers) { member ->

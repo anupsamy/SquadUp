@@ -98,7 +98,7 @@ fun GroupDetailsScreen(
 
     Scaffold(topBar = { GroupDetailsTopBar(navController, group.joinCode, group.groupName, group.meetingTime, ::refresh) }) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            if (isLeader) LeaderGroupView(group, groupViewModel, midpoint, activityPickerVM, selectedActivity, Modifier.weight(1f))
+            if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, selectedActivity = selectedActivity, modifier = Modifier.weight(1f))
             else MemberGroupView(profileUiState.user, group, groupViewModel, midpoint, selectedActivity, Modifier.weight(1f))
 
             Spacer(Modifier.height(12.dp))
@@ -111,6 +111,7 @@ fun GroupDetailsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroupDetailsTopBar(nav: NavController, joinCode: String, name: String, time: String, refresh: () -> Unit) {
     TopAppBar(

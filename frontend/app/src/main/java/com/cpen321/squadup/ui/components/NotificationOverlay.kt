@@ -35,8 +35,15 @@ fun NotificationOverlay(
         }
     }
 
-    val enterAnim = slideInVertically({ -it }, tween(300)) + fadeIn(tween(300))
-    val exitAnim = slideOutVertically({ -it }, tween(300)) + fadeOut(tween(300))
+    val enterAnim = slideInVertically(
+        initialOffsetY = { fullHeight -> -fullHeight },
+        animationSpec = tween(durationMillis = 300)
+    ) + fadeIn(animationSpec = tween(durationMillis = 300))
+
+    val exitAnim = slideOutVertically(
+        targetOffsetY = { fullHeight -> -fullHeight },
+        animationSpec = tween(durationMillis = 300)
+    ) + fadeOut(animationSpec = tween(durationMillis = 300))
 
     AnimatedVisibility(
         visible = isVisible,

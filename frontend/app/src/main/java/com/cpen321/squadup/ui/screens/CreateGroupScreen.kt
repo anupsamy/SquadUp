@@ -100,7 +100,7 @@ fun CreateGroupScreen(
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
 
-            ActivityDropdown(selectedActivity) { selectedActivity = it }
+            ActivityDropdown(selected = selectedActivity) { selectedActivity = it }
 
             Button(
                 onClick = {
@@ -110,7 +110,7 @@ fun CreateGroupScreen(
                         meetingDateTime.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Meeting date and time are required")
                         expectedPeople.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Expected people is required")
                         expectedPeople.toIntOrNull() == null || expectedPeople.toInt() <= 0 ->
-                            snackbarHostState.showMessage(coroutineScope, "Enter valid number of people")
+                            snackbarHostState.showMessage(coroutineScope, "Expected people must be a positive number")
                         selectedActivity == null -> snackbarHostState.showMessage(coroutineScope, "Select an activity")
                         user == null -> snackbarHostState.showMessage(coroutineScope, "User not loaded")
                         else -> {
@@ -201,20 +201,24 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
     ) {
         TextField(
-            value = selected?.displayName ?: "Select Activity Type",
+            value = selected?.displayName ?: "",
             onValueChange = {},
             readOnly = true,
+            label = { Text("Select Activity Type") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true }
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            modifier = Modifier.fillMaxWidth().menuAnchor()
         )
 
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            ActivityType.entries.forEach { type ->
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            ActivityType.values().forEach { type ->
                 DropdownMenuItem(
                     text = { Text(type.displayName) },
                     onClick = {

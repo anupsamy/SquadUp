@@ -293,11 +293,19 @@ fun AddressPickerSection(
 private fun validateSettings(
     state: MemberSettingsState,
     addressPickerQuery: String,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope
 ): Boolean {
     // query must match the selected address formatted string
-    if (addressPickerQuery != (state.address as? Address)?.formatted) return false
+    if (addressPickerQuery != (state.address as? Address)?.formatted) {
+        coroutineScope.launch { snackbarHostState.showSnackbar("Please select a valid address") }
+        return false;
+    }
     // expected people must be a positive integer
-    if (state.expectedPeople.toIntOrNull()?.let { it <= 0 } == true) return false
+    if (state.expectedPeople.toIntOrNull()?.let { it <= 0 } == true) {
+        coroutineScope.launch { snackbarHostState.showSnackbar("Expected people must be a positive number") }
+        return false;
+    }
     // meetingTimeError blocks saving
     if (state.meetingTimeError != null) return false
     return true
@@ -314,7 +322,12 @@ fun SaveSettingsButton(
     Button(
         onClick = {
             // validate form
-            if (!validateSettings(state, addressPickerViewModel.query)) return@Button
+            if (!validateSettings(
+                    state = state,
+                    addressPickerQuery = addressPickerViewModel.query,
+                    snackbarHostState = snackbarHostState,
+                    coroutineScope = coroutineScope
+            )) return@Button
 
             // build updated members list
             val updatedMembers = state.group.groupMemberIds?.map { member ->

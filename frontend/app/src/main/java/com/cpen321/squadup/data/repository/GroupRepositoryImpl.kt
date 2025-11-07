@@ -244,7 +244,7 @@ class GroupRepositoryImpl @Inject constructor(
             val activities = response.body()?.data ?: emptyList()
 
             Result.success(activities)
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e(TAG, "Error fetching activities", e)
             Result.success(emptyList())
         }
@@ -265,7 +265,7 @@ class GroupRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to select activity: ${response.message()}")
                 Result.failure(Exception("Failed to select activity"))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e(TAG, "Error selecting activity", e)
             Result.failure(e)
         }
@@ -289,7 +289,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to leave group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }

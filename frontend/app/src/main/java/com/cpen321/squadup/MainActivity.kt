@@ -158,8 +158,6 @@ class MainActivity : ComponentActivity() {
             }
         } catch (e: IOException) {
             Log.w("WebSocket", "Error stopping websocket: ${e.message}")
-        } catch (e: Exception) {
-            Log.w("WebSocket", "Error in onDestroy: ${e.message}")
         }
     }
 

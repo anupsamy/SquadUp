@@ -961,6 +961,175 @@ describe('POST /group/update', () => {
     expect(res.body).toHaveProperty('message', 'Group not found');
   });
 });
+
+// Add to unmocked tests (in a new describe block or extend existing selectActivity tests)
+
+describe('POST /group/select-activity', () => {
+  // Input: joinCode is not a string (e.g., number, object)
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Join code must be a string" message
+  it('should return 400 when joinCode is not a string', async () => {
+    const activityData = {
+      joinCode: 12345, // number instead of string
+      activity: {
+        placeId: 'place123',
+        name: 'Test Activity',
+      },
+    };
+
+    const res = await request(app).post('/group/select-activity').send(activityData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code must be a string');
+    expect(res.body).toHaveProperty('error', 'ValidationError');
+  });
+
+  // Input: joinCode is an object
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Join code must be a string" message
+  it('should return 400 when joinCode is an object', async () => {
+    const activityData = {
+      joinCode: { code: 'group123' }, // object instead of string
+      activity: {
+        placeId: 'place123',
+        name: 'Test Activity',
+      },
+    };
+
+    const res = await request(app).post('/group/select-activity').send(activityData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code must be a string');
+    expect(res.body).toHaveProperty('error', 'ValidationError');
+  });
+});
+
+describe('POST /group/:joinCode/midpoint/update', () => {
+  // Input: joinCode route parameter is not a string (e.g., passed as object or undefined)
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Invalid joinCode" message with ValidationError
+  it('should return 400 when joinCode is invalid', async () => {
+    // Note: Express route params are always strings, so we test by passing empty string
+    // or by testing the validation logic directly
+    const res = await request(app).post('/group//midpoint/update');
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Invalid joinCode');
+    expect(res.body).toHaveProperty('error', 'ValidationError');
+  });
+});
+
+describe('POST /group/update', () => {
+  // Input: joinCode in body is not a string (e.g., number, object)
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Invalid joinCode" message
+  it('should return 400 when joinCode is not a string', async () => {
+    const updateData = {
+      joinCode: 12345, // number instead of string
+      expectedPeople: 5,
+      groupMemberIds: [],
+      meetingTime: "2026-11-02T12:30:00Z",
+    };
+
+    const res = await request(app).post('/group/update').send(updateData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Invalid joinCode');
+  });
+
+  // Input: joinCode in body is an object
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Invalid joinCode" message
+  it('should return 400 when joinCode is an object', async () => {
+    const updateData = {
+      joinCode: { code: 'group123' }, // object instead of string
+      expectedPeople: 5,
+      groupMemberIds: [],
+      meetingTime: "2026-11-02T12:30:00Z",
+    };
+
+    const res = await request(app).post('/group/update').send(updateData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Invalid joinCode');
+  });
+
+  // Input: joinCode in body is an empty string
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Invalid joinCode" message
+  it('should return 400 when joinCode is empty string', async () => {
+    const updateData = {
+      joinCode: '', // empty string
+      expectedPeople: 5,
+      groupMemberIds: [],
+      meetingTime: "2026-11-02T12:30:00Z",
+    };
+
+    const res = await request(app).post('/group/update').send(updateData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Invalid joinCode');
+  });
+});
+
+describe('POST /group/join', () => {
+  // Input: joinCode is missing from request body
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Join code is required and must be a string" message
+  it('should return 400 when joinCode is missing', async () => {
+    const joinData = {
+      expectedPeople: 5,
+      groupMemberIds: [{ id: 'user-id', name: 'User', email: 'user@example.com' }],
+    };
+
+    const res = await request(app).post('/group/join').send(joinData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code is required and must be a string');
+  });
+
+  // Input: joinCode is null
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Join code is required and must be a string" message
+  it('should return 400 when joinCode is null', async () => {
+    const joinData = {
+      joinCode: null,
+      expectedPeople: 5,
+      groupMemberIds: [{ id: 'user-id', name: 'User', email: 'user@example.com' }],
+    };
+
+    const res = await request(app).post('/group/join').send(joinData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code is required and must be a string');
+  });
+
+  // Input: joinCode is not a string (number)
+  // Expected status code: 400
+  // Expected behavior: validation error returned
+  // Expected output: "Join code is required and must be a string" message
+  it('should return 400 when joinCode is not a string', async () => {
+    const joinData = {
+      joinCode: 12345, // number instead of string
+      expectedPeople: 5,
+      groupMemberIds: [{ id: 'user-id', name: 'User', email: 'user@example.com' }],
+    };
+
+    const res = await request(app).post('/group/join').send(joinData);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('message', 'Join code is required and must be a string');
+  });
+});
+
 });
 
 

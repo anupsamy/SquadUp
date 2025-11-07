@@ -71,7 +71,7 @@ export class GroupController {
   }
 
   async getGroupByJoinCode(
-    req: Request<{ joinCode: string }>, // Define the route parameter type
+    req: Request<{ joinCode: string }>, // always a string
     res: Response<GetGroupResponse>,
     next: NextFunction
   ) {
@@ -80,16 +80,16 @@ export class GroupController {
 
       // Query the database for the group with the given joinCode
       // Validate joinCode is a string before use
-    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-    if (!validatedJoinCodeForFind) {
-      res.status(400).json({
-        message: 'Invalid joinCode',
-        data: {} as any,
-        error: Error('ValidationError')
-      });
-      return;
-    }
-    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     data: {} as any,
+    //     error: Error('ValidationError')
+    //   });
+    //   return;
+    // }
+    const group = await groupModel.findByJoinCode(joinCode);
       // console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
@@ -275,17 +275,19 @@ export class GroupController {
     try {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
 
+      //JOIN CODE MUST BE STRING FROM REQ - validation not possible to hit as it will always be parsed as string
+      //TODO: standardize req params vs body handling
       // Query the database for the group with the given joinCode
       // Validate joinCode is a string before use
-    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-    if (!validatedJoinCodeForFind) {
-      res.status(400).json({
-        message: 'Invalid joinCode',
-        error: 'ValidationError'
-      });
-      return;
-    }
-    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     error: 'ValidationError'
+    //   });
+    //   return;
+    // }
+    const group = await groupModel.findByJoinCode(joinCode);
 
       if (!group) {
         return res.status(404).json({
@@ -310,11 +312,8 @@ export class GroupController {
       const locationInfo: LocationInfo[] = group.groupMemberIds
       .filter(member => member.address != null && member.transitType != null)
       .map(member => {
-        const address = member.address;
-        const transitType = member.transitType;
-        if (address == null || transitType == null) {
-          throw new Error('Address and transit type are required');
-        }
+        const address = member.address!!;
+        const transitType = member.transitType!!;
         return {
           address,
           transitType,
@@ -364,15 +363,16 @@ async updateMidpointByJoinCode(
 
       // Query the database for the group with the given joinCode
       // Validate joinCode is a string before use
-    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-    if (!validatedJoinCodeForFind) {
-      res.status(400).json({
-        message: 'Invalid joinCode',
-        error: 'ValidationError'
-      });
-      return;
-    }
-    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
+      //IMPOSSIBLE TO HIT - will always be parsed as string in req
+      // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+      // if (!validatedJoinCodeForFind) {
+      //   res.status(400).json({
+      //     message: 'Invalid joinCode',
+      //     error: 'ValidationError'
+      //   });
+      //   return;
+      // }
+      const group = await groupModel.findByJoinCode(joinCode);
 
       if (!group) {
         return res.status(404).json({
@@ -383,11 +383,8 @@ async updateMidpointByJoinCode(
       const locationInfo: LocationInfo[] = group.groupMemberIds
       .filter(member => member.address != null && member.transitType != null)
       .map(member => {
-        const address = member.address;
-        const transitType = member.transitType;
-        if (address == null || transitType == null) {
-          throw new Error('Address and transit type are required');
-        }
+        const address = member.address!!;
+        const transitType = member.transitType!!;
         return {
           address,
           transitType,
@@ -443,19 +440,19 @@ async getActivities(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-
-    // Validate joinCode is a string before use
-    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-    if (!validatedJoinCodeForFind) {
-      res.status(400).json({
-        message: 'Invalid joinCode',
-        data: null,
-        error: 'ValidationError',
-        details: null,
-      });
-      return;
-    }
-    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
+    //REDUNDANT CODACY FIX - joincode type already checked
+    // Validate joinCode is a string before use 
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     data: null,
+    //     error: 'ValidationError',
+    //     details: null,
+    //   });
+    //   return;
+    // }
+    const group = await groupModel.findByJoinCode(joinCode);
 
     if (!group) {
       res.status(404).json({
@@ -507,19 +504,9 @@ async selectActivity(req: Request, res: Response): Promise<void> {
   try {
     const { joinCode, activity } = req.body;
 
-    if (!joinCode || !activity) {
+    if (!joinCode || !activity || typeof joinCode !== 'string') {
       res.status(400).json({
-        message: 'Join code and activity are required',
-        data: null,
-        error: 'ValidationError',
-        details: null,
-      });
-      return;
-    }
-
-    if (typeof joinCode !== 'string') {
-      res.status(400).json({
-        message: 'Join code must be a string',
+        message: 'Join code as string and activity are required',
         data: null,
         error: 'ValidationError',
         details: null,
@@ -538,19 +525,20 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Verify the group exists
+
+    //REDUNDANT CODACY FIX
     // Validate joinCode is a string before use
-    const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-    if (!validatedJoinCodeForFind) {
-      res.status(400).json({
-        message: 'Invalid joinCode',
-        data: null,
-        error: 'ValidationError',
-        details: null,
-      });
-      return;
-    }
-    const group = await groupModel.findByJoinCode(validatedJoinCodeForFind);
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     data: null,
+    //     error: 'ValidationError',
+    //     details: null,
+    //   });
+    //   return;
+    // }
+    const group = await groupModel.findByJoinCode(joinCode);
     if (!group) {
       res.status(404).json({
         message: 'Group not found',
@@ -582,36 +570,36 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
     // Send notifications to group members
     const wsService = getWebSocketService();
-    if (wsService && updatedGroup) {
-      const leaderId = updatedGroup.groupLeaderId.id || '';
-      const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
-      const rawActivityName = activity.name;
-      const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
+    // if (wsService && updatedGroup) {
+    //   const leaderId = updatedGroup.groupLeaderId.id || '';
+    //   const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
+    //   const rawActivityName = activity.name;
+    //   const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
 
-      // Send WebSocket notification
-      wsService.notifyGroupUpdate(
-        joinCode,
-        `${leaderName} selected "${activityName}" for the group`,
-        {
-          type: 'activity_selected',
-          activity,
-          leaderId,
-          leaderName
-        }
-      );
+    //   // Send WebSocket notification
+    //   wsService.notifyGroupUpdate(
+    //     joinCode,
+    //     `${leaderName} selected "${activityName}" for the group`,
+    //     {
+    //       type: 'activity_selected',
+    //       activity,
+    //       leaderId,
+    //       leaderName
+    //     }
+    //   );
 
-      // Send FCM notification (will be suppressed in foreground on client side)
-      const activityDataStr = JSON.stringify(activity);
-      sendActivitySelectedFCM(
-        joinCode,
-        activityName,
-        updatedGroup.groupName,
-        leaderId,
-        activityDataStr
-      ).catch((error: unknown) => {
-        logger.error('Failed to send activity selected FCM notification:', error);
-      });
-    }
+    //   // Send FCM notification (will be suppressed in foreground on client side)
+    //   const activityDataStr = JSON.stringify(activity);
+    //   sendActivitySelectedFCM(
+    //     joinCode,
+    //     activityName,
+    //     updatedGroup.groupName,
+    //     leaderId,
+    //     activityDataStr
+    //   ).catch((error: unknown) => {
+    //     logger.error('Failed to send activity selected FCM notification:', error);
+    //   });
+    // }
 
     // Send notifications to group members
     /*const wsService = getWebSocketService();

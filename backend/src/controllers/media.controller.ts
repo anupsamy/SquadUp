@@ -26,7 +26,7 @@ export class MediaController {
       const rawFilePath = req.file.path;
       const filePath: string = typeof rawFilePath === 'string' ? rawFilePath : '';
       const sanitizedFilePath = sanitizeInput(filePath);
-      const image = await MediaService.saveImage(
+      const image = MediaService.saveImage(
         sanitizedFilePath,
         user._id.toString()
       );

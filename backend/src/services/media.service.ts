@@ -42,9 +42,7 @@ export class MediaService {
         } catch (cleanupError) {
           // Ignore cleanup errors
         }
-      }
-      throw new Error(`Failed to save profile picture: ${error}`);
-    }
+      }    }
   }
 
   static deleteImage(url: string): void {
@@ -67,9 +65,11 @@ export class MediaService {
       }
 
       const files = fs.readdirSync(IMAGES_DIR);
-      const userFiles = files.filter(file => file.startsWith(userId + '-'));
+      const userFiles = files.filter(file => file.startsWith(`${userId}-`));
 
-      userFiles.forEach(file => this.deleteImage(file));
+      userFiles.forEach(file => { 
+        this.deleteImage(file); 
+      });
     } catch (error) {
       console.error('Failed to delete user images:', error);
     }

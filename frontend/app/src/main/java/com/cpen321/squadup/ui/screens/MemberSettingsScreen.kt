@@ -90,18 +90,21 @@ data class MemberSettingsState(
     val existingMemberInfo: GroupUser?
 )
 
-// --- Shorter, safer composable signature ---
+data class MemberSettingsHandlers(
+    val addressPickerViewModel: AddressPickerViewModel,
+    val groupViewModel: GroupViewModel,
+    val snackbarHostState: SnackbarHostState,
+    val coroutineScope: CoroutineScope,
+    val onAddressChange: (Address?) -> Unit,
+    val onTransitTypeChange: (TransitType?) -> Unit,
+    val onMeetingTimeChange: (String, String?) -> Unit,
+    val onExpectedPeopleChange: (String) -> Unit
+)
+
 @Composable
 private fun MemberSettingsContent(
     state: MemberSettingsState,
-    addressPickerViewModel: AddressPickerViewModel,
-    groupViewModel: GroupViewModel,
-    snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope,
-    onAddressChange: (Address?) -> Unit,
-    onTransitTypeChange: (TransitType?) -> Unit,
-    onMeetingTimeChange: (String, String?) -> Unit,
-    onExpectedPeopleChange: (String) -> Unit,
+    handlers: MemberSettingsHandlers,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -114,31 +117,31 @@ private fun MemberSettingsContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Address picker section (unchanged behavior)
-        AddressPickerSection(addressPickerViewModel, state.address) { selected ->
-            onAddressChange(selected)
+        // Address picker
+        AddressPickerSection(handlers.addressPickerViewModel, state.address) { selected ->
+            handlers.onAddressChange(selected)
         }
 
-        // Transit dropdown (unchanged behavior)
-        TransitTypeDropdown(selectedType = state.transitType, onTypeSelected = onTransitTypeChange)
+        // Transit dropdown
+        TransitTypeDropdown(selectedType = state.transitType, onTypeSelected = handlers.onTransitTypeChange)
 
-        // Only the group leader can edit meeting time & expected people
+        // Only group leader can edit meetingTime & expectedPeople
         if (state.group.groupLeaderId?.id == state.currentUserId) {
             MeetingTimePickerButton(
                 context = context,
                 meetingTime = state.meetingTime,
                 meetingTimeError = state.meetingTimeError,
-                onMeetingTimeChange = onMeetingTimeChange
+                onMeetingTimeChange = handlers.onMeetingTimeChange
             )
 
             ExpectedPeopleField(
                 value = state.expectedPeople,
                 error = state.expectedPeopleError,
-                onValueChange = onExpectedPeopleChange
+                onValueChange = handlers.onExpectedPeopleChange
             )
         }
 
-        // Save button (keeps same dependencies)
+        // Save button
         SaveSettingsButton(
             address = state.address,
             transitType = state.transitType,
@@ -146,15 +149,16 @@ private fun MemberSettingsContent(
             expectedPeople = state.expectedPeople,
             meetingTimeError = state.meetingTimeError,
             existingMemberInfo = state.existingMemberInfo,
-            addressPickerViewModel = addressPickerViewModel,
+            addressPickerViewModel = handlers.addressPickerViewModel,
             group = state.group,
             currentUserId = state.currentUserId,
-            groupViewModel = groupViewModel,
-            snackbarHostState = snackbarHostState,
-            coroutineScope = coroutineScope
+            groupViewModel = handlers.groupViewModel,
+            snackbarHostState = handlers.snackbarHostState,
+            coroutineScope = handlers.coroutineScope
         )
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

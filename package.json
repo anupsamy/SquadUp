@@ -5,6 +5,7 @@
   "devDependencies": {
     "@types/express": "^5.0.5",
     "@types/googlemaps": "^3.43.3",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.9.2"
   }
 }

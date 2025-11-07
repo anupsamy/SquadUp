@@ -131,7 +131,7 @@ private fun MemberSettingsContent(
                 context = context,
                 meetingTime = state.meetingTime,
                 meetingTimeError = state.meetingTimeError,
-                onMeetingTimeChange = handlers.onMeetingTimeChange
+                onMeetingTimeSelected = handlers.onMeetingTimeChange
             )
 
             ExpectedPeopleField(
@@ -143,15 +143,8 @@ private fun MemberSettingsContent(
 
         // Save button
         SaveSettingsButton(
-            address = state.address,
-            transitType = state.transitType,
-            meetingTime = state.meetingTime,
-            expectedPeople = state.expectedPeople,
-            meetingTimeError = state.meetingTimeError,
-            existingMemberInfo = state.existingMemberInfo,
+            state = state,
             addressPickerViewModel = handlers.addressPickerViewModel,
-            group = state.group,
-            currentUserId = state.currentUserId,
             groupViewModel = handlers.groupViewModel,
             snackbarHostState = handlers.snackbarHostState,
             coroutineScope = handlers.coroutineScope
@@ -160,15 +153,20 @@ private fun MemberSettingsContent(
 }
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemberSettingsScreen(
     navController: NavController,
     group: GroupDataDetailed,
     profileViewModel: ProfileViewModel = hiltViewModel(),
-    groupViewModel: GroupViewModel,
+    groupViewModel: GroupViewModel = hiltViewModel(),
+    addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
 ) {
     val profileUiState by profileViewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
     val currentUserId = profileUiState.user?._id
     val existingMemberInfo = remember(group, currentUserId) {
         group.groupMemberIds?.find { it.id == currentUserId }
@@ -178,47 +176,51 @@ fun MemberSettingsScreen(
     var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
     var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
-    var expectedPeopleError by remember { mutableStateOf<String?>(null) }
     var meetingTimeError by remember { mutableStateOf<String?>(null) }
+    var expectedPeopleError by remember { mutableStateOf<String?>(null) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-    val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+    val state = MemberSettingsState(
+        group = group,
+        currentUserId = currentUserId,
+        address = address,
+        transitType = transitType,
+        meetingTime = meetingTime,
+        expectedPeople = expectedPeople,
+        meetingTimeError = meetingTimeError,
+        expectedPeopleError = expectedPeopleError,
+        existingMemberInfo = existingMemberInfo
+    )
+
+    val handlers = MemberSettingsHandlers(
+        addressPickerViewModel = addressPickerViewModel,
+        groupViewModel = groupViewModel,
+        snackbarHostState = snackbarHostState,
+        coroutineScope = coroutineScope,
+        onAddressChange = { address = it },
+        onTransitTypeChange = { transitType = it },
+        onMeetingTimeChange = { newTime, error ->
+            meetingTime = newTime
+            meetingTimeError = error
+        },
+        onExpectedPeopleChange = {
+            expectedPeople = it
+            expectedPeopleError = null
+        }
+    )
 
     Scaffold(
         topBar = { MemberSettingsTopBar(navController, group.joinCode) },
         bottomBar = { MemberSettingsBottomBar(navController, group.joinCode) },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        content = { paddingValues ->
-            MemberSettingsContent(
-                group = group,
-                currentUserId = currentUserId,
-                address = address,
-                transitType = transitType,
-                meetingTime = meetingTime,
-                expectedPeople = expectedPeople,
-                meetingTimeError = meetingTimeError,
-                expectedPeopleError = expectedPeopleError,
-                addressPickerViewModel = addressPickerViewModel,
-                existingMemberInfo = existingMemberInfo,
-                groupViewModel = groupViewModel,
-                snackbarHostState = snackbarHostState,
-                coroutineScope = coroutineScope,
-                onAddressChange = { address = it },
-                onTransitTypeChange = { transitType = it },
-                onMeetingTimeChange = { newTime, error ->
-                    meetingTime = newTime
-                    meetingTimeError = error
-                },
-                onExpectedPeopleChange = { 
-                    expectedPeople = it
-                    expectedPeopleError = null
-                },
-                modifier = Modifier.padding(paddingValues)
-            )
-        }
-    )
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        MemberSettingsContent(
+            state = state,
+            handlers = handlers,
+            modifier = Modifier.padding(padding)
+        )
+    }
 }
+
 
 @Composable
 fun MeetingTimePickerButton(
@@ -282,10 +284,10 @@ fun ExpectedPeopleField(value: String, error: String?, onValueChange: (String) -
 @Composable
 fun AddressPickerSection(
     viewModel: AddressPickerViewModel,
-    initialValue: Any?,
-    onAddressSelected: (Any?) -> Unit
+    initialValue: Address?,
+    onAddressSelected: (Address?) -> Unit
 ) {
-    AddressPicker(viewModel, initialValue, onAddressSelected)
+    AddressPicker(viewModel, initialValue = initialValue, onAddressSelected = onAddressSelected)
 }
 
 private fun validateSettings(
@@ -332,8 +334,8 @@ fun SaveSettingsButton(
             )
 
             // update midpoint if address/transit changed for the current user
-            val existingAddr = (state.existingMemberInfo as? GroupMember)?.address
-            val existingTransit = (state.existingMemberInfo as? GroupMember)?.transitType
+            val existingAddr = (state.existingMemberInfo as? GroupUser)?.address
+            val existingTransit = (state.existingMemberInfo as? GroupUser)?.transitType
             if (existingAddr != state.address || existingTransit != state.transitType) {
                 groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
             }

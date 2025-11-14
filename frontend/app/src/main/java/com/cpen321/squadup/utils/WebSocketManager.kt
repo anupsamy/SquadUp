@@ -59,6 +59,9 @@ class WebSocketManager(private val url: String) {
         instance = this
     }
     private val client = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
         .pingInterval(30, TimeUnit.SECONDS)
         .build()
     private var webSocket: WebSocket? = null
@@ -125,9 +128,7 @@ class WebSocketManager(private val url: String) {
             Log.e("WebSocket", "Connection failed to: $url")
             Log.e("WebSocket", "Error: $errorMessage")
             Log.e("WebSocket", "Response code: $responseCode, message: $responseMessage")
-            if (response != null) {
-                Log.e("WebSocket", "Response body: ${response.body?.string()}")
-            }
+            // Note: Don't read response body here as it may have already been consumed
             t.printStackTrace()
             
             mainHandler.post { callback?.onConnectionStateChanged(false) }

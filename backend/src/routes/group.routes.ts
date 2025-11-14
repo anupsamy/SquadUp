@@ -8,7 +8,7 @@ const router = Router();
 const groupController = new GroupController();
 
 router.get('/info', (req, res, next) => {
-  groupController.getAllGroups(req, res).catch((error: unknown) => {
+  groupController.getAllGroups(req, res, next).catch((error: unknown) => {
     next(error);
   });
 });
@@ -35,7 +35,7 @@ router.post(
 router.get(
     '/:joinCode', // Define the route parameter
     (req, res, next) => {
-      groupController.getGroupByJoinCode(req, res).catch((error: unknown) => {
+      groupController.getGroupByJoinCode(req, res, next).catch((error: unknown) => {
         next(error);
       });
     }
@@ -55,7 +55,7 @@ router.post( //have seperate endpoint for updating?
     '/join',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
     (req, res, next) => {
-      groupController.joinGroupByJoinCode(req, res).catch((error: unknown) => {
+      groupController.joinGroupByJoinCode(req, res, next).catch((error: unknown) => {
         next(error);
       });
     }
@@ -65,7 +65,7 @@ router.post(
     '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
     (req, res, next) => {
-      groupController.updateGroupByJoinCode(req, res).catch((error: unknown) => {
+      groupController.updateGroupByJoinCode(req, res, next).catch((error: unknown) => {
         next(error);
       });
     }
@@ -74,7 +74,7 @@ router.post(
 router.delete(
     '/delete/:joinCode', // Define the route parameter
     (req, res, next) => {
-      groupController.deleteGroupByJoinCode(req, res).catch((error: unknown) => {
+      groupController.deleteGroupByJoinCode(req, res, next).catch((error: unknown) => {
         next(error);
       });
     }
@@ -101,7 +101,7 @@ router.post(
 router.post(
     '/leave/:joinCode', // Define the route parameter
     (req, res, next) => {
-      groupController.leaveGroup(req, res).catch((error: unknown) => {
+      groupController.leaveGroup(req, res, next).catch((error: unknown) => {
         next(error);
       });
     }

@@ -414,12 +414,12 @@ describe('Unmocked: Group Controller', () => {
     });
 
     app.post('/group/create', (req, res, next) => groupController.createGroup(req, res, next));
-    app.get('/group/info',(req, res, next) => groupController.getAllGroups(req, res));
+    app.get('/group/info',(req, res, next) => groupController.getAllGroups(req, res, next));
     app.get('/group/:joinCode',(req, res, next) => groupController.getGroupByJoinCode(req, res));
-    app.post('/group/update', (req, res, next) => groupController.updateGroupByJoinCode(req, res));
-    app.delete('/group/delete/:joinCode', (req, res, next) => groupController.deleteGroupByJoinCode(req, res));
-    app.post('/group/join', (req, res, next) => groupController.joinGroupByJoinCode(req, res));
-    app.post('/group/leave/:joinCode', (req, res, next) => groupController.leaveGroup(req, res));
+    app.post('/group/update', (req, res, next) => groupController.updateGroupByJoinCode(req, res, next));
+    app.delete('/group/delete/:joinCode', (req, res, next) => groupController.deleteGroupByJoinCode(req, res, next));
+    app.post('/group/join', (req, res, next) => groupController.joinGroupByJoinCode(req, res, next));
+    app.post('/group/leave/:joinCode', (req, res, next) => groupController.leaveGroup(req, res, next));
     app.get('/group/:joinCode/midpoint',(req, res, next) => groupController.getMidpointByJoinCode(req, res, next));
     app.post('/group/:joinCode/midpoint/update', (req, res, next) => groupController.updateMidpointByJoinCode(req, res, next));
 

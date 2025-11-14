@@ -320,7 +320,7 @@ describe('Nonfunctional Requirements: Group View Load Time', () => {
     });
 
     app.post('/group/create', (req, res, next) => groupController.createGroup(req, res, next));
-    app.get('/group/info', (req, res, next) => groupController.getAllGroups(req, res));
+    app.get('/group/info', (req, res, next) => groupController.getAllGroups(req, res, next));
     app.get('/group/:joinCode', (req, res, next) => groupController.getGroupByJoinCode(req, res));
     app.get('/group/:joinCode/midpoint', (req, res, next) => groupController.getMidpointByJoinCode(req, res, next));
   });

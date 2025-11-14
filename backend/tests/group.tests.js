@@ -329,7 +329,7 @@ describe('Unmocked: Group Controller', () => {
             }
             next();
         });
-        app.get('/group/info', (req, res, next) => groupController.getAllGroups(req, res));
+        app.get('/group/info', (req, res, next) => groupController.getAllGroups(req, res, next));
         app.get('/group/:joinCode', (req, res, next) => groupController.getGroupByJoinCode(req, res));
         app.post('/group/join', (req, res, next) => groupController.joinGroupByJoinCode(req, res, next));
         app.post('/group/create', (req, res, next) => groupController.createGroup(req, res, next));

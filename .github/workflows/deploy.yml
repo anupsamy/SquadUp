@@ -4,6 +4,7 @@ on:
   push:
     branches:
        - prod
+       - vi-tests-merging
     paths:
       - 'backend/**'
       - '.github/workflows/deploy.yml'

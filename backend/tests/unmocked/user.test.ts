@@ -398,6 +398,67 @@ describe('Unmocked: User Controller', () => {
       expect(res.body).toHaveProperty('message', 'User deleted successfully');
     });
   });
+
+  // Add these tests to the "Unmocked: User Controller" describe block
+
+describe('GET /profile', () => {
+  // Input: unauthenticated request (no user in req)
+  // Expected status code: 401
+  // Expected behavior: returns unauthorized error
+  // Expected output: "User not authenticated" message
+  it('should return 401 when user is not authenticated', async () => {
+    const unauthApp = express();
+    unauthApp.use(express.json());
+    unauthApp.get('/profile', (req, res) =>
+      userController.getProfile(req, res)
+    );
+
+    const res = await request(unauthApp).get('/profile');
+
+    expect(res.status).toBe(401);
+    expect(res.body).toHaveProperty('message', 'User not authenticated');
+  });
+});
+
+describe('POST /profile (update unauthenticated)', () => {
+  // Input: unauthenticated request (no user in req) with update data
+  // Expected status code: 401
+  // Expected behavior: returns unauthorized error
+  // Expected output: "User not authenticated" message
+  it('should return 401 when user is not authenticated', async () => {
+    const unauthApp = express();
+    unauthApp.use(express.json());
+    unauthApp.post('/profile', (req, res, next) =>
+      userController.updateProfile(req, res, next)
+    );
+
+    const res = await request(unauthApp)
+      .post('/profile')
+      .send({ name: 'Updated Name' });
+
+    expect(res.status).toBe(401);
+    expect(res.body).toHaveProperty('message', 'User not authenticated');
+  });
+});
+
+describe('DELETE /profile (delete unauthenticated)', () => {
+  // Input: unauthenticated request (no user in req)
+  // Expected status code: 401
+  // Expected behavior: returns unauthorized error
+  // Expected output: "User not authenticated" message
+  it('should return 401 when user is not authenticated', async () => {
+    const unauthApp = express();
+    unauthApp.use(express.json());
+    unauthApp.delete('/profile', (req, res, next) =>
+      userController.deleteProfile(req, res, next)
+    );
+
+    const res = await request(unauthApp).delete('/profile');
+
+    expect(res.status).toBe(401);
+    expect(res.body).toHaveProperty('message', 'User not authenticated');
+  });
+});
 });
 
 /*

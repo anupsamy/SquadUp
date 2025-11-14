@@ -147,11 +147,8 @@ async getActivityList(
   let geoLocation: GeoLocation[] = locationInfo
   .filter(loc => loc.address.lat != null && loc.address.lng != null)
   .map(loc => {
-        const lat = loc.address.lat;
-        const lng = loc.address.lng;
-        if (lat == null || lng == null) {
-          throw new Error('Address coordinates are required');
-        }
+        const lat = loc.address.lat!!;
+        const lng = loc.address.lng!!;
         return {
           lat,
           lng,
@@ -170,38 +167,34 @@ async getActivityList(
 
     for (let j = 0; j < geoLocation.length; j++) {
       // Validate array access to prevent object injection: ensure index is in bounds for both arrays
-      if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
-        continue;
-      }
+      //impossible to hit - will always be array and within bounds
+      // if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
+      //   continue;
+      // }
       // Validate array element access to prevent object injection
+      // Ensure j is a valid number index before accessing array //j comes from loop so is always valid
+      // const validatedIndex = typeof j === 'number' && j >= 0 && j < travelTimes.length && j < geoLocation.length ? j : -1;
+      // if (validatedIndex === -1) {
+      //   continue;
+      // }
       // Ensure j is a valid number index before accessing array
       const validatedIndex = typeof j === 'number' && j >= 0 && j < travelTimes.length && j < geoLocation.length ? j : -1;
       if (validatedIndex === -1) {
         continue;
       }
-      if (
-        typeof validatedIndex !== "string" ||
-        !Object.prototype.hasOwnProperty.call(travelTimes, validatedIndex)
-      ) {
-        throw new Error("Invalid key for travel times.");
-      }
-      const rawWeightValue = travelTimes[validatedIndex];
+      // if (
+      //   typeof validatedIndex !== "string" ||
+      //   !Object.prototype.hasOwnProperty.call(travelTimes, validatedIndex)
+      // ) {
+      //   throw new Error("Invalid key for travel times.");
+      // }
+      const rawWeightValue = travelTimes[j];
       const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
       const weight = isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       
       // Validate array element access to prevent object injection
-      if (
-        !Array.isArray(geoLocation) ||
-        typeof validatedIndex !== "number" ||
-        validatedIndex < 0 ||
-        validatedIndex >= geoLocation.length
-      ) {
-        throw new Error("Invalid index for geoLocation array.");
-      }
-
-      const geoLocationItemValue = geoLocation[validatedIndex];
-
+      const geoLocationItemValue = geoLocation[j];
       const geoLocationItem = geoLocationItemValue;
       // TypeScript guarantees lat and lng exist on GeoLocation
       const rawLat = geoLocationItem.lat;

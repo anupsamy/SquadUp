@@ -231,4 +231,58 @@ describe('Mocked: AuthService', () => {
   await expect(authService.signInWithGoogle('token')).rejects.toThrow('Invalid Google token');
 });
   });
+
+  // Add to the existing AuthService test suite
+
+describe('generateAccessToken', () => {
+  beforeEach(() => {
+    delete process.env.JWT_SECRET;
+    jest.clearAllMocks();
+  });
+
+  // Input: JWT_SECRET environment variable is not set
+  // Expected behavior: throws error about missing JWT_SECRET
+  // Expected output: "JWT_SECRET environment variable is not set" error
+  it('should throw error when JWT_SECRET is not set', async () => {
+    authService = new AuthService();
+    const mockUser = {
+      _id: new mongoose.Types.ObjectId(),
+      googleId: 'google-123',
+      email: 'user@example.com',
+      name: 'Test User',
+      bio: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await expect(authService['generateAccessToken'](mockUser as any)).rejects.toThrow(
+      'JWT_SECRET environment variable is not set'
+    );
+  });
+
+  // Input: JWT_SECRET is set but jwt.sign returns non-string value
+  // Expected behavior: throws error about failed token generation
+  // Expected output: "Failed to generate access token" error
+  it('should throw error when jwt.sign does not return a string', async () => {
+    process.env.JWT_SECRET = 'test-secret';
+    authService = new AuthService();
+    
+    // Mock jwt.sign to return something other than a string
+    jest.spyOn(jwt, 'sign').mockReturnValueOnce(null as any);
+
+    const mockUser = {
+      _id: new mongoose.Types.ObjectId(),
+      googleId: 'google-123',
+      email: 'user@example.com',
+      name: 'Test User',
+      bio: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await expect(authService['generateAccessToken'](mockUser as any)).rejects.toThrow(
+      'Failed to generate access token'
+    );
+  });
+});
 });

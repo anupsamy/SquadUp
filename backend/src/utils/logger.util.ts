@@ -9,9 +9,9 @@ const logger = {
     const finalMessage = logMessage;
     // Use apply to avoid spread operator with non-literal args
     if (sanitizedArgs.length > 0) {
-      console.log(finalMessage, ...sanitizedArgs);
+      console.log(`[LOG] ${sanitizeInput(finalMessage)}`, ...sanitizedArgs);
     } else {
-      console.log(finalMessage);
+      console.log(`[LOG] ${sanitizeInput(finalMessage)}`);
     }
   },
   error: (message: string, ...args: unknown[]) => {

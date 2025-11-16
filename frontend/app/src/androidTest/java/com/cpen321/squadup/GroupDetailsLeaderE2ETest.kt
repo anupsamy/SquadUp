@@ -74,13 +74,8 @@ class GroupDetailsLeaderE2ETest {
 
     @Test
     fun groupDetailsScreen() {
-        // Navigate to the first group with a determined midpoint with activities
         navigateToFirstGroup()
-
-        // Click midpoint button every time
         findMidpoint()
-
-        // Use cases
         viewRecommendedLocations()
         selectActivityAndViewSelectedActivity()
     }

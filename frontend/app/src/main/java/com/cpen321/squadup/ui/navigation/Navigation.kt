@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavGraphBuilder
 import com.cpen321.squadup.R
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.screens.AuthScreen
@@ -91,77 +92,198 @@ private fun handleNavigationEvent(
     mainViewModel: MainViewModel,
     groupViewModel: GroupViewModel
 ) {
+    fun nav(route: String, popToRoot: Boolean = false) {
+        navController.navigate(route) {
+            if (popToRoot) popUpTo(0) { inclusive = true }
+        }
+        navigationStateManager.clearNavigationEvent()
+    }
+
+    fun navWithMessage(setter: (String) -> Unit, message: String, route: String, popToRoot: Boolean = false) {
+        setter(message)
+        nav(route, popToRoot)
+    }
+
     when (navigationEvent) {
-        is NavigationEvent.NavigateToAuth -> {
-            navController.navigate(NavRoutes.AUTH) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToAuthWithMessage -> {
-            authViewModel.setSuccessMessage(navigationEvent.message)
-            navController.navigate(NavRoutes.AUTH) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToCreateGroup -> {
-            navController.navigate(NavRoutes.CREATE_GROUP)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToMain -> {
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToMainWithMessage -> {
-            mainViewModel.setSuccessMessage(navigationEvent.message)
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToProfileCompletion -> {
-            navController.navigate(NavRoutes.PROFILE_COMPLETION) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToProfile -> {
-            navController.navigate(NavRoutes.PROFILE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToManageProfile -> {
-            navController.navigate(NavRoutes.MANAGE_PROFILE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToManageHobbies -> {
-            navController.navigate(NavRoutes.MANAGE_HOBBIES)
-            navigationStateManager.clearNavigationEvent()
-        }
-
+        is NavigationEvent.NavigateToAuth ->
+            nav(NavRoutes.AUTH, popToRoot = true)
+        is NavigationEvent.NavigateToAuthWithMessage ->
+            navWithMessage(authViewModel::setSuccessMessage, navigationEvent.message, NavRoutes.AUTH, popToRoot = true)
+        is NavigationEvent.NavigateToCreateGroup ->
+            nav(NavRoutes.CREATE_GROUP)
+        is NavigationEvent.NavigateToMain ->
+            nav(NavRoutes.MAIN, popToRoot = true)
+        is NavigationEvent.NavigateToMainWithMessage ->
+            navWithMessage(mainViewModel::setSuccessMessage, navigationEvent.message, NavRoutes.MAIN, popToRoot = true)
+        is NavigationEvent.NavigateToProfileCompletion ->
+            nav(NavRoutes.PROFILE_COMPLETION, popToRoot = true)
+        is NavigationEvent.NavigateToProfile ->
+            nav(NavRoutes.PROFILE)
+        is NavigationEvent.NavigateToManageProfile ->
+            nav(NavRoutes.MANAGE_PROFILE)
+        is NavigationEvent.NavigateToManageHobbies ->
+            nav(NavRoutes.MANAGE_HOBBIES)
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
             navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.ClearBackStack -> {
             navController.popBackStack(navController.graph.startDestinationId, false)
             navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NoNavigation -> {
-            // Do nothing
+            // no-op
         }
+    }
+}
+
+private fun NavGraphBuilder.addLoadingAndAuthRoutes(
+    authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel
+) {
+    composable(NavRoutes.LOADING) {
+        LoadingScreen(message = stringResource(R.string.checking_authentication))
+    }
+
+    composable(NavRoutes.AUTH) {
+        AuthScreen(authViewModel = authViewModel, profileViewModel = profileViewModel)
+    }
+}
+
+private fun NavGraphBuilder.addProfileRoutes(
+    authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    composable(NavRoutes.PROFILE_COMPLETION) {
+        ProfileCompletionScreen(
+            profileViewModel = profileViewModel,
+            onProfileCompleted = { navigationStateManager.handleProfileCompletion() },
+            onProfileCompletedWithMessage = { message ->
+                Log.d("AppNavigation", "Profile completed with message: $message")
+                navigationStateManager.handleProfileCompletionWithMessage(message)
+            }
+        )
+    }
+
+    composable(NavRoutes.PROFILE) {
+        ProfileScreen(
+            authViewModel = authViewModel,
+            profileViewModel = profileViewModel,
+            actions = ProfileScreenActions(
+                onBackClick = { navigationStateManager.navigateBack() },
+                onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
+                onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
+                onAccountLogOut = { navigationStateManager.handleAccountLogOut() }
+            )
+        )
+    }
+
+    composable(NavRoutes.MANAGE_PROFILE) {
+        ManageProfileScreen(
+            profileViewModel = profileViewModel,
+            onBackClick = { navigationStateManager.navigateBack() }
+        )
+    }
+}
+
+private fun NavGraphBuilder.addMainRoute(
+    navController: NavHostController,
+    mainViewModel: MainViewModel,
+    profileViewModel: ProfileViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    composable(NavRoutes.MAIN) {
+        MainScreen(
+            navController = navController,
+            mainViewModel = mainViewModel,
+            profileViewModel = profileViewModel,
+            onProfileClick = { navigationStateManager.navigateToProfile() }
+        )
+    }
+}
+
+private fun NavGraphBuilder.addGroupCreationRoutes(
+    navController: NavHostController
+) {
+    composable(NavRoutes.CREATE_GROUP) {
+        CreateGroupScreen(navController = navController)
+    }
+
+    composable("group_success/{groupName}/{joinCode}") { backStackEntry ->
+        val groupName = backStackEntry.arguments?.getString("groupName") ?: ""
+        val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+
+        GroupSuccessScreen(
+            navController = navController,
+            groupName = groupName,
+            joinCode = joinCode
+        )
+    }
+}
+
+private fun NavGraphBuilder.addGroupDetailRoutes(
+    navController: NavHostController,
+    mainViewModel: MainViewModel,
+    groupViewModel: GroupViewModel,
+    profileViewModel: ProfileViewModel
+) {
+    composable("${NavRoutes.GROUP_DETAILS}/{joinCode}") { backStackEntry ->
+        val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+        val group = mainViewModel.getGroupById(joinCode)
+
+        group?.let {
+            GroupDetailsScreen(
+                navController = navController,
+                group = group,
+                groupViewModel = groupViewModel,
+                profileViewModel = profileViewModel
+            )
+        }
+    }
+
+    composable("${NavRoutes.GROUP_LIST}/{joinCode}") { backStackEntry ->
+        val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+        val group = mainViewModel.getGroupById(joinCode)
+
+        group?.let {
+            GroupListScreen(
+                navController = navController,
+                group = group,
+                groupViewModel = groupViewModel,
+                profileViewModel = profileViewModel
+            )
+        }
+    }
+
+    composable("${NavRoutes.MEMBER_SETTINGS}/{joinCode}") { backStackEntry ->
+        val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
+        val group = mainViewModel.getGroupById(joinCode)
+
+        group?.let {
+            MemberSettingsScreen(
+                navController = navController,
+                group = group,
+                groupViewModel = groupViewModel,
+                profileViewModel = profileViewModel
+            )
+        }
+    }
+}
+
+private fun NavGraphBuilder.addJoinGroupRoute(
+    navController: NavHostController,
+    mainViewModel: MainViewModel,
+    groupViewModel: GroupViewModel,
+    profileViewModel: ProfileViewModel
+) {
+    composable(NavRoutes.JOIN_GROUP) {
+        JoinGroupScreen(
+            navController = navController,
+            mainViewModel = mainViewModel,
+            groupViewMode = groupViewModel,
+            profileViewModel = profileViewModel,
+        )
     }
 }
 
@@ -178,119 +300,11 @@ private fun AppNavHost(
         navController = navController,
         startDestination = NavRoutes.LOADING
     ) {
-        composable(NavRoutes.LOADING) {
-            LoadingScreen(message = stringResource(R.string.checking_authentication))
-        }
-
-        composable(NavRoutes.AUTH) {
-            AuthScreen(authViewModel = authViewModel, profileViewModel = profileViewModel)
-        }
-
-        composable(NavRoutes.PROFILE_COMPLETION) {
-            ProfileCompletionScreen(
-                profileViewModel = profileViewModel,
-                onProfileCompleted = { navigationStateManager.handleProfileCompletion() },
-                onProfileCompletedWithMessage = { message ->
-                    Log.d("AppNavigation", "Profile completed with message: $message")
-                    navigationStateManager.handleProfileCompletionWithMessage(message)
-                }
-            )
-        }
-
-        composable(NavRoutes.MAIN) {
-            MainScreen(
-                navController = navController,
-                mainViewModel = mainViewModel,
-                profileViewModel = profileViewModel,
-                onProfileClick = { navigationStateManager.navigateToProfile() }
-            )
-        }
-
-        composable(NavRoutes.PROFILE) {
-            ProfileScreen(
-                authViewModel = authViewModel,
-                profileViewModel = profileViewModel,
-                actions = ProfileScreenActions(
-                    onBackClick = { navigationStateManager.navigateBack() },
-                    onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
-                    onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
-                    onAccountLogOut = { navigationStateManager.handleAccountLogOut() }
-                )
-            )
-        }
-
-        composable(NavRoutes.MANAGE_PROFILE) {
-            ManageProfileScreen(
-                profileViewModel = profileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() }
-            )
-        }
-
-        composable(NavRoutes.CREATE_GROUP) {
-            CreateGroupScreen(navController = navController)
-        }
-
-        composable("group_success/{groupName}/{joinCode}") { backStackEntry ->
-            val groupName = backStackEntry.arguments?.getString("groupName") ?: ""
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-
-            GroupSuccessScreen(
-                navController = navController,
-                groupName = groupName,
-                joinCode = joinCode
-            )
-        }
-
-        composable("${NavRoutes.GROUP_DETAILS}/{joinCode}") { backStackEntry ->
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            val group = mainViewModel.getGroupById(joinCode)
-
-            group?.let {
-                GroupDetailsScreen(
-                    navController = navController,
-                    group = group,
-                    groupViewModel = groupViewModel,
-                    profileViewModel = profileViewModel
-                )
-            }
-        }
-
-        composable("${NavRoutes.GROUP_LIST}/{joinCode}") { backStackEntry ->
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            val group = mainViewModel.getGroupById(joinCode)
-
-            group?.let {
-                GroupListScreen(
-                    navController = navController,
-                    group = group,
-                    groupViewModel = groupViewModel,
-                    profileViewModel = profileViewModel
-                )
-            }
-        }
-
-        composable("${NavRoutes.MEMBER_SETTINGS}/{joinCode}") { backStackEntry ->
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            val group = mainViewModel.getGroupById(joinCode)
-
-            group?.let {
-                MemberSettingsScreen(
-                    navController = navController,
-                    group = group,
-                    groupViewModel = groupViewModel,
-                    profileViewModel = profileViewModel
-                )
-            }
-        }
-
-        composable(NavRoutes.JOIN_GROUP) {
-            JoinGroupScreen(
-                navController = navController,
-                mainViewModel = mainViewModel,
-                groupViewMode = groupViewModel,
-                profileViewModel = profileViewModel,
-                )
-        }
-
+        addLoadingAndAuthRoutes(authViewModel, profileViewModel)
+        addProfileRoutes(authViewModel, profileViewModel, navigationStateManager)
+        addMainRoute(navController, mainViewModel, profileViewModel, navigationStateManager)
+        addGroupCreationRoutes(navController)
+        addGroupDetailRoutes(navController, mainViewModel, groupViewModel, profileViewModel)
+        addJoinGroupRoute(navController, mainViewModel, groupViewModel, profileViewModel)
     }
 }

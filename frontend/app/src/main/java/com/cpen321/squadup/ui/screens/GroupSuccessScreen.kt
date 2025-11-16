@@ -26,7 +26,7 @@ fun GroupSuccessScreen(
     groupName: String,
     joinCode: String
 ) {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboardManager.current
 
     Scaffold(
         topBar = {
@@ -38,63 +38,56 @@ fun GroupSuccessScreen(
                     }
                 }
             )
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = groupName,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Group Name with different style
                 Text(
-                    text = groupName,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center
+                    text = "Join Code: $joinCode",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Join Code + Copy button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Join Code: $joinCode",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
-                    )
-                    OutlinedButton(
-                        onClick = { clipboardManager.setText(AnnotatedString(joinCode)) }
-                    ) {
-                        Text("Copy")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = { navController.navigate(NavRoutes.MAIN) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "Back to Home",
-                        fontSize = 18.sp
-                    )
+                OutlinedButton(onClick = { clipboard.setText(AnnotatedString(joinCode)) }) {
+                    Text("Copy")
                 }
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = { navController.navigate(NavRoutes.MAIN) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text("Back to Home", fontSize = 18.sp)
+            }
         }
-    )
+    }
 }
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

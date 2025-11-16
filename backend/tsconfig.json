@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "lib": ["es2023", "dom"],
-    "module": "nodenext",
+    "moduleResolution": "Bundler",
+    "module": "preserve",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
@@ -19,6 +20,7 @@
     }
 
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "jest.config.ts", "jest.setup.ts"]
+  "include": ["src/**/*", "../jest.setup.ts",],
+  "exclude": ["node_modules", "dist", "jest.config.ts", "src/services/websocket.service.ts"],
+  "rootDir": "./"
 }

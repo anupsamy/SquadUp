@@ -67,9 +67,9 @@ router.post(
 );
 
 // Test endpoint for WebSocket notifications
-router.post(
-    '/test-notification/:joinCode',
-    groupController.testWebSocketNotification.bind(groupController)
-);
+//router.post(
+  //  '/test-notification/:joinCode',
+    //groupController.testWebSocketNotification.bind(groupController)
+//);
 
 export default router;

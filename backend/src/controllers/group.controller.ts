@@ -6,7 +6,7 @@ import { MediaService } from '../services/media.service';
 import { groupModel } from '../group.model';
 import { userModel } from '../user.model';
 import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsResponse, IGroup, Activity } from '../types/group.types';
-import { getWebSocketService } from '../services/websocket.service';
+//import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
 import { sendGroupJoinFCM, sendGroupLeaveFCM, sendActivitySelectedFCM } from '../services/fcm.service';
@@ -32,9 +32,9 @@ export class GroupController {
         meetingTime: meetingTime,  // Default to current time for now,
         activityType: activityType
       });
-      console.error('GroupController newGroup:', newGroup);
+      //console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
-        message: 'Group ${groupName} created successfully',
+        message: `Group ${groupName} created successfully`,
         data: {
           group: newGroup,
         }
@@ -78,7 +78,7 @@ export class GroupController {
 
       // Query the database for the group with the given joinCode
       const group = await groupModel.findByJoinCode(joinCode);
-      console.error('GroupController getGroupByJoinCode:', group);
+      //console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({
@@ -109,39 +109,6 @@ export class GroupController {
     });
   }
 
-  async updateGroup(
-    req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
-  ) {
-    try {
-      const group = req.group!;
-
-      const updatedGroup = await groupModel.update(group._id, req.body);
-
-      if (!updatedGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
-
-      res.status(200).json({
-        message: 'Group info updated successfully',
-        data: { group: updatedGroup },
-      });
-    } catch (error) {
-      logger.error('Failed to update group info:', error);
-
-      if (error instanceof Error) {
-        return res.status(500).json({
-          message: error.message || 'Failed to update group info',
-        });
-      }
-
-      next(error);
-    }
-  }
-
   async joinGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
     res: Response<GetGroupResponse>,
@@ -169,7 +136,7 @@ export class GroupController {
       }
 
       // Send WebSocket notifications for new members
-      const wsService = getWebSocketService();
+      /*const wsService = getWebSocketService();
       if (wsService) {
         const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
         const newMemberIds = (groupMemberIds || []).map(member => member.id);
@@ -190,7 +157,7 @@ export class GroupController {
           // FCM topic notification (clients subscribe to topic == joinCode)
           void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
         });
-      }
+      }*/
 
       res.status(200).json({
         message: 'Group info updated successfully',
@@ -379,7 +346,7 @@ async updateMidpointByJoinCode(
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {joinCode, midpoint});
 
-      console.log("Activities List: " , activityList);
+      //console.log("Activities List: " , activityList);
       res.status(200).json({
         message: 'Get midpoint successfully!',
         data: {
@@ -501,7 +468,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
 
     // Send notifications to group members
-    const wsService = getWebSocketService();
+    /*const wsService = getWebSocketService();
     if (wsService && updatedGroup) {
       const leaderId = updatedGroup.groupLeaderId?.id || '';
       const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
@@ -528,7 +495,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
         leaderId,
         activityDataStr
       );
-    }
+    }*/
 
     res.status(200).json({
       message: 'Activity selected successfully',
@@ -614,7 +581,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       const result = await groupModel.leaveGroup(joinCode, userId);
 
       // Send WebSocket notification for user leaving
-      const wsService = getWebSocketService();
+      /*const wsService = getWebSocketService();
       if (wsService && leavingUser) {
         wsService.notifyGroupLeave(
           joinCode,
@@ -647,13 +614,13 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
             `${result.newLeader.name} is now the new group leader`,
             { newLeader: result.newLeader }
           );
-        }
+        }*/
 
         res.status(200).json({
           message: 'Left group successfully',
           data: result.newLeader ? { newLeader: result.newLeader } : undefined,
         });
-      }
+      //}
     } catch (error) {
       logger.error('Failed to leave group:', error);
 
@@ -668,7 +635,7 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
   }
 
   // Test endpoint for WebSocket notifications
-  async testWebSocketNotification(
+ /* async testWebSocketNotification(
     req: Request<{joinCode: string}>,
     res: Response,
     next: NextFunction) {
@@ -698,5 +665,5 @@ async getMidpoints(req: Request, res: Response): Promise<void> {
       logger.error('Failed to send test notification:', error);
       next(error);
     }
-  }
+  }*/
 }

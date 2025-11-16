@@ -1,7 +1,7 @@
-import { LocationService } from '../services/location.service';
+import { LocationService } from '../../src/services/location.service';
 import { Client } from '@googlemaps/google-maps-services-js';
-import type { LocationInfo, GeoLocation} from '../types/location.types';
-import type { TransitType } from '../types/transit.types';
+import type { LocationInfo, GeoLocation} from '../../src/types/location.types';
+import type { TransitType } from '../../src/types/transit.types';
 
 jest.mock('@googlemaps/google-maps-services-js');
 

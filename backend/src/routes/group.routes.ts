@@ -6,7 +6,11 @@ import { CreateGroupRequest, createGroupSchema, UpdateGroupRequest, updateGroupS
 const router = Router();
 const groupController = new GroupController();
 
-router.get('/info', groupController.getAllGroups.bind(groupController));
+router.get('/info', (req, res, next) => {
+  groupController.getAllGroups(req, res, next).catch((error: unknown) => {
+    next(error);
+  });
+});
 
 router.get(
     '/activities',
@@ -20,7 +24,11 @@ router.post(
 
 router.get(
     '/:joinCode', // Define the route parameter
-    groupController.getGroupByJoinCode.bind(groupController) // Bind the controller method
+    (req, res, next) => {
+      groupController.getGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 // Route to create a group
 router.post( //have seperate endpoint for updating?
@@ -32,18 +40,30 @@ router.post( //have seperate endpoint for updating?
 router.post( //have seperate endpoint for updating?
     '/join',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
-    groupController.joinGroupByJoinCode.bind(groupController)
+    (req, res, next) => {
+      groupController.joinGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post(
     '/update',
     validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
-    groupController.updateGroupByJoinCode.bind(groupController)
+    (req, res, next) => {
+      groupController.updateGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.delete(
     '/delete/:joinCode', // Define the route parameter
-    groupController.deleteGroupByJoinCode.bind(groupController) // Bind the controller method
+    (req, res, next) => {
+      groupController.deleteGroupByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.get(
@@ -58,7 +78,11 @@ router.post(
 
 router.post(
     '/leave/:joinCode', // Define the route parameter
-    groupController.leaveGroup.bind(groupController) // Bind the controller method
+    (req, res, next) => {
+      groupController.leaveGroup(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 // Test endpoint for WebSocket notifications

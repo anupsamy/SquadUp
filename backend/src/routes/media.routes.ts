@@ -10,8 +10,12 @@ const mediaController = new MediaController();
 router.post(
   '/upload',
   authenticateToken,
-  upload.single('media'),
-  mediaController.uploadImage
+  upload.single('media') as express.RequestHandler,
+  (req, res, next) => {
+    mediaController.uploadImage(req, res).catch((error: unknown) => {
+      next(error);
+    });
+  }
 );
 
 export default router;

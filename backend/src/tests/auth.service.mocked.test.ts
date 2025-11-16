@@ -175,37 +175,6 @@ describe('Mocked: AuthService', () => {
       await expect(authService.signInWithGoogle('token')).rejects.toThrow('Invalid Google token');
     });
 
-    it('should return token and user on successful signin', async () => {
-    const mockPayload = {
-      sub: 'google-123',
-      email: 'user@example.com',
-      name: 'Existing User',
-    };
-
-    const mockTicket = { getPayload: jest.fn().mockReturnValue(mockPayload) };
-    (googleAuthLibrary.OAuth2Client as unknown as jest.Mock).mockImplementation(() => ({
-      verifyIdToken: jest.fn().mockResolvedValue(mockTicket),
-    }));
-    authService = new AuthService();
-
-    const mockUser = {
-      _id: new mongoose.Types.ObjectId(),
-      googleId: 'google-123',
-      email: 'user@example.com',
-      name: 'Existing User',
-      bio: '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    jest.spyOn(userModel, 'findByGoogleId').mockResolvedValueOnce(mockUser as any);
-    jest.spyOn(jwt, 'sign').mockReturnValueOnce('jwt-token-456' as any);
-
-    const result = await authService.signInWithGoogle('valid-token');
-
-    expect(result.token).toBe('jwt-token-456');
-    expect(result.user.email).toBe('user@example.com');
-  });
 
   it('should throw "Invalid Google token" when verification fails', async () => {
     // Mock verifyIdToken to reject

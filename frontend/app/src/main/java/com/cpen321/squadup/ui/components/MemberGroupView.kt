@@ -104,13 +104,15 @@ fun MemberGroupView(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                ActivityCard( //TODO: just pass activity
-                    name = activity.name,
-                    address = activity.address,
-                    rating = activity.rating ?: 0.0,
-                    userRatingsTotal = activity.userRatingsTotal ?: 0,
-                    priceLevel = activity.priceLevel ?: 0,
-                    type = activity.type ?: "",
+                ActivityCard(
+                    activity = ActivityInfo(
+                        name = activity.name,
+                        address = activity.address,
+                        rating = activity.rating ?: 0.0,
+                        userRatingsTotal = activity.userRatingsTotal ?: 0,
+                        priceLevel = activity.priceLevel ?: 0,
+                        type = activity.type ?: ""
+                    ),
                     isSelected = true,
                     onClick = { /* optional click action */ },
                     modifier = Modifier.fillMaxWidth().testTag("SelectedActivityCard")

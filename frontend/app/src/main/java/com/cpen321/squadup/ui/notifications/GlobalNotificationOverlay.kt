@@ -32,10 +32,11 @@ private fun NotificationIcon() {
 @Composable
 private fun NotificationContent(
     title: String,
-    message: String
+    message: String,
+    modifier: Modifier = Modifier 
 ) {
     Column(
-        modifier = Modifier.weight(1f)
+        modifier = modifier
     ) {
         Text(
             text = title,
@@ -90,7 +91,8 @@ private fun NotificationCard(
             Spacer(modifier = Modifier.width(12.dp))
             NotificationContent(
                 title = title,
-                message = message
+                message = message,
+                modifier = Modifier.weight(1f) 
             )
             DismissButton(onDismiss = onDismiss)
         }

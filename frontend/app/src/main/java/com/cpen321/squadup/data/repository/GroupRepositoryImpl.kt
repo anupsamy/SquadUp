@@ -21,6 +21,8 @@ import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.SquadGoal
 import java.io.IOException
+import retrofit2.HttpException
+import com.google.gson.JsonParseException
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(

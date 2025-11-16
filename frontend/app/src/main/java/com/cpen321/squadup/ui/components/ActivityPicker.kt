@@ -57,23 +57,25 @@ private fun EmptyActivitiesState(modifier: Modifier = Modifier) {
 private fun ActivitiesList(
     activities: List<Activity>,
     selectedActivityId: String?,
-    onActivityClick: (String) -> Unit
+    onActivityClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = Modifier
-            .weight(1f)
+        modifier = modifier  // Use the passed modifier instead of Modifier.weight()
             .padding(16.dp)
     ) {
         items(activities) { activity ->
             ActivityCard(
-                name = activity.name,
-                address = activity.address,
-                rating = activity.rating,
-                userRatingsTotal = activity.userRatingsTotal,
-                priceLevel = activity.priceLevel,
-                type = activity.type,
+                activity = ActivityInfo(  // Create ActivityInfo object
+                    name = activity.name,
+                    address = activity.address,
+                    rating = activity.rating,
+                    userRatingsTotal = activity.userRatingsTotal,
+                    priceLevel = activity.priceLevel,
+                    type = activity.type
+                ),
                 isSelected = activity.placeId == selectedActivityId,
-                onClick = { onActivityClick(activity.placeId)},
+                onClick = { onActivityClick(activity.placeId) },
                 modifier = Modifier.testTag("activityCard")
             )
         }
@@ -115,7 +117,7 @@ fun ActivityPicker(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val handleSelectClick = {
+    val handleSelectClick: () -> Unit = {
         viewModel.confirmSelection(joinCode)
         coroutineScope.launch {
             snackbarHostState.showSnackbar(
@@ -123,6 +125,7 @@ fun ActivityPicker(
                 duration = SnackbarDuration.Short
             )
         }
+        Unit  // Explicitly return Unit
     }
 
     if (activities.isEmpty()) {

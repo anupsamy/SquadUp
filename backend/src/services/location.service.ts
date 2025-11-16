@@ -134,10 +134,7 @@ async getActivityList(
       .slice(0, maxResults);
 
   } catch (err) {
-<<<<<<< Updated upstream
     console.error("Error fetching nearby places:", err);
-=======
->>>>>>> Stashed changes
     return [];
   }
 }

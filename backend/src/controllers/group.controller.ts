@@ -44,7 +44,7 @@ export class GroupController {
     }
   }
 
-  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>) {
+  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>, next: NextFunction) {
     try {
       // Fetch all groups from the database
       const groups = await groupModel.findAll();
@@ -119,7 +119,8 @@ export class GroupController {
 
   async joinGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>
+    res: Response<GetGroupResponse>, 
+    next: NextFunction
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds} = req.body;
@@ -171,7 +172,8 @@ export class GroupController {
 
   async updateGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>
+    res: Response<GetGroupResponse>, 
+    next: NextFunction
   ) {
     try {
       const {joinCode, expectedPeople, groupMemberIds, meetingTime} = req.body;
@@ -212,7 +214,8 @@ export class GroupController {
 
   async deleteGroupByJoinCode(
     req: Request<{joinCode: string}>,
-    res: Response) {
+    res: Response, 
+    next: NextFunction) {
     try {
       const {joinCode} = req.params;
 
@@ -395,7 +398,10 @@ async updateMidpointByJoinCode(
     }
 }
 
-async getActivities(req: Request, res: Response): Promise<void> {
+async getActivities(
+  req: Request, 
+  res: Response
+): Promise<void> {
   try {
     const { joinCode } = req.query;
 
@@ -629,7 +635,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
 
   async leaveGroup(
     req: Request<{joinCode: string}, unknown, {userId: string}>,
-    res: Response) {
+    res: Response, next: NextFunction) {
     try {
       const {joinCode} = req.params;
       const {userId} = req.body;

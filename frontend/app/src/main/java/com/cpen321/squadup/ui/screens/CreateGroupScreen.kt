@@ -2,8 +2,11 @@ package com.cpen321.squadup.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context  
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState  
+import androidx.compose.foundation.verticalScroll  
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import android.util.Log
 import androidx.compose.foundation.clickable
 import com.cpen321.squadup.data.remote.dto.GroupUser
+import com.cpen321.squadup.data.remote.dto.User  
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import com.cpen321.squadup.data.remote.dto.ActivityType
@@ -55,7 +59,7 @@ fun CreateGroupScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState()), 
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -72,9 +76,18 @@ fun CreateGroupScreen(
 
                 ActivityDropdown(selectedActivity) { selectedActivity = it }
 
+                
                 CreateGroupButton(
-                    groupName, meetingDateTime, expectedPeople, selectedActivity,
-                    profileUiState.user, groupViewModel, uiState.isCreatingGroup, navController
+                    groupForm = GroupForm(
+                        name = groupName,
+                        meetingDateTime = meetingDateTime,
+                        expectedPeople = expectedPeople,
+                        selectedActivity = selectedActivity
+                    ),
+                    userInfo = UserInfo(user = profileUiState.user),
+                    groupViewModel = groupViewModel,
+                    isCreating = uiState.isCreatingGroup,
+                    navController = navController
                 )
 
                 uiState.successMessage?.let { Text(text = it, color = MaterialTheme.colorScheme.primary) }
@@ -123,6 +136,7 @@ fun ExpectedPeopleInput(value: String, onValueChange: (String) -> Unit) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)  
 @Composable
 fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
@@ -131,7 +145,7 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
             value = selected?.displayName ?: "Select Activity Type",
             onValueChange = {}, readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier.fillMaxWidth().clickable { expanded = true }
+            modifier = Modifier.fillMaxWidth().menuAnchor().clickable { expanded = true }  
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             ActivityType.values().forEach { type ->
@@ -168,11 +182,11 @@ fun CreateGroupButton(
                 return@Button
             }
             val groupLeader = GroupUser(
-                userInfo.user._id,
-                userInfo.user.name,
-                userInfo.user.email,
-                userInfo.user.address,
-                userInfo.user.transitType
+                id = userInfo.user._id, 
+                name = userInfo.user.name,
+                email = userInfo.user.email,
+                address = userInfo.user.address,
+                transitType = userInfo.user.transitType
             )
             groupViewModel.createGroup(
                 groupForm.name,

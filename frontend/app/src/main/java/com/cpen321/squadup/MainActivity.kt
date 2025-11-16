@@ -29,6 +29,8 @@ import com.cpen321.squadup.ui.notifications.NotificationManager
 import com.cpen321.squadup.ui.notifications.GlobalNotificationOverlay
 import javax.inject.Inject
 import java.io.IOException
+import org.json.JSONException
+import com.google.gson.JsonSyntaxException
 
 
 

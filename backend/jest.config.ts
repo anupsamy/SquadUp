@@ -12,11 +12,12 @@ const config: Config = {
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
-    '!src/tests/**',
-    '!src/services/websocket.service.ts',
-    '!src/services/fcm.service.ts',
-    '!src/utils/**'
   ],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json'
+    }
+  }
 };
 
 export default config;

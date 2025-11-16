@@ -1,25 +1,21 @@
 {
   "compilerOptions": {
-    "lib": ["es2023", "dom"],
-    "moduleResolution": "Bundler",
-    "module": "preserve",
+    "lib": ["es2023"],
+    "moduleResolution": "node",
+    "module": "commonjs",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "types": ["node", "jest"],
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
   },
-  "include": ["src/**/*", "jest.setup.ts", "**/*.ts", "tests/**/*"],
-  "exclude": ["node_modules", "dist", "jest.config.ts", "src/services/websocket.service.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts", "jest.config.ts", "jest.setup.ts"]
 }

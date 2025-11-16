@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
 import { UploadImageRequest, UploadImageResponse } from '../types/media.types';
@@ -7,7 +6,8 @@ import { sanitizeInput } from '../utils/sanitizeInput.util';
 export class MediaController {
   async uploadImage(
     req: Request<unknown, unknown, UploadImageRequest>,
-    res: Response<UploadImageResponse>
+    res: Response<UploadImageResponse>,
+    next: NextFunction
   ): Promise<void> {
     try {
       if (!req.file) {

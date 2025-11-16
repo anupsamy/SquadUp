@@ -119,4 +119,39 @@ describe('Unmocked: Media Controller - uploadImage', () => {
       expect(res.body).toHaveProperty('message', 'String error');
     });
   });
+
+// Input: request without user authentication
+// Expected status code: 401
+// Expected behavior: returns unauthorized error
+// Expected output: "User not authenticated" message
+it('should return 401 when user is not authenticated', async () => {
+  const unauthApp = express();
+  unauthApp.use(express.json());
+  
+  app.post('/media/upload/unauthenticated', (req: any, res: any) => {
+    const tempDir = path.join(process.cwd(), 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const tempFile = path.join(tempDir, `test-${Date.now()}.jpg`);
+    fs.writeFileSync(tempFile, Buffer.from('fake image data'));
+
+    req.file = {
+      path: tempFile,
+      filename: 'test.jpg',
+      mimetype: 'image/jpeg',
+    };
+    
+    // Explicitly set user to undefined to simulate unauthenticated request
+    req.user = undefined;
+    
+    mediaController.uploadImage(req, res, () => {});
+  });
+
+  const res = await request(app).post('/media/upload/unauthenticated');
+
+  expect(res.status).toBe(401);
+  expect(res.body).toHaveProperty('message', 'User not authenticated');
+});
 });

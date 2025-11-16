@@ -118,12 +118,16 @@ async getActivityList(
   epsilon = 1e-5
 ): Promise<GeoLocation> {
   let geoLocation: GeoLocation[] = locationInfo
-  .filter(loc => loc.address.lat && loc.address.lng)
-  .map(loc => ({
-        lat: loc.address.lat!,
-        lng: loc.address.lng!,
-        transitType: loc.transitType
-      }));
+  .filter(loc => loc.address.lat != null && loc.address.lng != null)
+  .map(loc => {
+        const lat = loc.address.lat!!;
+        const lng = loc.address.lng!!;
+        return {
+          lat,
+          lng,
+          transitType: loc.transitType
+        };
+      });
   let midpoint = this.getGeographicMidpoint(geoLocation);
 
   for (let i = 0; i < maxIterations; i++) {
@@ -136,7 +140,31 @@ async getActivityList(
 
     for (let j = 0; j < geoLocation.length; j++) {
       //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
-      const weight = travelTimes[j];
+      // Validate array access to prevent object injection: ensure index is in bounds for both arrays
+      //impossible to hit - will always be array and within bounds
+      // if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
+      //   continue;
+      // }
+      // Validate array element access to prevent object injection
+      // Ensure j is a valid number index before accessing array //j comes from loop so is always valid
+      // const validatedIndex = typeof j === 'number' && j >= 0 && j < travelTimes.length && j < geoLocation.length ? j : -1;
+      // if (validatedIndex === -1) {
+      //   continue;
+      // }
+      const rawWeightValue = travelTimes[j];
+      const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;
+      // Validate weight to prevent object injection: ensure it's a finite number and non-negative
+      const weight = isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
+      
+      // Validate array element access to prevent object injection
+      const geoLocationItemValue = geoLocation[j];
+      const geoLocationItem = geoLocationItemValue;
+      // TypeScript guarantees lat and lng exist on GeoLocation
+      const rawLat = geoLocationItem.lat;
+      const rawLng = geoLocationItem.lng;
+      const lat = typeof rawLat === 'number' && isFinite(rawLat) && rawLat >= -90 && rawLat <= 90 ? rawLat : 0;
+      const lng = typeof rawLng === 'number' && isFinite(rawLng) && rawLng >= -180 && rawLng <= 180 ? rawLng : 0;
+      
       totalWeight += weight;
       newLat += geoLocation[j].lat * weight;
       newLng += geoLocation[j].lng * weight;

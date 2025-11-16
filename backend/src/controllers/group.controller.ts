@@ -68,7 +68,7 @@ export class GroupController {
   }
 
   async getGroupByJoinCode(
-    req: Request<{ joinCode: string }>, // Define the route parameter type
+    req: Request<{ joinCode: string }>, // always a string
     res: Response<GetGroupResponse>,
     next: NextFunction
   ) {
@@ -76,8 +76,18 @@ export class GroupController {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
 
       // Query the database for the group with the given joinCode
-      const group = await groupModel.findByJoinCode(joinCode);
-      //console.error('GroupController getGroupByJoinCode:', group);
+      // Validate joinCode is a string before use
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     data: {} as any,
+    //     error: Error('ValidationError')
+    //   });
+    //   return;
+    // }
+    const group = await groupModel.findByJoinCode(joinCode);
+      // console.error('GroupController getGroupByJoinCode:', group);
 
       if (!group) {
         return res.status(404).json({
@@ -247,8 +257,19 @@ export class GroupController {
     try {
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
 
+      //JOIN CODE MUST BE STRING FROM REQ - validation not possible to hit as it will always be parsed as string
+      //TODO: standardize req params vs body handling
       // Query the database for the group with the given joinCode
-      const group = await groupModel.findByJoinCode(joinCode);
+      // Validate joinCode is a string before use
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     error: 'ValidationError'
+    //   });
+    //   return;
+    // }
+    const group = await groupModel.findByJoinCode(joinCode);
 
       if (!group) {
         return res.status(404).json({
@@ -271,11 +292,15 @@ export class GroupController {
       }
 
       const locationInfo: LocationInfo[] = group.groupMemberIds
-      .filter(member => member.address && member.transitType)
-      .map(member => ({
-        address: member.address!,
-        transitType: member.transitType!,
-      }));
+      .filter(member => member.address != null && member.transitType != null)
+      .map(member => {
+        const address = member.address!!;
+        const transitType = member.transitType!!;
+        return {
+          address,
+          transitType,
+        };
+      });
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       const activityList: Activity[] = [];
@@ -315,6 +340,16 @@ async updateMidpointByJoinCode(
       const { joinCode } = req.params; // Extract the joinCode from the route parameters
 
       // Query the database for the group with the given joinCode
+      // Validate joinCode is a string before use
+      //IMPOSSIBLE TO HIT - will always be parsed as string in req
+      // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+      // if (!validatedJoinCodeForFind) {
+      //   res.status(400).json({
+      //     message: 'Invalid joinCode',
+      //     error: 'ValidationError'
+      //   });
+      //   return;
+      // }
       const group = await groupModel.findByJoinCode(joinCode);
 
       if (!group) {
@@ -324,11 +359,15 @@ async updateMidpointByJoinCode(
       }
 
       const locationInfo: LocationInfo[] = group.groupMemberIds
-      .filter(member => member.address && member.transitType)
-      .map(member => ({
-        address: member.address!,
-        transitType: member.transitType!,
-      }));
+      .filter(member => member.address != null && member.transitType != null)
+      .map(member => {
+        const address = member.address!!;
+        const transitType = member.transitType!!;
+        return {
+          address,
+          transitType,
+        };
+      });
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
@@ -374,7 +413,18 @@ async getActivities(req: Request, res: Response): Promise<void> {
       });
       return;
     }
-
+    //REDUNDANT CODACY FIX - joincode type already checked
+    // Validate joinCode is a string before use 
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     data: null,
+    //     error: 'ValidationError',
+    //     details: null,
+    //   });
+    //   return;
+    // }
     const group = await groupModel.findByJoinCode(joinCode);
 
     if (!group) {
@@ -427,9 +477,9 @@ async selectActivity(req: Request, res: Response): Promise<void> {
   try {
     const { joinCode, activity } = req.body;
 
-    if (!joinCode || !activity) {
+    if (!joinCode || !activity || typeof joinCode !== 'string') {
       res.status(400).json({
-        message: 'Join code and activity are required',
+        message: 'Join code as string and activity are required',
         data: null,
         error: 'ValidationError',
         details: null,
@@ -448,7 +498,19 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Verify the group exists
+
+    //REDUNDANT CODACY FIX
+    // Validate joinCode is a string before use
+    // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
+    // if (!validatedJoinCodeForFind) {
+    //   res.status(400).json({
+    //     message: 'Invalid joinCode',
+    //     data: null,
+    //     error: 'ValidationError',
+    //     details: null,
+    //   });
+    //   return;
+    // }
     const group = await groupModel.findByJoinCode(joinCode);
     if (!group) {
       res.status(404).json({
@@ -461,7 +523,56 @@ async selectActivity(req: Request, res: Response): Promise<void> {
     }
 
     // Update the group with the selected activity
-    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, activity);
+    // Validate activity type before passing to model
+    const validatedActivity: Activity = typeof activity === 'object' && activity !== null && 'placeId' in activity && 'name' in activity
+      ? (activity as Activity)
+      : {
+          placeId: '',
+          name: '',
+          address: '',
+          rating: 0,
+          userRatingsTotal: 0,
+          priceLevel: 0,
+          type: '',
+          latitude: 0,
+          longitude: 0,
+          businessStatus: '',
+          isOpenNow: false,
+        };
+    const updatedGroup = await groupModel.updateSelectedActivity(joinCode, validatedActivity);
+
+    // Send notifications to group members
+    //const wsService = getWebSocketService();
+    // if (wsService && updatedGroup) {
+    //   const leaderId = updatedGroup.groupLeaderId.id || '';
+    //   const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
+    //   const rawActivityName = activity.name;
+    //   const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
+
+    //   // Send WebSocket notification
+    //   wsService.notifyGroupUpdate(
+    //     joinCode,
+    //     `${leaderName} selected "${activityName}" for the group`,
+    //     {
+    //       type: 'activity_selected',
+    //       activity,
+    //       leaderId,
+    //       leaderName
+    //     }
+    //   );
+
+    //   // Send FCM notification (will be suppressed in foreground on client side)
+    //   const activityDataStr = JSON.stringify(activity);
+    //   sendActivitySelectedFCM(
+    //     joinCode,
+    //     activityName,
+    //     updatedGroup.groupName,
+    //     leaderId,
+    //     activityDataStr
+    //   ).catch((error: unknown) => {
+    //     logger.error('Failed to send activity selected FCM notification:', error);
+    //   });
+    // }
 
     // Send notifications to group members
     /*const wsService = getWebSocketService();

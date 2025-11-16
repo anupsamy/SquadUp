@@ -446,4 +446,82 @@ describe('POST /group/leave/:joinCode', () => {
   });
 });
 
+describe('POST /group/:joinCode/midpoint/update (Mocked)', () => {
+  // Mocked behavior: updateGroupByJoinCode returns null
+  // Input: valid group with members that have address and transitType
+  // Expected status code: 500
+  // Expected behavior: error is returned when midpoint update fails
+  // Expected output: "Failed to update group midpoint" message
+  it('should return 500 when updateGroupByJoinCode returns null', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: 'leader-id',
+      name: 'Leader',
+      email: 'leader@example.com',
+      address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
+      transitType: 'transit' as const,
+    };
+
+    // Create a real group
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 1,
+      groupMemberIds: [exampleGroupLeader],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    // Mock updateGroupByJoinCode to return null
+    jest.spyOn(groupModel, 'updateGroupByJoinCode').mockResolvedValueOnce(null);
+
+    const res = await request(app).post(`/group/${exampleJoinCode}/midpoint/update`);
+
+    expect(res.status).toBe(500);
+    expect(res.body).toHaveProperty('message', 'Failed to update group midpoint');
+    expect(groupModel.updateGroupByJoinCode).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Add to mocked tests
+
+describe('GET /group/:joinCode/midpoint (Mocked)', () => {
+  // Mocked behavior: updateGroupByJoinCode returns null
+  // Input: valid group with members that have address and transitType, no cached midpoint
+  // Expected status code: 500
+  // Expected behavior: error is returned when midpoint update fails
+  // Expected output: "Failed to update group midpoint" message
+  it('should return 500 when updateGroupByJoinCode returns null', async () => {
+    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleGroupLeader = {
+      id: 'leader-id',
+      name: 'Leader',
+      email: 'leader@example.com',
+      address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
+      transitType: 'transit' as const,
+    };
+
+    // Create a real group without a cached midpoint
+    await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 1,
+      groupMemberIds: [exampleGroupLeader],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+    });
+
+    // Mock updateGroupByJoinCode to return null
+    jest.spyOn(groupModel, 'updateGroupByJoinCode').mockResolvedValueOnce(null);
+
+    const res = await request(app).get(`/group/${exampleJoinCode}/midpoint`);
+
+    expect(res.status).toBe(500);
+    expect(res.body).toHaveProperty('message', 'Failed to update group midpoint');
+    expect(groupModel.updateGroupByJoinCode).toHaveBeenCalledTimes(1);
+  });
+});
+
 });

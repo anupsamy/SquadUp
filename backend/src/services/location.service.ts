@@ -20,7 +20,7 @@ export class LocationService {
           origins: [`${origin.lat},${origin.lng}`],
           destinations: [`${destination.lat},${destination.lng}`],
           key: mapsApiKey,
-          mode: origin.transitType as unknown,
+          mode: origin.transitType as any,
         },
       });
 

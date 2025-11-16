@@ -43,7 +43,7 @@ export class AuthService {
 
   private generateAccessToken(user: IUser): string {
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
+    if (jwtSecret == undefined) {
       throw new Error('JWT_SECRET environment variable is not set');
     }
     const token = jwt.sign({ id: user._id }, jwtSecret, {

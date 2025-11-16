@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { GroupController } from '../../src/controllers/group.controller';
 import { getWebSocketService } from '../../src/services/websocket.service';
 import { groupModel } from '../../src/group.model';
-import { locationService } from '@/services/location.service';
+import { locationService } from '../../src/services/location.service';
 
 
 jest.mock('../../src/utils/logger.util');

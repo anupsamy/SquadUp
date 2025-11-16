@@ -3,8 +3,8 @@ import express, { Express } from 'express';
 import { GroupController } from '../../src/controllers/group.controller';
 import { groupModel } from '../../src/group.model';
 import { WebSocketService } from '../../src/services/websocket.service';
-import { locationService } from '@/services/location.service';
-import { TRANSIT_TYPES } from '@/types/transit.types';
+import { locationService } from '../../src/services/location.service';
+import { TRANSIT_TYPES } from '../../src/types/transit.types';
 
 jest.mock('../../src/utils/logger.util');
 jest.mock('../../src/services/media.service');

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { GroupController } from '../controllers/group.controller';
 import { validateBody } from '../middleware/validation.middleware';
 import { CreateGroupRequest, createGroupSchema, UpdateGroupRequest, updateGroupSchema } from '../types/group.types';
+import logger from '../utils/logger.util';
 
 const router = Router();
 const groupController = new GroupController();
@@ -14,12 +15,21 @@ router.get('/info', (req, res, next) => {
 
 router.get(
     '/activities',
-    groupController.getActivities.bind(groupController)
+    (req, res, next) => {
+      groupController.getActivities(req, res).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post(
     '/activities/select',
-    groupController.selectActivity.bind(groupController)
+    (req, res) => {
+      groupController.selectActivity(req, res).catch((error: unknown) => {
+        // Error handling is done in the controller method
+        logger.error('Unhandled error in selectActivity:', error);
+      });
+    }
 );
 
 router.get(
@@ -34,7 +44,11 @@ router.get(
 router.post( //have seperate endpoint for updating?
     '/create',
     validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
-    groupController.createGroup
+    (req, res, next) => {
+      groupController.createGroup(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post( //have seperate endpoint for updating?
@@ -68,12 +82,20 @@ router.delete(
 
 router.get(
     '/midpoint/:joinCode',
-    groupController.getMidpointByJoinCode.bind(groupController)
+    (req, res, next) => {
+      groupController.getMidpointByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post(
     '/midpoint/:joinCode',
-    groupController.updateMidpointByJoinCode.bind(groupController)
+    (req, res, next) => {
+      groupController.updateMidpointByJoinCode(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post(

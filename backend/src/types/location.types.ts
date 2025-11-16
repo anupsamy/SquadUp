@@ -8,14 +8,14 @@ export interface LocationInfo {
 }
 
 export interface GeoLocation {
-    formatted?: String,
+    formatted?: string,
     lat: number,
     lng: number,
     transitType?: TransitType
 }
 
 // types/location.ts (update existing)
-export type getLocationResponse = {
+export interface getLocationResponse {
   message: string;
   data?: {
     midpoint: {
@@ -26,4 +26,4 @@ export type getLocationResponse = {
     };
     activities?: Activity[];
   };
-};
+}

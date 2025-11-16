@@ -1,10 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
 import {
-    BasicGroupInfo,
+  BasicGroupInfo,
   basicGroupSchema,
-  CreateGroupInfo,
-  createGroupSchema,
   IGroup,
   updateGroupSchema,
   activitySchema,
@@ -12,8 +10,6 @@ import {
   GroupUser,
   Activity,
 } from './types/group.types';
-import {addressSchema, userModel, UserModel} from './user.model';
-import {GoogleUserInfo} from './types/user.types';
 import logger from './utils/logger.util';
 
 
@@ -310,7 +306,7 @@ export class GroupModel {
         const isLeader = group.groupLeaderId.id === userId;
 
         // Remove user from group members
-        const updatedMembers = (group.groupMemberIds || []).filter(member => member.id !== userId);
+        const updatedMembers = group.groupMemberIds.filter(member => member.id !== userId);
 
         // If the user is the leader and there are other members, transfer leadership
         if (isLeader && updatedMembers.length > 0) {
@@ -327,10 +323,14 @@ export class GroupModel {
             { new: true }
           );
 
+          if (!updatedGroup) {
+            throw new Error(`Failed to update group leadership for joinCode '${joinCode}'`);
+          }
+
           return {
             success: true,
             deleted: false,
-            newLeader: newLeader
+            newLeader
           };
         }
         // If the user is the leader and there are no other members, delete the group
@@ -348,6 +348,10 @@ export class GroupModel {
             { groupMemberIds: updatedMembers },
             { new: true }
           );
+
+          if (!updatedGroup) {
+            throw new Error(`Failed to remove user from group with joinCode '${joinCode}'`);
+          }
 
           return {
             success: true,

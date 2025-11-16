@@ -86,11 +86,13 @@ fun MainScreen(
 
     // Keep WebSocket subscriptions in sync with groups the user belongs to
     LaunchedEffect(currentUserId, filteredGroups) {
-        val userId = currentUserId ?: return@LaunchedEffect
-        // Subscribe to all current groups (WebSocket + FCM topic)
-        filteredGroups.forEach { group ->
-            WebSocketManager.subscribeToGroup(userId, group.joinCode)
-            subscribeToGroupTopic(group.joinCode) // <-- FCM topic subscription
+        val userId = currentUserId
+        if (userId != null) {
+            // Subscribe to all current groups (WebSocket + FCM topic)
+            filteredGroups.forEach { group ->
+                WebSocketManager.subscribeToGroup(userId, group.joinCode)
+                subscribeToGroupTopic(group.joinCode) // <-- FCM topic subscription
+            }
         }
     }
 

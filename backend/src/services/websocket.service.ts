@@ -1,6 +1,6 @@
-import WebSocket from 'ws';
 import { Server, IncomingMessage } from 'http';
 import logger from '../utils/logger.util';
+import WebSocket, { WebSocketServer } from 'ws';
 
 export interface WebSocketMessage {
   type: 'group_join' | 'group_leave' | 'group_update' | 'error';
@@ -14,14 +14,14 @@ export interface WebSocketMessage {
 }
 
 export class WebSocketService {
-  private wss: WebSocket.Server;
+  private wss: WebSocketServer;
   private clients: Map<string, WebSocket> = new Map(); // userId -> WebSocket
   private groupSubscriptions: Map<string, Set<string>> = new Map(); // joinCode -> Set<userId>
 
   constructor(server: Server) {
     console.log('🔧 Creating WebSocket server...');
     try {
-      this.wss = new WebSocket.Server({ 
+      this.wss = new WebSocketServer({  
         server,
         path: '/ws'
       });

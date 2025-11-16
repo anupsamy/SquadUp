@@ -41,4 +41,5 @@ interface GroupRepository {
     suspend fun selectActivity(joinCode: String, activity: Activity): Result<Unit>
 
     // suspend fun getMidpoints(joinCode: String): Result<List<LatLng>>
+//    suspend fun getMidpoints(joinCode: String): Result<List<LatLng>>
 }

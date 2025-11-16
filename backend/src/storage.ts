@@ -3,7 +3,9 @@ import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 
-import { IMAGES_DIR } from './hobbies';
+export const IMAGES_DIR = 'uploads/images';
+
+//NOT INCLUDED IN TEST SUITE - config/setup code only
 
 if (!fs.existsSync(IMAGES_DIR)) {
   fs.mkdirSync(IMAGES_DIR, { recursive: true });

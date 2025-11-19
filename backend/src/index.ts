@@ -7,7 +7,7 @@ import { connectDB } from './database';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
 import router from './routes';
 import path from 'path';
-//import { initializeWebSocketService } from './services/websocket.service';
+import { initializeWebSocketService } from './services/websocket.service';
 
 const app = express();
 const server = createServer(app);
@@ -21,12 +21,12 @@ app.use('*', notFoundHandler);
 app.use(errorHandler);
 
 // Initialize WebSocket service
-/*try {
+try {
   initializeWebSocketService(server);
   console.log('✅ WebSocket service initialization attempted');
 } catch (error: unknown) {
   console.error('❌ Failed to initialize WebSocket service:', error);
-}*/
+}
 
 connectDB();
 server.listen(PORT, () => {

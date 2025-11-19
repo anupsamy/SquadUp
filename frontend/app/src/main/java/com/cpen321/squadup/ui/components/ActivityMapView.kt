@@ -11,10 +11,17 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+
+private fun isValidCoordinate(latitude: Double, longitude: Double): Boolean {
+    return latitude != 0.0 && longitude != 0.0 &&
+            !latitude.isNaN() && !longitude.isNaN() &&
+            latitude.isFinite() && longitude.isFinite()
+}
 
 @Composable
 fun LeaderActivityMapView(
@@ -24,39 +31,14 @@ fun LeaderActivityMapView(
 ) {
     val cameraPositionState = rememberCameraPositionState()
 
-    // Combine all coordinates
     val allPoints = remember(locations, activities) {
-        (locations + activities.map { LatLng(it.latitude, it.longitude) })
-            .filter { 
-                it.latitude != 0.0 && it.longitude != 0.0 && 
-                !it.latitude.isNaN() && !it.longitude.isNaN() &&
-                it.latitude.isFinite() && it.longitude.isFinite()
-            } // avoid invalid coords
+        buildAllPoints(locations, activities)
     }
 
     // Move camera to fit all markers once map is ready
     LaunchedEffect(allPoints) {
         if (allPoints.isNotEmpty()) {
-            try {
-                val boundsBuilder = LatLngBounds.builder()
-                allPoints.forEach { boundsBuilder.include(it) }
-                val bounds = boundsBuilder.build()
-                val padding = 150 // pixels — adjust to taste
-                // Move after map is fully ready
-                cameraPositionState.animate(
-                    update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
-                    durationMs = 1000
-                )
-            } catch (e: IllegalStateException) {
-                // If bounds can't be built (no valid points), use default zoom
-                if (allPoints.isNotEmpty()) {
-                    val firstPoint = allPoints.first()
-                    cameraPositionState.animate(
-                        update = CameraUpdateFactory.newLatLngZoom(firstPoint, 14f),
-                        durationMs = 1000
-                    )
-                }
-            }
+            animateCameraToFit(cameraPositionState, allPoints)
         }
     }
 
@@ -65,26 +47,7 @@ fun LeaderActivityMapView(
         cameraPositionState = cameraPositionState,
         onMapLoaded = {
             if (allPoints.isNotEmpty()) {
-                if (allPoints.size == 1) {
-                    // ✅ Single marker: center and zoom out manually
-                    val singlePoint = allPoints.first()
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(singlePoint, 14f) // smaller number = zoomed out
-                    )
-                } else {
-                    // ✅ Multiple markers: fit bounds normally
-                    try {
-                        val boundsBuilder = LatLngBounds.builder()
-                        allPoints.forEach { point -> boundsBuilder.include(point) }
-                        val bounds = boundsBuilder.build()
-                        val padding = 150
-                        cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
-                    } catch (e: IllegalStateException) {
-                        // Fallback to single point zoom if bounds can't be built
-                        val firstPoint = allPoints.first()
-                        cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(firstPoint, 14f))
-                    }
-                }
+                onMapLoadedMoveCamera(cameraPositionState, allPoints)
             }
         }
     ) {
@@ -108,6 +71,51 @@ fun LeaderActivityMapView(
         }
     }
 }
+
+private fun buildAllPoints(locations: List<LatLng>, activities: List<Activity>): List<LatLng> =
+    (locations + activities.map { LatLng(it.latitude, it.longitude) })
+        .filter { isValidCoordinate(it.latitude, it.longitude) }
+
+private suspend fun animateCameraToFit(cameraState: CameraPositionState, points: List<LatLng>) {
+    try {
+        val boundsBuilder = LatLngBounds.builder()
+        points.forEach { boundsBuilder.include(it) }
+        val bounds = boundsBuilder.build()
+        val padding = 150
+        cameraState.animate(
+            update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
+            durationMs = 1000
+        )
+    } catch (e: IllegalStateException) {
+        // Fallback: center on first point
+        if (points.isNotEmpty()) {
+            val firstPoint = points.first()
+            cameraState.animate(
+                update = CameraUpdateFactory.newLatLngZoom(firstPoint, 14f),
+                durationMs = 1000
+            )
+        }
+    }
+}
+
+private fun onMapLoadedMoveCamera(cameraState: CameraPositionState, allPoints: List<LatLng>) {
+    if (allPoints.size == 1) {
+        val singlePoint = allPoints.first()
+        cameraState.move(CameraUpdateFactory.newLatLngZoom(singlePoint, 14f))
+    } else {
+        try {
+            val boundsBuilder = LatLngBounds.builder()
+            allPoints.forEach { boundsBuilder.include(it) }
+            val bounds = boundsBuilder.build()
+            val padding = 150
+            cameraState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+        } catch (e: IllegalStateException) {
+            val firstPoint = allPoints.first()
+            cameraState.move(CameraUpdateFactory.newLatLngZoom(firstPoint, 14f))
+        }
+    }
+}
+
 @Composable
 fun MemberActivityMapView(
     midpoint: LatLng?,
@@ -117,124 +125,72 @@ fun MemberActivityMapView(
 ) {
     val cameraPositionState = rememberCameraPositionState()
 
-    // Build list of valid coordinates
     val allPoints = remember(midpoint, userLocation, selectedActivity) {
         buildList {
-            midpoint?.let {
-                if (it.latitude != 0.0 && it.longitude != 0.0 && 
-                    !it.latitude.isNaN() && !it.longitude.isNaN() &&
-                    it.latitude.isFinite() && it.longitude.isFinite()) {
-                    add(it)
-                }
-            }
-            userLocation?.let {
-                if (it.latitude != 0.0 && it.longitude != 0.0 && 
-                    !it.latitude.isNaN() && !it.longitude.isNaN() &&
-                    it.latitude.isFinite() && it.longitude.isFinite()) {
-                    add(it)
-                }
-            }
-            selectedActivity?.let { activity ->
-                if (activity.latitude != 0.0 && activity.longitude != 0.0 &&
-                    !activity.latitude.isNaN() && !activity.longitude.isNaN() &&
-                    activity.latitude.isFinite() && activity.longitude.isFinite()) {
-                    add(LatLng(activity.latitude, activity.longitude))
-                }
-            }
+            midpoint?.takeIf { isValidCoordinate(it.latitude, it.longitude) }?.let(::add)
+            userLocation?.takeIf { isValidCoordinate(it.latitude, it.longitude) }?.let(::add)
+            selectedActivity?.takeIf { isValidCoordinate(it.latitude, it.longitude) }
+                ?.let { add(LatLng(it.latitude, it.longitude)) }
         }
     }
 
-    // Move camera to fit all markers once map is ready
     LaunchedEffect(allPoints) {
-        if (allPoints.isNotEmpty()) {
-            if (allPoints.size == 1) {
-                val singlePoint = allPoints.first()
-                cameraPositionState.animate(
-                    update = CameraUpdateFactory.newLatLngZoom(singlePoint, 14f),
-                    durationMs = 1000
-                )
-            } else {
-                try {
-                    val boundsBuilder = LatLngBounds.builder()
-                    allPoints.forEach { boundsBuilder.include(it) }
-                    val bounds = boundsBuilder.build()
-                    val padding = 150
-                    cameraPositionState.animate(
-                        update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
-                        durationMs = 1000
-                    )
-                } catch (e: IllegalStateException) {
-                    // Fallback to single point zoom if bounds can't be built
-                    if (allPoints.isNotEmpty()) {
-                        val firstPoint = allPoints.first()
-                        cameraPositionState.animate(
-                            update = CameraUpdateFactory.newLatLngZoom(firstPoint, 14f),
-                            durationMs = 1000
-                        )
-                    }
-                }
-            }
-        }
+        if (allPoints.isNotEmpty()) animateTo(allPoints, cameraPositionState)
     }
 
     GoogleMap(
         modifier = modifier.fillMaxSize().testTag("MidpointMap"),
         cameraPositionState = cameraPositionState,
-        onMapLoaded = {
-            if (allPoints.isNotEmpty()) {
-                if (allPoints.size == 1) {
-                    val singlePoint = allPoints.first()
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(singlePoint, 14f)
-                    )
-                } else {
-                    try {
-                        val boundsBuilder = LatLngBounds.builder()
-                        allPoints.forEach { point -> boundsBuilder.include(point) }
-                        val bounds = boundsBuilder.build()
-                        val padding = 150
-                        cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, padding))
-                    } catch (e: IllegalStateException) {
-                        // Fallback to single point zoom if bounds can't be built
-                        val firstPoint = allPoints.first()
-                        cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(firstPoint, 14f))
-                    }
-                }
-            }
-        },
+        onMapLoaded = { if (allPoints.isNotEmpty()) moveTo(allPoints, cameraPositionState) }
     ) {
-        // Midpoint marker (red)
-        midpoint?.let { point ->
-            if (point.latitude != 0.0 && point.longitude != 0.0) {
-                Marker(
-                    state = MarkerState(position = point),
-                    title = "Group Midpoint",
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                )
-            }
-        }
-
-        // User location marker (green)
-        userLocation?.let { point ->
-            if (point.latitude != 0.0 && point.longitude != 0.0) {
-                Marker(
-                    state = MarkerState(position = point),
-                    title = "Your Location",
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-                )
-            }
-        }
-
-        // Selected activity marker (blue)
-        selectedActivity?.let { activity ->
-            if (activity.latitude != 0.0 && activity.longitude != 0.0) {
-                Marker(
-                    state = MarkerState(position = LatLng(activity.latitude, activity.longitude)),
-                    title = activity.name,
-                    snippet = activity.address,
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-                )
-            }
+        midpoint?.let { placeMarkerIfValid(it.latitude, it.longitude, "Group Midpoint", BitmapDescriptorFactory.HUE_RED) }
+        userLocation?.let { placeMarkerIfValid(it.latitude, it.longitude, "Your Location", BitmapDescriptorFactory.HUE_GREEN) }
+        selectedActivity?.let { act ->
+            placeMarkerIfValid(act.latitude, act.longitude, act.name, BitmapDescriptorFactory.HUE_AZURE, act.address)
         }
     }
+}
+
+private suspend fun animateTo(points: List<LatLng>, camera: CameraPositionState) {
+    if (points.isEmpty()) return
+    if (points.size == 1) {
+        val p = points.first()
+        camera.animate(update = CameraUpdateFactory.newLatLngZoom(p, 14f), durationMs = 1000)
+        return
+    }
+    try {
+        val builder = LatLngBounds.builder()
+        points.forEach { builder.include(it) }
+        val bounds = builder.build()
+        camera.animate(update = CameraUpdateFactory.newLatLngBounds(bounds, 150), durationMs = 1000)
+    } catch (e: IllegalStateException) {
+        val p = points.first()
+        camera.animate(update = CameraUpdateFactory.newLatLngZoom(p, 14f), durationMs = 1000)
+    }
+}
+
+private fun moveTo(points: List<LatLng>, camera: CameraPositionState) {
+    if (points.isEmpty()) return
+    if (points.size == 1) {
+        camera.move(CameraUpdateFactory.newLatLngZoom(points.first(), 14f))
+        return
+    }
+    try {
+        val builder = LatLngBounds.builder()
+        points.forEach { builder.include(it) }
+        camera.move(CameraUpdateFactory.newLatLngBounds(builder.build(), 150))
+    } catch (e: IllegalStateException) {
+        camera.move(CameraUpdateFactory.newLatLngZoom(points.first(), 14f))
+    }
+}
+
+@Composable
+private fun placeMarkerIfValid(lat: Double, lng: Double, title: String, hue: Float, snippet: String? = null) {
+    if (lat == 0.0 && lng == 0.0) return
+    Marker(
+        state = MarkerState(position = LatLng(lat, lng)),
+        title = title,
+        snippet = snippet,
+        icon = BitmapDescriptorFactory.defaultMarker(hue)
+    )
 }

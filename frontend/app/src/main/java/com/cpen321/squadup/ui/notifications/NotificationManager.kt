@@ -5,6 +5,7 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,87 +33,46 @@ class NotificationManager @Inject constructor() {
     }
     
     fun handleWebSocketMessage(message: String) {
-        try {
-            val json = JSONObject(message)
-            val type = json.optString("type", "unknown")
-            val messageText = json.optString("message", message)
-            val timestamp = json.optString("timestamp", "")
-            
-            when (type) {
-                "group_join" -> {
-                    val notification = AppNotification(
-                        id = System.currentTimeMillis().toString(),
-                        title = "Group Member Joined",
-                        message = messageText,
-                        type = type,
-                        timestamp = timestamp
-                    )
-                    showNotification(notification)
-                }
-                "group_leave" -> {
-                    val notification = AppNotification(
-                        id = System.currentTimeMillis().toString(),
-                        title = "Group Member Left",
-                        message = messageText,
-                        type = type,
-                        timestamp = timestamp
-                    )
-                    showNotification(notification)
-                }
-                "group_update" -> {
-                    // Check if this is an activity_selected update
-                    val dataObj = json.optJSONObject("data")
-                    val updateType = dataObj?.optString("type", "")
-                    
-                    if (updateType == "activity_selected") {
-                        val activityObj = dataObj.optJSONObject("activity")
-                        val activityName = activityObj?.optString("name", "an activity") ?: "an activity"
-                        val notification = AppNotification(
-                            id = System.currentTimeMillis().toString(),
-                            title = "Activity Selected",
-                            message = "Group leader selected \"$activityName\"",
-                            type = "activity_selected",
-                            timestamp = timestamp
-                        )
-                        showNotification(notification)
-                    } else {
-                        val notification = AppNotification(
-                            id = System.currentTimeMillis().toString(),
-                            title = "Group Update",
-                            message = messageText,
-                            type = type,
-                            timestamp = timestamp
-                        )
-                        showNotification(notification)
-                    }
-                }
-                "notification" -> {
-                    val notification = AppNotification(
-                        id = System.currentTimeMillis().toString(),
-                        title = "New Notification",
-                        message = messageText,
-                        type = type,
-                        timestamp = timestamp
-                    )
-                    showNotification(notification)
-                }
-                "welcome" -> {
-                    // Handle welcome message if needed
-                }
-                else -> {
-                    // For any other message type, still show it
-                    val notification = AppNotification(
-                        id = System.currentTimeMillis().toString(),
-                        title = "Notification",
-                        message = messageText,
-                        type = type,
-                        timestamp = timestamp
-                    )
-                    showNotification(notification)
+    try {
+        val json = JSONObject(message)
+        val type = json.optString("type", "unknown")
+        val messageText = json.optString("message", message)
+        val timestamp = json.optString("timestamp", "")
+
+        fun notify(title: String, msg: String, notifType: String = type) {
+            val notification = AppNotification(
+                id = System.currentTimeMillis().toString(),
+                title = title,
+                message = msg,
+                type = notifType,
+                timestamp = timestamp
+            )
+            showNotification(notification)
+        }
+
+        when (type) {
+            "group_join" -> notify("Group Member Joined", messageText)
+            "group_leave" -> notify("Group Member Left", messageText)
+            "group_update" -> {
+                val dataObj = json.optJSONObject("data")
+                val updateType = dataObj?.optString("type", "")
+                if (updateType == "activity_selected") {
+                    val activityObj = dataObj.optJSONObject("activity")
+                    val activityName = activityObj?.optString("name", "an activity") ?: "an activity"
+                    notify("Activity Selected", "Group leader selected \"$activityName\"", "activity_selected")
+                } else {
+                    notify("Group Update", messageText)
                 }
             }
-        } catch (e: Exception) {
-            // If not JSON, ignore or handle as needed
+            "notification" -> notify("New Notification", messageText)
+            "welcome" -> {
+                // Handle welcome message if needed
+            }
+            else -> notify("Notification", messageText)
         }
+    } catch (e: JSONException) {
+        // If not JSON, ignore or handle as needed
     }
+}
+
 }

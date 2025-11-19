@@ -87,6 +87,8 @@ class MemberSettingsLeaderE2ETest {
         composeTestRule.onNode(hasText("Expected People"))
             .performTextInput("0")
 
+        device.pressBack()
+
         // Save
         composeTestRule.onNodeWithText("Save")
             .assertIsEnabled()
@@ -106,12 +108,14 @@ class MemberSettingsLeaderE2ETest {
         composeTestRule.onNode(hasText("Expected People"))
             .performTextClearance()
 
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
         composeTestRule.onNode(hasText("Expected People"))
             .performTextInput("7")
 
         device.pressBack()
+
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithText("Expected people must be a positive number", substring = true).fetchSemanticsNodes().isEmpty()
+        }
 
         // Save
         composeTestRule.onNodeWithText("Save")
@@ -119,7 +123,7 @@ class MemberSettingsLeaderE2ETest {
             .performClick()
 
         composeTestRule.waitForIdle()
-        Thread.sleep(2000)
+        Thread.sleep(3000)
 
         // Verify success
         composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
@@ -146,6 +150,9 @@ class MemberSettingsLeaderE2ETest {
         // Verify failure
         composeTestRule.waitForNodeWithText("Meeting time must be in the future", timeoutMillis = 10000)
             .assertIsDisplayed()
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithText("Meeting time must be in the future", substring = true).fetchSemanticsNodes().isEmpty()
+        }
 
         composeTestRule.waitForIdle()
         Thread.sleep(500)
@@ -229,6 +236,10 @@ class MemberSettingsLeaderE2ETest {
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
+
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithText("Please select a valid address", substring = true).fetchSemanticsNodes().isEmpty()
+        }
 
         // Save
         composeTestRule.onNodeWithText("Save")

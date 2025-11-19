@@ -40,11 +40,6 @@ interface GroupInterface {
     suspend fun getGroups(
         @Header("Authorization") authHeader: String
     ): Response<ApiResponse<GroupsDataAll>>
-//    @GET("group/midpoints")
-//    suspend fun getMidpoints(
-//        @Header("Authorization") authHeader: String,
-//        @Query("joinCode") joinCode: String
-//    ): Response<ApiResponse<List<ActivityCoordinates>>>
 
     @POST("group/update")
     suspend fun updateGroup(
@@ -64,12 +59,6 @@ interface GroupInterface {
         @retrofit2.http.Path("joinCode") joinCode: String,
         @Body request: LeaveGroupRequest
     ): Response<Unit>
-
-//    @GET("group/midpoints")
-//    suspend fun getMidpoints(
-//        @Header("Authorization") authHeader: String,
-//        @Query("joinCode") joinCode: String
-//    ): Response<ApiResponse<List<ActivityCoordinates>>>
 
     @GET("group/midpoint/{joinCode}")
     suspend fun getMidpointByJoinCode(

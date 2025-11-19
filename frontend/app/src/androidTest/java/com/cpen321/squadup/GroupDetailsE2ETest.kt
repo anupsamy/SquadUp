@@ -37,6 +37,12 @@ class GroupDetailsE2ETest {
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         device.wait(Until.hasObject(By.pkg(TestData.APP_PACKAGE_NAME)), TestData.TEST_TIMEOUT_LONG)
         composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText("Leader:", substring = true).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText("Group Update", substring = true).fetchSemanticsNodes().isEmpty()
+        }
     }
 
     /**
@@ -436,10 +442,6 @@ class GroupDetailsE2ETest {
 
         composeTestRule.waitForIdle()
         Thread.sleep(1500)
-
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText("Group Update", substring = true).fetchSemanticsNodes().isEmpty()
-        }
 
         // Test back button on group details
         composeTestRule.onNodeWithContentDescription("Back")

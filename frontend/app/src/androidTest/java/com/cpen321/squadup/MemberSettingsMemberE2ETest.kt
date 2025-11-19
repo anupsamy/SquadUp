@@ -116,6 +116,10 @@ class MemberSettingsMemberE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithText("Please select a valid address", substring = true).fetchSemanticsNodes().isEmpty()
+        }
+
         // Save
         composeTestRule.onNodeWithText("Save")
             .assertIsEnabled()

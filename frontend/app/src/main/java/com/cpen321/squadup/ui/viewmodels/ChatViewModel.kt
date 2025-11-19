@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 
@@ -57,7 +58,7 @@ class ChatViewModel @Inject constructor() : ViewModel() {
                     _messages.value = _messages.value + text
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: JSONException) {
             // If not JSON, treat as regular message
             _messages.value = _messages.value + text
         }

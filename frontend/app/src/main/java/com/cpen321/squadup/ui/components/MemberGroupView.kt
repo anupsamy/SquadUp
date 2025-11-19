@@ -104,13 +104,17 @@ fun MemberGroupView(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                ActivityCard( //TODO: just pass activity
+                val activityInfo = ActivityInfo(
                     name = activity.name,
                     address = activity.address,
                     rating = activity.rating ?: 0.0,
                     userRatingsTotal = activity.userRatingsTotal ?: 0,
                     priceLevel = activity.priceLevel ?: 0,
-                    type = activity.type ?: "",
+                    type = activity.type ?: ""
+                )
+
+                ActivityCard( //TODO: just pass activity
+                    activity = activityInfo,
                     isSelected = true,
                     onClick = { /* optional click action */ },
                     modifier = Modifier.fillMaxWidth().testTag("SelectedActivityCard")

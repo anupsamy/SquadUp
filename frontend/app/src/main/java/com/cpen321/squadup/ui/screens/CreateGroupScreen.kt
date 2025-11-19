@@ -60,6 +60,21 @@ fun CreateGroupScreen(
         }
     }
 
+    // Observe the success message and navigate to the success screen
+    LaunchedEffect(uiState.successMessage) {
+        uiState.successMessage?.let {
+            uiState.responseData?.let { respData ->
+                val joinCode = respData["joinCode"] as? String ?: ""
+                val gName = respData["groupName"] as? String ?: ""
+                
+                if (joinCode.isNotEmpty() && gName.isNotEmpty()) {
+                    navController.navigate("group_success/$gName/$joinCode")
+                    groupViewModel.clearMessages() // Clear the success message after navigation
+                }
+            }
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {

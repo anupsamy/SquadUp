@@ -13,11 +13,14 @@ const config: Config = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
   ],
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.test.json'
-    }
-  }
+  transform: {
+  '^.+\\.(ts|tsx)$': [
+    'ts-jest',
+    {
+      tsconfig: 'tsconfig.test.json',
+    },
+  ],
+},
 };
 
 export default config;

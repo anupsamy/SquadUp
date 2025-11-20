@@ -5,3 +5,4 @@
 
 node_modules/
 frontend/cpen321keystore.jks
+backend/temp/

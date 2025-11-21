@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpen321.squadup.data.remote.dto.Activity
@@ -28,7 +29,6 @@ fun MemberGroupView(
     selectedActivity: Activity?,
     modifier: Modifier = Modifier
 ) {
-    //val midpoint by groupViewModel.midpoint.collectAsState()
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
 
     Column(
@@ -104,16 +104,20 @@ fun MemberGroupView(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                ActivityCard( //TODO: just pass activity
+                val activityInfo = ActivityInfo(
                     name = activity.name,
                     address = activity.address,
                     rating = activity.rating ?: 0.0,
                     userRatingsTotal = activity.userRatingsTotal ?: 0,
                     priceLevel = activity.priceLevel ?: 0,
-                    type = activity.type ?: "",
+                    type = activity.type ?: ""
+                )
+
+                ActivityCard( //TODO: just pass activity
+                    activity = activityInfo,
                     isSelected = true,
                     onClick = { /* optional click action */ },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag("SelectedActivityCard")
                 )
             }
         }

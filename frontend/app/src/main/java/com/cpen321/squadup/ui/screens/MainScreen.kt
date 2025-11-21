@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.testTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Group
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.R
+import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
@@ -50,7 +52,6 @@ import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
-import com.cpen321.squadup.ui.viewmodels.NewsViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.utils.WebSocketManager
 import com.google.firebase.messaging.FirebaseMessaging
@@ -59,113 +60,66 @@ import com.google.firebase.messaging.FirebaseMessaging
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
-    newsViewModel: NewsViewModel,
     profileViewModel: ProfileViewModel = hiltViewModel(),
-    selectedHobbies: List<String>,
     onProfileClick: () -> Unit,
-    navController: NavController 
+    navController: NavController
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
-    val snackBarHostState = remember { SnackbarHostState() }
-    val joinCode = remember { mutableStateOf("") } // State for the join code input
-    val joinGroupMessage = remember { mutableStateOf<String?>(null) } // State for success/error messages
     val profileUiState by profileViewModel.uiState.collectAsState()
-
-
-    LaunchedEffect(Unit) {
-        mainViewModel.fetchGroups()
-    }
-     LaunchedEffect(Unit) {
-        profileViewModel.loadProfile()
-    }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val currentUserId = profileUiState.user?._id
-    
-    val filteredGroups = uiState.groups.filter { group ->
-        Log.d("MainScreen", "filteredGroups: ${group}")
-    group.groupLeaderId?.id == currentUserId || group.groupMemberIds?.any { it.id == currentUserId } == true
-    }
+    val filteredGroups = uiState.groups.filterUserGroups(currentUserId)
 
-    // Keep WebSocket subscriptions in sync with groups the user belongs to
-    LaunchedEffect(currentUserId, filteredGroups) {
-        val userId = currentUserId ?: return@LaunchedEffect
-        // Subscribe to all current groups (WebSocket + FCM topic)
-        filteredGroups.forEach { group ->
-            WebSocketManager.subscribeToGroup(userId, group.joinCode)
-            subscribeToGroupTopic(group.joinCode) // <-- FCM topic subscription
-        }
-    }
+    LaunchedEffect(Unit) { mainViewModel.fetchGroups(); profileViewModel.loadProfile() }
+    LaunchedEffect(currentUserId, filteredGroups) { subscribeToUserGroups(currentUserId, filteredGroups) }
 
     Scaffold(
-        topBar = {
-            MainTopBar(onProfileClick = onProfileClick)
-        },
-        snackbarHost = {
-            MainSnackbarHost(
-                hostState = snackBarHostState,
-                successMessage = uiState.successMessage,
-                onSuccessMessageShown = mainViewModel::clearSuccessMessage
-            )
-        }
+        topBar = { MainTopBar(onProfileClick) },
+        snackbarHost = { MainSnackbarHost(snackBarHostState, uiState.successMessage, mainViewModel::clearSuccessMessage) }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                //.verticalScroll(rememberScrollState())
-        ) {
-            // Existing group list and create group button
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             MainBody(
                 modifier = Modifier.weight(1f),
                 paddingValues = PaddingValues(0.dp),
-                newsViewModel = newsViewModel,
-                selectedHobbies = selectedHobbies,
-                onCreateGroupClick = {
-                    navController.navigate(NavRoutes.CREATE_GROUP)
-                },
+                onCreateGroupClick = { navController.navigate(NavRoutes.CREATE_GROUP) },
                 groups = filteredGroups,
-                onGroupClick = { groupId ->
-                    navController.navigate("${NavRoutes.GROUP_DETAILS}/$groupId")
-                },
+                onGroupClick = { navController.navigate("${NavRoutes.GROUP_DETAILS}/$it") },
                 navController = navController
-
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                // Create Group Button
-                IconButton(
-                    onClick = { navController.navigate(NavRoutes.CREATE_GROUP) },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add, // Use Icons.Filled for Material icons
-                        contentDescription = "Create Group",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                // Join Group Button
-                IconButton(
-                    onClick = { navController.navigate(NavRoutes.JOIN_GROUP) },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Group,
-                        contentDescription = "Join Group",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            BottomActionButtons(navController)
         }
     }
 }
+
+private fun List<GroupDataDetailed>.filterUserGroups(userId: String?) = filter { group ->
+    group.groupLeaderId?.id == userId || group.groupMemberIds?.any { it.id == userId } == true
+}
+
+private fun subscribeToUserGroups(userId: String?, groups: List<GroupDataDetailed>) {
+    userId ?: return
+    groups.forEach { group ->
+        WebSocketManager.subscribeToGroup(userId, group.joinCode)
+        subscribeToGroupTopic(group.joinCode)
+    }
+}
+
+@Composable
+private fun BottomActionButtons(navController: NavController) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        IconButton(onClick = { navController.navigate(NavRoutes.CREATE_GROUP) }, modifier = Modifier.size(56.dp)) {
+            Icon(Icons.Filled.Add, "Create Group", tint = MaterialTheme.colorScheme.primary)
+        }
+        IconButton(onClick = { navController.navigate(NavRoutes.JOIN_GROUP) }, modifier = Modifier.size(56.dp)) {
+            Icon(Icons.Filled.Group, "Join Group", tint = MaterialTheme.colorScheme.primary)
+        }
+    }
+}
+
 
 @Composable
 private fun JoinGroupSection(
@@ -206,41 +160,43 @@ private fun JoinGroupSection(
     }
 }
 
+data class MainContentState(
+    val uiState: MainUiState,
+    val groups: List<GroupDataDetailed>,
+    val snackBarHostState: SnackbarHostState,
+    val navController: NavController
+)
+
+data class MainContentActions(
+    val onProfileClick: () -> Unit,
+    val onCreateGroupClick: () -> Unit,
+    val onSuccessMessageShown: () -> Unit,
+    val onGroupClick: (String) -> Unit
+)
+
 @Composable
 private fun MainContent(
-    uiState: MainUiState,
-    newsViewModel: NewsViewModel,
-    selectedHobbies: List<String>,
-    groups: List<GroupDataDetailed>,
-    snackBarHostState: SnackbarHostState,
-    onProfileClick: () -> Unit,
-    onCreateGroupClick: () -> Unit, 
-    onSuccessMessageShown: () -> Unit,
-    onGroupClick: (String) -> Unit,
-    modifier: Modifier,
-    navController: NavController
+    state: MainContentState,
+    actions: MainContentActions,
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = {
-            MainTopBar(onProfileClick = onProfileClick)
-        },
+        topBar = { MainTopBar(onProfileClick = actions.onProfileClick) },
         snackbarHost = {
             MainSnackbarHost(
-                hostState = snackBarHostState,
-                successMessage = uiState.successMessage,
-                onSuccessMessageShown = onSuccessMessageShown
+                hostState = state.snackBarHostState,
+                successMessage = state.uiState.successMessage,
+                onSuccessMessageShown = actions.onSuccessMessageShown
             )
         }
     ) { paddingValues ->
         MainBody(
             paddingValues = paddingValues,
-            newsViewModel = newsViewModel,
-            selectedHobbies = selectedHobbies,
-            onCreateGroupClick = onCreateGroupClick,
-            groups = groups,
-            onGroupClick = onGroupClick,
-            navController = navController
+            onCreateGroupClick = actions.onCreateGroupClick,
+            groups = state.groups,
+            onGroupClick = actions.onGroupClick,
+            navController = state.navController
         )
     }
 }
@@ -323,8 +279,6 @@ private fun MainSnackbarHost(
 @Composable
 private fun MainBody(
     paddingValues: PaddingValues,
-    newsViewModel: NewsViewModel,
-    selectedHobbies: List<String>,
     onCreateGroupClick: () -> Unit,
     groups: List<GroupDataDetailed>,
     onGroupClick: (String) -> Unit,
@@ -350,6 +304,7 @@ private fun MainBody(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
+                        .testTag("groupButton")
                 ) {
                     Column {
                         Text(text = group.groupName, style = MaterialTheme.typography.bodyLarge)

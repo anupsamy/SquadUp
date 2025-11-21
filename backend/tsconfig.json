@@ -1,13 +1,21 @@
 {
   "compilerOptions": {
     "lib": ["es2023"],
-    "module": "nodenext",
+    "moduleResolution": "node",
+    "module": "commonjs",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts", "jest.config.ts", "jest.setup.ts"]
 }

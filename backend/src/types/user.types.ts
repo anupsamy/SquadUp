@@ -14,7 +14,6 @@ export interface IUser extends Document {
   address?: Address;
   transitType?: TransitType;
   bio: string;
-  hobbies: string[];
   createdAt: Date;
   updatedAt: Date;
 }

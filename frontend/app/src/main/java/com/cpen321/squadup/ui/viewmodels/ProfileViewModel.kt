@@ -20,6 +20,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 
 data class ProfileUiState(
@@ -89,53 +90,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    /*fun toggleHobby(hobby: String) {
-        val currentSelected = _uiState.value.selectedHobbies?.toMutableSet() ?: mutableSetOf()
-        if (currentSelected.contains(hobby)) {
-            currentSelected.remove(hobby)
-        } else {
-            currentSelected.add(hobby)
-        }
-        _uiState.value = _uiState.value.copy(selectedHobbies = currentSelected)
-    }
-
-    fun saveHobbies() {
-        viewModelScope.launch {
-            val originalHobbies = _uiState.value.user?.hobbies?.toSet() ?: emptySet()
-
-            _uiState.value =
-                _uiState.value.copy(
-                    isSavingProfile = true,
-                    errorMessage = null,
-                    successMessage = null
-                )
-
-                val selectedHobbiesList = _uiState.value.selectedHobbies?.toList() ?: emptyList()
-            val result = profileRepository.updateUserHobbies(selectedHobbiesList)
-
-            if (result.isSuccess) {
-                val updatedUser = result.getOrNull()!!
-                _uiState.value = _uiState.value.copy(
-                    isSavingProfile = false,
-                    user = updatedUser,
-                    successMessage = "Hobbies updated successfully!"
-                )
-            } else {
-                // Revert to original hobbies on failure
-                val error = result.exceptionOrNull()
-                Log.d(TAG, "error: $error")
-                Log.e(TAG, "Failed to update hobbies", error)
-                val errorMessage = error?.message ?: "Failed to update hobbies"
-
-                _uiState.value = _uiState.value.copy(
-                    isSavingProfile = false,
-                    selectedHobbies = originalHobbies, // Revert the selected hobbies
-                    errorMessage = errorMessage
-                )
-            }
-        }
-    }*/
-
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
@@ -174,7 +128,7 @@ class ProfileViewModel @Inject constructor(
                         errorMessage = "Failed to update profile picture"
                     )
                 }
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 Log.e(TAG, "Failed to update profile picture", e)
                 _uiState.value = _uiState.value.copy(
                     isLoadingPhoto = false,
@@ -206,7 +160,7 @@ class ProfileViewModel @Inject constructor(
                 return response.body()!!.data?.image.toString()
             } else {
                 val errorBody = response.errorBody()?.string()
-                throw Exception("Failed to upload profile picture: $errorBody")
+                throw IOException("Failed to upload profile picture: $errorBody")
             }
         } finally {
             setLoadingPhoto(false)

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
@@ -67,218 +68,74 @@ fun GroupDetailsScreen(
     groupViewModel: GroupViewModel,
     profileViewModel: ProfileViewModel
 ) {
-    val isGroupDeleted by groupViewModel.isGroupDeleted.collectAsState()
-    val isGroupLeft by groupViewModel.isGroupLeft.collectAsState()
+    val isDeleted by groupViewModel.isGroupDeleted.collectAsState()
+    val isLeft by groupViewModel.isGroupLeft.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
-    val activityPickerViewModel: ActivityPickerViewModel = hiltViewModel()
-
-    val vmMidpoint by groupViewModel.midpoint.collectAsState()
-    val staticMidpoint = parseMidpointString(group.midpoint)
-    val midpoint = vmMidpoint ?: staticMidpoint //take from static unless updated from v,
-
-    val vmSelectedActivity by activityPickerViewModel.selectedActivity.collectAsState()
-    val staticSelectedActivity = group.selectedActivity
-    val selectedActivity = vmSelectedActivity ?: staticSelectedActivity
-
+    val activityPickerVM: ActivityPickerViewModel = hiltViewModel()
+    
+    val midpoint = groupViewModel.midpoint.collectAsState().value ?: parseMidpointString(group.midpoint)
+    val selectedActivity = activityPickerVM.selectedActivity.collectAsState().value ?: group.selectedActivity
     val currentUserId = profileUiState.user?._id
     val isLeader = group.groupLeaderId?.id == currentUserId
 
-    fun hardRefresh(navController: NavController, joinCode: String) {
-        navController.navigate(NavRoutes.MAIN) {
-            popUpTo(NavRoutes.MAIN) { inclusive = false }
-        }
-        navController.navigate("${NavRoutes.GROUP_DETAILS}/$joinCode")
+    fun refresh() {
+        navController.navigate(NavRoutes.MAIN) { popUpTo(NavRoutes.MAIN) { inclusive = false } }
+        navController.navigate("${NavRoutes.GROUP_DETAILS}/${group.joinCode}")
     }
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
+        activityPickerVM.setInitialSelectedActivity(group.selectedActivity)
+        if ((group.groupMemberIds?.size ?: 0) == group.expectedPeople.toInt()) groupViewModel.getMidpoint(group.joinCode)
+        if (midpoint != null) activityPickerVM.loadActivities(group.joinCode)
     }
 
-    LaunchedEffect(staticSelectedActivity) {
-        activityPickerViewModel.setInitialSelectedActivity(staticSelectedActivity)
-    }
+    LaunchedEffect(group.joinCode, currentUserId) { currentUserId?.let { WebSocketManager.subscribeToGroup(it, group.joinCode) } }
+    DisposableEffect(group.joinCode, currentUserId) { onDispose { currentUserId?.let { WebSocketManager.unsubscribeFromGroup(it, group.joinCode) } } }
 
-    LaunchedEffect(midpoint) {
-        // Only load activities if the midpoint is actually available
-        if (midpoint != null) {
-            activityPickerViewModel.loadActivities(group.joinCode)
+    LaunchedEffect(isDeleted) { if (isDeleted) { unsubscribeFromGroupTopic(group.joinCode); navController.navigate(NavRoutes.MAIN) { popUpTo(0) { inclusive = true } }; groupViewModel.resetGroupDeletedState() } }
+    LaunchedEffect(isLeft) { if (isLeft) { navController.navigate(NavRoutes.MAIN) { popUpTo(0) { inclusive = true } }; groupViewModel.resetGroupLeftState() } }
+
+    Scaffold(topBar = { GroupDetailsTopBar(navController, group.joinCode, group.groupName, group.meetingTime, ::refresh) }) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, selectedActivity = selectedActivity, modifier = Modifier.weight(1f))
+            else MemberGroupView(profileUiState.user, group, groupViewModel, midpoint, selectedActivity, Modifier.weight(1f))
+
+            Spacer(Modifier.height(12.dp))
+            JoinCodeSection(group.joinCode)
+            Spacer(Modifier.height(8.dp))
+            MembersHostSection(group)
+            Spacer(Modifier.height(16.dp))
+            SeeDetailsButton(navController, group.joinCode)
         }
     }
+}
 
-
-    // Subscribe to WebSocket notifications when viewing a group
-    LaunchedEffect(group.joinCode, currentUserId) {
-        currentUserId?.let { userId ->
-            Log.d("GroupDetails", "Subscribing to group ${group.joinCode} for user $userId")
-            // Wait a bit for WebSocket to be connected
-            kotlinx.coroutines.delay(500)
-            WebSocketManager.subscribeToGroup(userId, group.joinCode)
-        }
-    }
-
-    // Unsubscribe when leaving the screen (WebSocket ONLY)
-    DisposableEffect(group.joinCode, currentUserId) {
-        onDispose {
-            currentUserId?.let { userId ->
-                Log.d("GroupDetails", "Unsubscribing from group ${group.joinCode} for user $userId (WebSocket only)")
-                WebSocketManager.unsubscribeFromGroup(userId, group.joinCode)
-            }
-        }
-    }
-
-    LaunchedEffect(isGroupDeleted) {
-        if (isGroupDeleted) {
-            unsubscribeFromGroupTopic(group.joinCode)
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            groupViewModel.resetGroupDeletedState()
-        }
-    }
-
-    LaunchedEffect(isGroupLeft) {
-        if (isGroupLeft) {
-            navController.navigate("main") {
-                popUpTo(0) { inclusive = true }
-            }
-            groupViewModel.resetGroupLeftState()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        val membersJoined = group.groupMemberIds?.size ?: 0
-        if (membersJoined == group.expectedPeople.toInt()) {
-            groupViewModel.getMidpoint(group.joinCode)
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = group.groupName,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = group.meetingTime,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate(NavRoutes.MAIN) }){
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {hardRefresh(navController, group.joinCode) }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                    }
-                }
-            )
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                // Condensed map + group section
-                if (isLeader) {
-                    LeaderGroupView(
-                        group = group,
-                        groupViewModel = groupViewModel,
-                        midpoint = midpoint,
-                        activityPickerViewModel = activityPickerViewModel,
-                        selectedActivity = selectedActivity,
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
-                    MemberGroupView(
-                        user = profileUiState.user,
-                        group = group,
-                        groupViewModel = groupViewModel,
-                        midpoint = midpoint,
-                        selectedActivity = selectedActivity,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Compact join code section
-                val clipboardManager = LocalClipboardManager.current
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Join Code",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                        )
-                        Text(
-                            text = group.joinCode,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    OutlinedButton(
-                        onClick = { clipboardManager.setText(AnnotatedString(group.joinCode ?: "")) },
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                        Text("Copy", fontSize = 12.sp)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Members + Hosted by condensed
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            "Members",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                        )
-                        Text(
-                            "${group.groupMemberIds?.size ?: 0}/${group.expectedPeople}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            "Host",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                        )
-                        Text(
-                            group.groupLeaderId?.name ?: "Unknown",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Compact See Details button
-                Button(
-                    onClick = {
-                        navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                ) {
-                    Text("See Details", fontSize = 14.sp)
-                }
-            }
-        }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GroupDetailsTopBar(nav: NavController, joinCode: String, name: String, time: String, refresh: () -> Unit) {
+    TopAppBar(
+        title = { Column { Text(name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)); Text(time, style = MaterialTheme.typography.bodySmall) } },
+        navigationIcon = { IconButton({ nav.navigate(NavRoutes.MAIN) }) { Icon(Icons.Default.ArrowBack, "Back") } },
+        actions = { IconButton(onClick = refresh) { Icon(Icons.Default.Refresh, "Refresh") } }
     )
+}
+
+@Composable private fun JoinCodeSection(joinCode: String) {
+    val clipboard = LocalClipboardManager.current
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Column { Text("Join Code", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)); Text(joinCode, style = MaterialTheme.typography.bodySmall) }
+        OutlinedButton({ clipboard.setText(AnnotatedString(joinCode)) }, Modifier.height(32.dp)) { Text("Copy", fontSize = 12.sp) }
+    }
+}
+
+@Composable private fun MembersHostSection(group: GroupDataDetailed) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Column { Text("Members", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)); Text("${group.groupMemberIds?.size ?: 0}/${group.expectedPeople}", style = MaterialTheme.typography.bodySmall) }
+        Column(horizontalAlignment = Alignment.End) { Text("Host", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)); Text(group.groupLeaderId?.name ?: "Unknown", style = MaterialTheme.typography.bodySmall) }
+    }
+}
+
+@Composable private fun SeeDetailsButton(nav: NavController, joinCode: String) {
+    Button({ nav.navigate("${NavRoutes.GROUP_LIST}/$joinCode") }, Modifier.fillMaxWidth().height(40.dp)) { Text("See Details", fontSize = 14.sp) }
 }

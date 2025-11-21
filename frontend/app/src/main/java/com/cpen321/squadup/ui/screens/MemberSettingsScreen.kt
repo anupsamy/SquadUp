@@ -26,12 +26,132 @@ import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 import androidx.compose.ui.platform.LocalContext
+import android.content.Context
 import android.app.TimePickerDialog
 import android.app.DatePickerDialog
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import java.util.*
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MemberSettingsTopBar(
+    navController: NavController,
+    joinCode: String
+) {
+    TopAppBar(
+        title = { 
+            Text(
+                "Member Settings", 
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+            ) 
+        },
+        navigationIcon = {
+            IconButton(onClick = { navController.navigate("${NavRoutes.GROUP_DETAILS}/$joinCode") }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        }
+    )
+}
+
+@Composable
+private fun MemberSettingsBottomBar(
+    navController: NavController,
+    joinCode: String
+) {
+    NavigationBar {
+        NavigationBarItem(
+            selected = false,
+            onClick = { navController.navigate("${NavRoutes.GROUP_LIST}/$joinCode") },
+            icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Squads") },
+            label = { Text("Squads") }
+        )
+        NavigationBarItem(
+            selected = true,
+            onClick = { },
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+            label = { Text("Settings") }
+        )
+    }
+}
+
+data class MemberSettingsState(
+    val group: GroupDataDetailed,
+    val currentUserId: String?,
+    val address: Address?,
+    val transitType: TransitType?,
+    val meetingTime: String,
+    val expectedPeople: String,
+    val meetingTimeError: String?,
+    val expectedPeopleError: String?,
+    val existingMemberInfo: GroupUser?
+)
+
+data class MemberSettingsHandlers(
+    val addressPickerViewModel: AddressPickerViewModel,
+    val groupViewModel: GroupViewModel,
+    val snackbarHostState: SnackbarHostState,
+    val coroutineScope: CoroutineScope,
+    val onAddressChange: (Address?) -> Unit,
+    val onTransitTypeChange: (TransitType?) -> Unit,
+    val onMeetingTimeChange: (String, String?) -> Unit,
+    val onExpectedPeopleChange: (String) -> Unit
+)
+
+@Composable
+private fun MemberSettingsContent(
+    state: MemberSettingsState,
+    handlers: MemberSettingsHandlers,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Address picker
+        AddressPickerSection(handlers.addressPickerViewModel, state.address) { selected ->
+            handlers.onAddressChange(selected)
+        }
+
+        // Transit dropdown
+        TransitTypeDropdown(selectedType = state.transitType, onTypeSelected = handlers.onTransitTypeChange)
+
+        // Only group leader can edit meetingTime & expectedPeople
+        if (state.group.groupLeaderId?.id == state.currentUserId) {
+            MeetingTimePickerButton(
+                context = context,
+                meetingTime = state.meetingTime,
+                meetingTimeError = state.meetingTimeError,
+                onMeetingTimeSelected = handlers.onMeetingTimeChange
+            )
+
+            ExpectedPeopleField(
+                value = state.expectedPeople,
+                error = state.expectedPeopleError,
+                onValueChange = handlers.onExpectedPeopleChange
+            )
+        }
+
+        // Save button
+        SaveSettingsButton(
+            state = state,
+            addressPickerViewModel = handlers.addressPickerViewModel,
+            groupViewModel = handlers.groupViewModel,
+            snackbarHostState = handlers.snackbarHostState,
+            coroutineScope = handlers.coroutineScope
+        )
+    }
+}
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,161 +160,204 @@ fun MemberSettingsScreen(
     navController: NavController,
     group: GroupDataDetailed,
     profileViewModel: ProfileViewModel = hiltViewModel(),
-    groupViewModel: GroupViewModel,
+    groupViewModel: GroupViewModel = hiltViewModel(),
+    addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
 ) {
     val profileUiState by profileViewModel.uiState.collectAsState()
-    val currentUser = profileUiState.user
-    val currentUserId = profileUiState.user?._id
-    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
+    val currentUserId = profileUiState.user?._id
     val existingMemberInfo = remember(group, currentUserId) {
         group.groupMemberIds?.find { it.id == currentUserId }
     }
 
-    // 2. Initialize the form state with the data from the group, not the general profile.
     var address by remember { mutableStateOf(existingMemberInfo?.address) }
     var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
-
-    // Leader-only fields
     var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
     var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
+    var meetingTimeError by remember { mutableStateOf<String?>(null) }
+    var expectedPeopleError by remember { mutableStateOf<String?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = "Member Settings",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navController.navigate("${NavRoutes.GROUP_DETAILS}/${group.joinCode}")
-                    }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+    val state = MemberSettingsState(
+        group = group,
+        currentUserId = currentUserId,
+        address = address,
+        transitType = transitType,
+        meetingTime = meetingTime,
+        expectedPeople = expectedPeople,
+        meetingTimeError = meetingTimeError,
+        expectedPeopleError = expectedPeopleError,
+        existingMemberInfo = existingMemberInfo
+    )
+
+    val handlers = MemberSettingsHandlers(
+        addressPickerViewModel = addressPickerViewModel,
+        groupViewModel = groupViewModel,
+        snackbarHostState = snackbarHostState,
+        coroutineScope = coroutineScope,
+        onAddressChange = { address = it },
+        onTransitTypeChange = { transitType = it },
+        onMeetingTimeChange = { newTime, error ->
+            meetingTime = newTime
+            meetingTimeError = error
         },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {navController.navigate("${NavRoutes.GROUP_LIST}/${group.joinCode}")},
-                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Squads") },
-                    label = { Text("Squads") }
-                )
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {  },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") }
-                )
-            }
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
-                AddressPicker(
-                    viewModel = addressPickerViewModel,
-                    initialValue = address,
-                    onAddressSelected = { address = it }
-                )
-
-                TransitTypeDropdown(
-                    selectedType = transitType,
-                    onTypeSelected = { transitType = it }
-                )
-
-                // Leader-only: allow updating meeting time and expected people
-                if (group.groupLeaderId?.id == currentUserId) {
-                    val context = LocalContext.current
-                    val calendar = Calendar.getInstance()
-
-                    // Display-only field for meeting time
-                    OutlinedTextField(
-                        value = meetingTime,
-                        onValueChange = {},
-                        label = { Text("Meeting Time") },
-                        modifier = Modifier.fillMaxWidth(),
-                        readOnly = true
-                    )
-
-                    // Button to open time picker
-                    Button(
-                        onClick = {
-                            // Step 1: Pick Date
-                            DatePickerDialog(
-                                context,
-                                { _, year, month, dayOfMonth ->
-                                    val selectedDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
-
-                                    // Step 2: Then pick Time
-                                    TimePickerDialog(
-                                        context,
-                                        { _, hourOfDay, minute ->
-                                            val selectedTime = String.format("%02d:%02d", hourOfDay, minute)
-                                            meetingTime = "${selectedDate}T${selectedTime}:00Z"
-                                            Toast.makeText(context, "Meeting set to: $meetingTime", Toast.LENGTH_SHORT).show()
-                                        },
-                                        calendar.get(Calendar.HOUR_OF_DAY),
-                                        calendar.get(Calendar.MINUTE),
-                                        true
-                                    ).show()
-                                },
-                                calendar.get(Calendar.YEAR),
-                                calendar.get(Calendar.MONTH),
-                                calendar.get(Calendar.DAY_OF_MONTH)
-                            ).show()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text( text = "Update Meeting Date & Time" )
-                    }
-
-                    OutlinedTextField(
-                        value = expectedPeople,
-                        onValueChange = { expectedPeople = it },
-                        label = { Text("Expected People") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        val updatedMembers = group.groupMemberIds?.map { member ->
-                            if (member.id == currentUserId) {
-                                member.copy(address = address, transitType = transitType)
-                            } else member
-                        } ?: emptyList()
-
-                        groupViewModel.updateMember(
-                            joinCode = group.joinCode,
-                            updatedMembers = updatedMembers,
-                            meetingTime = meetingTime,
-                            expectedPeople = expectedPeople.toIntOrNull() ?: 0,
-                            onSuccess = { Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show() },
-                            onError = { Toast.makeText(context, "Error saving!", Toast.LENGTH_SHORT).show()  }
-                        )
-
-                        groupViewModel.updateMidpoint(joinCode = group.joinCode)
-                    },
-                    enabled = address != null && transitType != null
-                ) {
-                    Text("Save")
-                }
-            }
+        onExpectedPeopleChange = {
+            expectedPeople = it
+            expectedPeopleError = null
         }
     )
+
+    Scaffold(
+        topBar = { MemberSettingsTopBar(navController, group.joinCode) },
+        bottomBar = { MemberSettingsBottomBar(navController, group.joinCode) },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        MemberSettingsContent(
+            state = state,
+            handlers = handlers,
+            modifier = Modifier.padding(padding)
+        )
+    }
 }
+
+
+@Composable
+fun MeetingTimePickerButton(
+    context: Context,
+    meetingTime: String,
+    meetingTimeError: String?,
+    onMeetingTimeSelected: (String, String?) -> Unit
+) {
+    val calendar = Calendar.getInstance()
+    Column {
+        OutlinedTextField(
+            value = meetingTime,
+            onValueChange = {},
+            label = { Text("Meeting Time") },
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true,
+            isError = meetingTimeError != null,
+            supportingText = { if (meetingTimeError != null) Text(meetingTimeError, color = MaterialTheme.colorScheme.error) }
+        )
+        Button(onClick = {
+            DatePickerDialog(
+                context,
+                { _, year, month, day ->
+                    TimePickerDialog(
+                        context,
+                        { _, hour, minute ->
+                            val selectedCalendar = Calendar.getInstance().apply { set(year, month, day, hour, minute, 0) }
+                            val now = Calendar.getInstance().timeInMillis
+                            if (selectedCalendar.timeInMillis < now) {
+                                onMeetingTimeSelected(meetingTime, "Meeting time must be in the future")
+                            } else {
+                                val newTime = String.format("%04d-%02d-%02d%02d:%02d:00Z", year, month + 1, day, hour, minute)
+                                onMeetingTimeSelected(newTime, null)
+                            }
+                        },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true
+                    ).show()
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }, modifier = Modifier.fillMaxWidth()) { Text("Click to update Meeting Date & Time") }
+    }
+}
+
+@Composable
+fun ExpectedPeopleField(value: String, error: String?, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text("Expected People") },
+        modifier = Modifier.fillMaxWidth(),
+        isError = error != null,
+        supportingText = { if (error != null) Text(error, color = MaterialTheme.colorScheme.error) }
+    )
+}
+
+@Composable
+fun AddressPickerSection(
+    viewModel: AddressPickerViewModel,
+    initialValue: Address?,
+    onAddressSelected: (Address?) -> Unit
+) {
+    AddressPicker(viewModel, initialValue = initialValue, onAddressSelected = onAddressSelected)
+}
+
+private fun validateSettings(
+    state: MemberSettingsState,
+    addressPickerQuery: String,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope
+): Boolean {
+    // query must match the selected address formatted string
+    if (addressPickerQuery != (state.address as? Address)?.formatted) {
+        coroutineScope.launch { snackbarHostState.showSnackbar("Please select a valid address") }
+        return false;
+    }
+    // expected people must be a positive integer
+    if (state.expectedPeople.toIntOrNull()?.let { it <= 0 } == true) {
+        coroutineScope.launch { snackbarHostState.showSnackbar("Expected people must be a positive number") }
+        return false;
+    }
+    // meetingTimeError blocks saving
+    if (state.meetingTimeError != null) return false
+    return true
+}
+
+@Composable
+fun SaveSettingsButton(
+    state: MemberSettingsState,
+    addressPickerViewModel: AddressPickerViewModel,
+    groupViewModel: GroupViewModel,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope
+) {
+    Button(
+        onClick = {
+            // validate form
+            if (!validateSettings(
+                    state = state,
+                    addressPickerQuery = addressPickerViewModel.query,
+                    snackbarHostState = snackbarHostState,
+                    coroutineScope = coroutineScope
+            )) return@Button
+
+            // build updated members list
+            val updatedMembers = state.group.groupMemberIds?.map { member ->
+                if (member.id == state.currentUserId) {
+                    member.copy(address = state.address, transitType = state.transitType)
+                } else member
+            } ?: emptyList()
+
+            // perform update
+            groupViewModel.updateMember(
+                joinCode = state.group.joinCode,
+                updatedMembers = updatedMembers,
+                meetingTime = state.meetingTime,
+                expectedPeople = state.expectedPeople.toInt(),
+                onSuccess = { coroutineScope.launch { snackbarHostState.showSnackbar("Settings saved successfully!") } },
+                onError = { coroutineScope.launch { snackbarHostState.showSnackbar("Error saving!") } }
+            )
+
+            // update midpoint if address/transit changed for the current user
+            val existingAddr = (state.existingMemberInfo as? GroupUser)?.address
+            val existingTransit = (state.existingMemberInfo as? GroupUser)?.transitType
+            if (existingAddr != state.address || existingTransit != state.transitType) {
+                groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
+            }
+        },
+        enabled = state.address != null && state.transitType != null
+    ) {
+        Text("Save")
+    }
+}
+
+
+

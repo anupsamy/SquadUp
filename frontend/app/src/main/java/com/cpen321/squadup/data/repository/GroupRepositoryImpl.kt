@@ -20,6 +20,9 @@ import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.google.gson.JsonParseException
+import retrofit2.HttpException
+import java.io.IOException
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
@@ -35,7 +38,6 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getGroupByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl getGroupByJoinCode response: ${response.body()!!.data!!.group}")
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!.group) // Return GroupDataDetailed directly
             } else {
@@ -43,7 +45,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch group by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }
@@ -53,7 +55,7 @@ class GroupRepositoryImpl @Inject constructor(
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getGroups("Bearer $authToken") // Ensure this is the correct endpoint
             val groupsDataAll = response.body()?.data
-            Log.d(TAG, "GroupRepImpl getGroups response: ${groupsDataAll}")
+
             if (response.isSuccessful && groupsDataAll != null) {
                 val groups = groupsDataAll.groups // Directly use the list of GroupDataDetailed
                 Log.d(TAG, "GroupRepImpl getGroups response 2: ${groups}")
@@ -63,7 +65,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch groups.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }
@@ -84,9 +86,6 @@ class GroupRepositoryImpl @Inject constructor(
                 activityType = activityType
             )
             val response = groupInterface.createGroup("", request)
-            //:Response<ApiResponse<GroupData>>
-            Log.d(TAG, "GroupRepImpl response: ${response.body()}")
-            Log.d(TAG, "GroupRepImpl groupdata: ${response.body()!!.data}")
 
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!)
@@ -122,7 +121,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to delete group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }
@@ -135,12 +134,12 @@ class GroupRepositoryImpl @Inject constructor(
                 expectedPeople = expectedPeople,
                 groupMemberIds = updatedMembers
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
+
             val response = groupInterface.joinGroup(
                 authHeader = "Bearer $authToken",
                 request = request
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest response ${response}")
+
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -148,7 +147,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }
@@ -167,12 +166,12 @@ class GroupRepositoryImpl @Inject constructor(
                 groupMemberIds = updatedMembers,
                 meetingTime = meetingTime
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest ${request}")
+
             val response = groupInterface.updateGroup(
                 authHeader = "Bearer $authToken",
                 request = request
             )
-            Log.d(TAG, "GroupRepImpl updateGroupRequest response ${response}")
+            
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -180,7 +179,17 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to join group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while updating group", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while updating group", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while updating group", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while updating group: ${e.code()}", e)
             Result.failure(e)
         }
     }
@@ -189,7 +198,7 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.getMidpointByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl getMidpointByJoinCode response: ${response.body()!!.data}")
+            
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
             } else {
@@ -197,7 +206,11 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch group by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
+        // Network or connection issues
+        Result.failure(e)
+        } catch (e: HttpException) {
+            // Retrofit HTTP protocol issues (non-2xx responses)
             Result.failure(e)
         }
     }
@@ -206,7 +219,7 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val response = groupInterface.updateMidpointByJoinCode("Bearer $authToken", joinCode)
-            Log.d(TAG, "GroupRepImpl updateMidpointByJoinCode response: ${response.body()!!.data}")
+            
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!) // Return GroupDataDetailed directly
             } else {
@@ -214,8 +227,14 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to update midpoint by joinCode.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        } catch (e: IOException) {
+            Result.failure(IOException("Network error while updating midpoint: ${e.message}", e))
+        } catch (e: HttpException) {
+            Result.failure(HttpException(e.response() ?: throw e))
+        } catch (e: JsonParseException) {
+            Result.failure(JsonParseException("Error parsing server response: ${e.message}"))
+        } catch (e: IllegalStateException) {
+            Result.failure(IllegalStateException("Unexpected state while updating midpoint: ${e.message}", e))
         }
     }
 
@@ -226,10 +245,8 @@ class GroupRepositoryImpl @Inject constructor(
             val response = activityInterface.getActivities("", joinCode)
             val activities = response.body()?.data ?: emptyList()
 
-            Log.d(TAG, "Fetched activities: $activities")
-            Log.d(TAG, "response body: $response.body()")
             Result.success(activities)
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e(TAG, "Error fetching activities", e)
             Result.success(emptyList())
         }
@@ -250,51 +267,23 @@ class GroupRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to select activity: ${response.message()}")
                 Result.failure(Exception("Failed to select activity"))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e(TAG, "Error selecting activity", e)
             Result.failure(e)
         }
     }
 
-    //midpoints
-
-    override suspend fun getMidpoints(joinCode: String): Result<List<LatLng>> {
-        return try {
-            val response = groupInterface.getMidpoints(
-                "", // Auth header handled by interceptor
-                joinCode
-            )
-
-            val data = response.body()?.data
-            if (response.isSuccessful && data != null) {
-                // Convert the response data to LatLng objects
-                val latLngList = data
-                Result.success(latLngList.map { LatLng(it.latitude, it.longitude) })
-            } else {
-                Log.e(TAG, "Failed to fetch midpoints: ${response.message()}")
-                Result.success(emptyList())
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching midpoints", e)
-            Result.success(emptyList())
-        }
-    }
-
-
-
-    //activities
-
     override suspend fun leaveGroup(joinCode: String, userId: String): Result<Unit> {
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val request = LeaveGroupRequest(userId = userId)
-            Log.d(TAG, "GroupRepImpl leaveGroupRequest ${request}")
+    
             val response = groupInterface.leaveGroup(
                 authHeader = "Bearer $authToken",
                 joinCode = joinCode,
                 request = request
             )
-            Log.d(TAG, "GroupRepImpl leaveGroupRequest response ${response}")
+
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -302,7 +291,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val errorMessage = parseErrorMessage(errorBodyString, "Failed to leave group.")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Result.failure(e)
         }
     }

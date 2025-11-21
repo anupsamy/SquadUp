@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
+import com.cpen321.squadup.data.remote.dto.Activity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -28,13 +29,80 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.testTag
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+
+@Composable
+private fun EmptyActivitiesState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "No activities found within the radius. Try a group with a new activity type",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun ActivitiesList(
+    activities: List<Activity>,
+    selectedActivityId: String?,
+    onActivityClick: (String) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        items(activities) { activity ->
+            val activityInfo = ActivityInfo(
+                name = activity.name,
+                address = activity.address,
+                rating = activity.rating,
+                userRatingsTotal = activity.userRatingsTotal,
+                priceLevel = activity.priceLevel,
+                type = activity.type
+            )
+            ActivityCard(
+                activity = activityInfo,
+                isSelected = activity.placeId == selectedActivityId,
+                onClick = { onActivityClick(activity.placeId)},
+                modifier = Modifier.testTag("activityCard")
+            )
+        }
+    }
+}
+
+@Composable
+private fun SelectActivityButton(
+    enabled: Boolean,
+    onSelectClick: () -> Unit,
+    interactionSource: MutableInteractionSource
+) {
+    val isPressed by interactionSource.collectIsPressedAsState()
+    Button(
+        onClick = onSelectClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .scale(if (isPressed) 0.95f else 1f),
+        enabled = enabled,
+        interactionSource = interactionSource
+    ) {
+        Text("Select Activity")
+    }
+}
+
 @Composable
 fun ActivityPicker(
     viewModel: ActivityPickerViewModel,
@@ -47,149 +115,152 @@ fun ActivityPicker(
         compareByDescending { it.placeId == selectedActivityId })
 
     val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    if (activities.isEmpty()) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No activities found within the radius. Try a group with a new activity type",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+    val handleSelectClick: () -> Unit = {
+        viewModel.confirmSelection(joinCode)
+        coroutineScope.launch {
+            snackbarHostState.showSnackbar(
+                message = "Activity selected successfully! Group members have been notified.",
+                duration = SnackbarDuration.Short
             )
         }
+        Unit
+    }
+
+    if (activities.isEmpty()) {
+        EmptyActivitiesState(modifier = modifier)
     } else {
-
         Box(modifier = modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(16.dp)
-                ) {
-                    items(sortedActivities) { activity ->
-                        ActivityCard(
-                            name = activity.name,
-                            address = activity.address,
-                            rating = activity.rating,
-                            userRatingsTotal = activity.userRatingsTotal,
-                            priceLevel = activity.priceLevel,
-                            type = activity.type,
-                            isSelected = activity.placeId == selectedActivityId,
-                            onClick = { viewModel.selectActivity(activity.placeId) }
-                        )
-                    }
-                }
+            Column(modifier = Modifier.fillMaxSize()) {
+                ActivitiesList(
+                    activities = sortedActivities,
+                    selectedActivityId = selectedActivityId,
+                    onActivityClick = { viewModel.selectActivity(it) }
+                )
 
-                Button(
-                    onClick = {
-                        viewModel.confirmSelection(joinCode)
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = "Activity selected successfully! Group members have been notified.",
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .scale(if (isPressed) 0.95f else 1f),
+                SelectActivityButton(
                     enabled = selectedActivityId != null,
+                    onSelectClick = handleSelectClick,
                     interactionSource = interactionSource
-                ) {
-                    Text("Select Activity")
-                }
+                )
             }
 
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 80.dp) // Position above the button
+                    .padding(bottom = 80.dp)
             )
         }
     }
 }
+
+data class ActivityInfo(
+    val name: String,
+    val address: String,
+    val rating: Double,
+    val userRatingsTotal: Int,
+    val priceLevel: Int,
+    val type: String
+)
+
 @Composable
 fun ActivityCard(
-    name: String,
-    address: String,
-    rating: Double,
-    userRatingsTotal: Int,
-    priceLevel: Int,
-    type: String,
-    isSelected: Boolean,
+    activity: ActivityInfo,
+    isSelected: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val containerColor = if (isSelected)
+        MaterialTheme.colorScheme.primaryContainer
+    else
+        MaterialTheme.colorScheme.surface
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surface
-        ),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
         onClick = onClick
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-
-        Text(
-                text = name,
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = activity.name,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                text = address,
+                text = activity.address,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = rating.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    StarRating(rating = rating)
-                }
-                Text(
-                    text = "($userRatingsTotal)",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "$".repeat(priceLevel),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = type,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+
+            ActivityMetaRow(
+                rating = activity.rating,
+                userRatingsTotal = activity.userRatingsTotal,
+                priceLevel = activity.priceLevel,
+                type = activity.type
+            )
         }
     }
 }
+
+@Composable
+private fun ActivityMetaRow(
+    rating: Double,
+    userRatingsTotal: Int,
+    priceLevel: Int,
+    type: String
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RatingBlock(rating = rating)
+        Text(
+            text = "($userRatingsTotal)",
+            style = MaterialTheme.typography.bodySmall
+        )
+        PriceLevelText(priceLevel = priceLevel)
+        Text(
+            text = type,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun RatingBlock(rating: Double) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = rating.toString(),
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold
+        )
+        StarRating(rating = rating)
+    }
+}
+
+@Composable
+private fun PriceLevelText(priceLevel: Int) {
+    Text(
+        text = "$".repeat(priceLevel.coerceAtLeast(0)),
+        style = MaterialTheme.typography.bodySmall
+    )
+}
+
 @Composable
 fun StarRating(
     rating: Double,

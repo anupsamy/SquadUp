@@ -25,91 +25,92 @@ fun NotificationOverlay(
     modifier: Modifier = Modifier
 ) {
     var isVisible by remember { mutableStateOf(false) }
-    
-    // Show notification when it changes
+
     LaunchedEffect(notification) {
         if (notification != null) {
             isVisible = true
-            // Auto-dismiss after 3 seconds
             delay(3000)
             isVisible = false
             onDismiss()
         }
     }
 
+    val enterAnim = slideInVertically(
+        initialOffsetY = { fullHeight -> -fullHeight },
+        animationSpec = tween(durationMillis = 300)
+    ) + fadeIn(animationSpec = tween(durationMillis = 300))
+
+    val exitAnim = slideOutVertically(
+        targetOffsetY = { fullHeight -> -fullHeight },
+        animationSpec = tween(durationMillis = 300)
+    ) + fadeOut(animationSpec = tween(durationMillis = 300))
+
     AnimatedVisibility(
         visible = isVisible,
-        enter = slideInVertically(
-            initialOffsetY = { -it },
-            animationSpec = tween(300)
-        ) + fadeIn(animationSpec = tween(300)),
-        exit = slideOutVertically(
-            targetOffsetY = { -it },
-            animationSpec = tween(300)
-        ) + fadeOut(animationSpec = tween(300)),
+        enter = enterAnim,
+        exit = exitAnim,
         modifier = modifier.zIndex(1f)
     ) {
-        if (notification != null) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Notification icon
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .background(
-                                Color.Red,
-                                RoundedCornerShape(4.dp)
-                            )
-                    )
-                    
-                    Spacer(modifier = Modifier.width(12.dp))
-                    
-                    // Notification content
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "New Notification",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Text(
-                            text = notification.message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                    
-                    // Dismiss button
-                    TextButton(
-                        onClick = {
-                            isVisible = false
-                            onDismiss()
-                        }
-                    ) {
-                        Text(
-                            text = "×",
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
+        notification?.let {
+            NotificationCard(it.message) {
+                isVisible = false
+                onDismiss()
             }
         }
     }
 }
+
+@Composable
+private fun NotificationCard(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(Color.Red, RoundedCornerShape(4.dp))
+            )
+
+            Spacer(Modifier.width(12.dp))
+
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "New Notification",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+
+            TextButton(onClick = onDismiss) {
+                Text(
+                    "×",
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+    }
+}
+

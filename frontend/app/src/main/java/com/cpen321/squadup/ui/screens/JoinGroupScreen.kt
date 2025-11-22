@@ -77,7 +77,12 @@ fun JoinGroupScreen(
                 label = { Text("Enter Join Code") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                maxLines = 1
+                maxLines = 1,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface
+                )
             )
             Spacer(modifier = Modifier.height(16.dp))
 

@@ -102,7 +102,12 @@ fun CreateGroupScreen(
                 value = groupName,
                 onValueChange = { groupName = it },
                 label = { Text("Group Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface
+                )
             )
 
             DateTimePickerSection(context) { meetingDateTime = it }
@@ -112,7 +117,12 @@ fun CreateGroupScreen(
                 onValueChange = { expectedPeople = it },
                 label = { Text("Expected People") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface
+                )
             )
 
             ActivityDropdown(selected = selectedActivity) { selectedActivity = it }
@@ -184,7 +194,12 @@ fun DateTimePickerSection(context: Context, onDateTimeSelected: (String) -> Unit
                 calendar.get(Calendar.DAY_OF_MONTH)
             ).show()
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     ) {
         Text(if (meetingDate.isEmpty()) "Select Meeting Date" else "Date: $meetingDate")
     }
@@ -199,7 +214,12 @@ fun DateTimePickerSection(context: Context, onDateTimeSelected: (String) -> Unit
                 true
             ).show()
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     ) {
         Text(if (meetingTime.isEmpty()) "Select Meeting Time" else "Time: $meetingTime")
     }
@@ -225,8 +245,14 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
             readOnly = true,
             label = { Text("Select Activity Type") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            colors = ExposedDropdownMenuDefaults.textFieldColors(),
-            modifier = Modifier.fillMaxWidth().menuAnchor()
+            colors = ExposedDropdownMenuDefaults.textFieldColors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor()
         )
 
         ExposedDropdownMenu(

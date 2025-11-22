@@ -18,11 +18,20 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -108,14 +117,46 @@ private fun subscribeToUserGroups(userId: String?, groups: List<GroupDataDetaile
 @Composable
 private fun BottomActionButtons(navController: NavController) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { navController.navigate(NavRoutes.CREATE_GROUP) }, modifier = Modifier.size(56.dp)) {
-            Icon(Icons.Filled.Add, "Create Group", tint = MaterialTheme.colorScheme.primary)
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                text = "Your squads",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = "Create or join a new squad",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-        IconButton(onClick = { navController.navigate(NavRoutes.JOIN_GROUP) }, modifier = Modifier.size(56.dp)) {
-            Icon(Icons.Filled.Group, "Join Group", tint = MaterialTheme.colorScheme.primary)
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            IconButton(
+                onClick = { navController.navigate(NavRoutes.CREATE_GROUP) },
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Add,
+                    "Create Group",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            IconButton(
+                onClick = { navController.navigate(NavRoutes.JOIN_GROUP) },
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Group,
+                    "Join Group",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
@@ -290,33 +331,82 @@ private fun MainBody(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-        ) {
-            groups.forEach { group ->
-            
-                Button(
-                    onClick = { onGroupClick(group.joinCode) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .testTag("groupButton")
-                ) {
-                    Column {
-                        Text(text = group.groupName, style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            text = "Leader: ${group.groupLeaderId?.name ?: "Unknown Leader"}",
-                            style = MaterialTheme.typography.bodySmall
+        if (groups.isEmpty()) {
+            EmptyStateView(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                groups.forEach { group ->
+                    Card(
+                        onClick = { onGroupClick(group.joinCode) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("groupButton"),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 0.dp
                         )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp)
+                        ) {
+                            Text(
+                                text = group.groupName,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Leader • ${group.groupLeaderId?.name ?: "Unknown"}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+}
 
+@Composable
+private fun EmptyStateView(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Nothing here. For now.",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Text(
+            text = "This is where you'll find your added squads.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

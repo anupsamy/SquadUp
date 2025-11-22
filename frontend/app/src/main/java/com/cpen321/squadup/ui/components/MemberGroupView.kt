@@ -2,7 +2,10 @@ package com.cpen321.squadup.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,21 +40,30 @@ fun MemberGroupView(
             .padding(16.dp)
     ) {
         // Map/Status Box
-        Box(
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
+                .height(260.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center
+            ) {
             when {
                 // State 1: Calculating midpoint
                 isCalculatingMidpoint -> {
                     Text(
                         text = "Calculating midpoint...",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        )
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -85,11 +97,13 @@ fun MemberGroupView(
                     Text(
                         text = "Waiting for group leader to calculate midpoint...",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        )
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
+        }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

@@ -72,8 +72,6 @@ class MainActivity : ComponentActivity() {
         }
 
         // Initialize WebSocketManager
-        // For local testing, use: ws://10.0.2.2:3000/ws (Android emulator)
-        // For AWS staging, use: ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws
         val wsUrl = try {
             if (BuildConfig.FLAVOR == "staging") {
                 "ws://ec2-18-221-196-3.us-east-2.compute.amazonaws.com:80/ws"

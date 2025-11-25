@@ -2,7 +2,11 @@ package com.cpen321.squadup.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,48 +39,66 @@ private fun MapStatusBox(
     activities: List<Activity>,
     onFindMidpoint: () -> Unit
 ) {
-    Box(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(250.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center
+            .height(260.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        when {
-            isCalculatingMidpoint -> {
-                Text(
-                    text = "Getting midpoint...",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-
-            midpoint != null -> {
-                val locations = extractMidpointLocations(midpoint)
-                LeaderActivityMapView(
-                    locations = locations,
-                    activities = activities,
-                    modifier = Modifier.fillMaxSize().testTag("LeaderMapView")
-                )
-            }
-
-            else -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                isCalculatingMidpoint -> {
                     Text(
-                        text = "Waiting for members to join...",
+                        text = "Getting midpoint...",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                midpoint != null -> {
+                    val locations = extractMidpointLocations(midpoint)
+                    LeaderActivityMapView(
+                        locations = locations,
+                        activities = activities,
+                        modifier = Modifier.fillMaxSize().testTag("LeaderMapView")
+                    )
+                }
+
+                else -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    ) {
+                        Text(
+                            text = "Waiting for members to join...",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Or you can calculate midpoint now",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = onFindMidpoint) {
-                        Text(text = "Find midpoint")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Or you can calculate midpoint now",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = onFindMidpoint) {
+                            Text(
+                                text = "Find midpoint",
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
                     }
                 }
             }

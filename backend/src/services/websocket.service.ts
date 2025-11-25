@@ -57,17 +57,6 @@ export class WebSocketService {
         logger.error('WebSocket error:', error);
         this.handleDisconnection(ws);
       });
-
-      // Send welcome message
-      this.sendMessage(ws, {
-        type: 'group_update',
-        groupId: '',
-        joinCode: '',
-        userId: '',
-        userName: '',
-        message: 'Connected to SquadUp WebSocket server',
-        timestamp: new Date().toISOString()
-      });
     });
   }
 

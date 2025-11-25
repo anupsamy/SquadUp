@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -96,12 +97,20 @@ fun GroupDetailsScreen(
     LaunchedEffect(isDeleted) { if (isDeleted) { unsubscribeFromGroupTopic(group.joinCode); navController.navigate(NavRoutes.MAIN) { popUpTo(0) { inclusive = true } }; groupViewModel.resetGroupDeletedState() } }
     LaunchedEffect(isLeft) { if (isLeft) { navController.navigate(NavRoutes.MAIN) { popUpTo(0) { inclusive = true } }; groupViewModel.resetGroupLeftState() } }
 
-    Scaffold(topBar = { GroupDetailsTopBar(navController, group.joinCode, group.groupName, group.meetingTime, ::refresh) }) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Scaffold(
+        topBar = { GroupDetailsTopBar(navController, group.joinCode, group.groupName, group.meetingTime, ::refresh) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, selectedActivity = selectedActivity, modifier = Modifier.weight(1f))
             else MemberGroupView(profileUiState.user, group, groupViewModel, midpoint, selectedActivity, Modifier.weight(1f))
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
             JoinCodeSection(group.joinCode)
             Spacer(Modifier.height(8.dp))
             MembersHostSection(group)
@@ -115,7 +124,20 @@ fun GroupDetailsScreen(
 @Composable
 private fun GroupDetailsTopBar(nav: NavController, joinCode: String, name: String, time: String, refresh: () -> Unit) {
     TopAppBar(
-        title = { Column { Text(name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)); Text(time, style = MaterialTheme.typography.bodySmall) } },
+        title = {
+            Column {
+                Text(
+                    name,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    time,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
         navigationIcon = { IconButton({ nav.navigate(NavRoutes.MAIN) }) { Icon(Icons.Default.ArrowBack, "Back") } },
         actions = { IconButton(onClick = refresh) { Icon(Icons.Default.Refresh, "Refresh") } }
     )
@@ -123,19 +145,80 @@ private fun GroupDetailsTopBar(nav: NavController, joinCode: String, name: Strin
 
 @Composable private fun JoinCodeSection(joinCode: String) {
     val clipboard = LocalClipboardManager.current
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Column { Text("Join Code", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)); Text(joinCode, style = MaterialTheme.typography.bodySmall) }
-        OutlinedButton({ clipboard.setText(AnnotatedString(joinCode)) }, Modifier.height(32.dp)) { Text("Copy", fontSize = 12.sp) }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                "Join Code",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                joinCode,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        OutlinedButton(
+            onClick = { clipboard.setText(AnnotatedString(joinCode)) },
+            modifier = Modifier.height(32.dp)
+        ) {
+            Text("Copy", fontSize = 12.sp)
+        }
     }
 }
 
 @Composable private fun MembersHostSection(group: GroupDataDetailed) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Column { Text("Members", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)); Text("${group.groupMemberIds?.size ?: 0}/${group.expectedPeople}", style = MaterialTheme.typography.bodySmall) }
-        Column(horizontalAlignment = Alignment.End) { Text("Host", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)); Text(group.groupLeaderId?.name ?: "Unknown", style = MaterialTheme.typography.bodySmall) }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            Text(
+                "Members",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                "${group.groupMemberIds?.size ?: 0}/${group.expectedPeople}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                "Host",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                group.groupLeaderId?.name ?: "Unknown",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
-@Composable private fun SeeDetailsButton(nav: NavController, joinCode: String) {
-    Button({ nav.navigate("${NavRoutes.GROUP_LIST}/$joinCode") }, Modifier.fillMaxWidth().height(40.dp)) { Text("See Details", fontSize = 14.sp) }
+@Composable
+private fun SeeDetailsButton(nav: NavController, joinCode: String) {
+    Button(
+        onClick = { nav.navigate("${NavRoutes.GROUP_LIST}/$joinCode") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    ) {
+        Text("Group details", fontSize = 14.sp)
+    }
 }

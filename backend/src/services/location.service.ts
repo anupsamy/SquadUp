@@ -1,4 +1,4 @@
-import { Client } from "@googlemaps/google-maps-services-js";
+import { Client, TravelMode } from "@googlemaps/google-maps-services-js";
 import type { LocationInfo, GeoLocation } from "../types/location.types";
 import { format } from "path";
 import { Activity } from "../types/group.types";
@@ -16,12 +16,24 @@ export class LocationService {
       if (!apiKey) {
         throw new Error('MAPS_API_KEY is not configured');
       }
+      // Google Maps API expects mode as TravelMode enum
+      // TransitType values ("driving", "walking", "bicycling", "transit") match the API expectations
+      // Map TransitType to TravelMode enum
+      const transitTypeToTravelMode: Record<string, TravelMode> = {
+        'driving': TravelMode.driving,
+        'walking': TravelMode.walking,
+        'bicycling': TravelMode.bicycling,
+        'transit': TravelMode.transit,
+      };
+      const travelMode = origin.transitType 
+        ? transitTypeToTravelMode[origin.transitType] || TravelMode.driving
+        : TravelMode.driving;
       const response = await this.mapsClient.distancematrix({
         params: {
           origins: [`${origin.lat},${origin.lng}`],
           destinations: [`${destination.lat},${destination.lng}`],
           key: apiKey,
-          mode: origin.transitType as any,
+          mode: travelMode,
         },
       });
 

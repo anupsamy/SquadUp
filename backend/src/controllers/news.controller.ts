@@ -10,9 +10,13 @@ export class NewsController {
   // Expects req.body.hobbies = ["Reading", "Coding", "Cooking"]
   async getNewsByHobbies(req: Request, res: Response) {
     try {
-      const hobbies: string[] = req.body.hobbies;
-      if (!hobbies || !Array.isArray(hobbies) || hobbies.length === 0) {
+      const hobbies = req.body.hobbies;
+      if (!Array.isArray(hobbies) || hobbies.length === 0) {
         return res.status(400).json({ message: 'Hobbies array is required' });
+      }
+      // Validate that all items are strings
+      if (!hobbies.every((hobby): hobby is string => typeof hobby === 'string')) {
+        return res.status(400).json({ message: 'All hobbies must be strings' });
       }
 
       // Fetch news for all hobbies concurrently
@@ -27,11 +31,17 @@ export class NewsController {
             },
           });
 
-          const articles = response.data.articles.map((a: any) => ({
-            title: a.title,
-            url: a.url,
-            source: a.source.name,
-            publishedAt: a.publishedAt,
+          interface NewsArticle {
+            title?: string;
+            url?: string;
+            source?: { name?: string };
+            publishedAt?: string;
+          }
+          const articles = (response.data.articles as NewsArticle[]).map((a) => ({
+            title: a.title ?? '',
+            url: a.url ?? '',
+            source: a.source?.name ?? '',
+            publishedAt: a.publishedAt ?? '',
           }));
 
           return {

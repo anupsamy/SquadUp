@@ -16,7 +16,7 @@ export interface IGroup extends Document {
     joinCode: string;
     groupLeaderId: GroupUser;
     expectedPeople: number;
-    groupMemberIds: GroupUser[]; //Change to object of users later maybe,
+    groupMemberIds?: GroupUser[]; //Change to object of users later maybe, optional in schema
     midpoint: string,
     activityType: string,
     selectedActivity?: Activity;

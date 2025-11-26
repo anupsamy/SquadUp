@@ -33,14 +33,7 @@ export const authenticateToken = async (
       id: mongoose.Types.ObjectId;
     };
 
-    if (!decoded || !decoded.id) {
-      res.status(401).json({
-        error: 'Invalid token',
-        message: 'Token verification failed',
-      });
-      return;
-    }
-
+    // jwt.verify throws an error for invalid tokens, so if we reach here, decoded is valid
     const user = await userModel.findById(decoded.id);
 
     if (!user) {

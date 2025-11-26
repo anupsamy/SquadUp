@@ -10,7 +10,13 @@ export interface WebSocketMessage {
   userName: string;
   message: string;
   timestamp: string;
-  data?: any;
+  data?: unknown;
+}
+
+interface WebSocketIncomingMessage {
+  type?: string;
+  userId?: string;
+  joinCode?: string;
 }
 
 export class WebSocketService {
@@ -60,8 +66,9 @@ export class WebSocketService {
     });
   }
 
-  private handleMessage(ws: WebSocket, message: any) {
-    const { type, userId, joinCode } = message;
+  private handleMessage(ws: WebSocket, message: unknown) {
+    const msg = message as WebSocketIncomingMessage;
+    const { type, userId, joinCode } = msg;
 
     switch (type) {
       case 'subscribe':
@@ -166,7 +173,7 @@ export class WebSocketService {
     logger.info(`Notified group ${joinCode} about user ${userName} leaving`);
   }
 
-  public notifyGroupUpdate(joinCode: string, message: string, data?: any) {
+  public notifyGroupUpdate(joinCode: string, message: string, data?: unknown) {
     const wsMessage: WebSocketMessage = {
       type: 'group_update',
       groupId: '',
@@ -217,7 +224,7 @@ export class WebSocketService {
     logger.info(`Broadcast to group ${joinCode}: ${successCount} success, ${failureCount} failures`);
   }
 
-  private sendMessage(ws: WebSocket, message: any) {
+  private sendMessage(ws: WebSocket, message: unknown) {
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
     }

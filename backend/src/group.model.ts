@@ -310,7 +310,7 @@ export class GroupModel {
         const isLeader = group.groupLeaderId.id === userId;
 
         // Remove user from group members
-        const updatedMembers = (group.groupMemberIds || []).filter(member => member.id !== userId);
+        const updatedMembers = (group.groupMemberIds ?? []).filter(member => member.id !== userId);
 
         // If the user is the leader and there are other members, transfer leadership
         if (isLeader && updatedMembers.length > 0) {

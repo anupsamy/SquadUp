@@ -56,7 +56,7 @@ export class GroupController {
       //   console.error('GroupController groups[4]:', groups[4]);
       const sanitizedGroups:IGroup[] = groups.map(group => ({
       ...group.toObject(),
-      groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
+      groupMemberIds: group.groupMemberIds ?? [], // Replace null/undefined with an empty array
       }));
       // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
 
@@ -293,7 +293,7 @@ export class GroupController {
         }});
       }
 
-      const locationInfo: LocationInfo[] = group.groupMemberIds
+      const locationInfo: LocationInfo[] = (group.groupMemberIds ?? [])
       .filter(member => member.address != null && member.transitType != null)
       .map(member => {
         // Type assertion is safe here because we've already filtered for non-null values
@@ -361,7 +361,7 @@ async updateMidpointByJoinCode(
         });
       }
 
-      const locationInfo: LocationInfo[] = group.groupMemberIds
+      const locationInfo: LocationInfo[] = (group.groupMemberIds ?? [])
       .filter(member => member.address != null && member.transitType != null)
       .map(member => {
         // Type assertion is safe here because we've already filtered for non-null values
@@ -686,7 +686,7 @@ async selectActivity(req: Request, res: Response): Promise<void> {
       }
 
       // Find the user who is leaving
-      const leavingUser = currentGroup.groupMemberIds?.find(member => member.id === userId) ||
+      const leavingUser = (currentGroup.groupMemberIds ?? []).find(member => member.id === userId) ||
                          (currentGroup.groupLeaderId.id === userId ? currentGroup.groupLeaderId : null);
 
       const result = await groupModel.leaveGroup(joinCode, userId);

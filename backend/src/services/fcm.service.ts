@@ -11,13 +11,27 @@ export function initialize() {
       logger.warn('FIREBASE_SERVICE_ACCOUNT_KEY is not set; FCM disabled');
       return;
     }
-    const serviceAccount: any = JSON.parse(keyJson as string);
+    interface ServiceAccount {
+      type?: string;
+      project_id?: string;
+      private_key_id?: string;
+      private_key?: string;
+      client_email?: string;
+      client_id?: string;
+      auth_uri?: string;
+      token_uri?: string;
+      auth_provider_x509_cert_url?: string;
+      client_x509_cert_url?: string;
+    }
+    const serviceAccount = JSON.parse(keyJson as string) as ServiceAccount;
     // Normalize private_key newlines if the JSON contains escaped \n sequences
     if (typeof serviceAccount.private_key === 'string') {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
     }
+    // admin.credential.cert accepts string | ServiceAccount
+    // Cast to unknown first, then to the expected type to satisfy TypeScript
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as any),
+      credential: admin.credential.cert(serviceAccount as unknown as admin.ServiceAccount),
     });
     initialized = true;
     logger.info('Firebase Admin initialized');

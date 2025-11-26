@@ -159,18 +159,13 @@ async getActivityList(
     let newLat = 0, newLng = 0;
 
     for (let j = 0; j < geoLocation.length; j++) {
-      //const weight = 1 / (travelTimes[j] + 1e-6); //should be travel time, not 1/traveltime
       // Validate array access to prevent object injection: ensure index is in bounds for both arrays
-      //impossible to hit - will always be array and within bounds
-      // if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
-      //   continue;
-      // }
+      if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || 
+          typeof j !== 'number' || j < 0 || j >= travelTimes.length || j >= geoLocation.length) {
+        continue;
+      }
+      
       // Validate array element access to prevent object injection
-      // Ensure j is a valid number index before accessing array //j comes from loop so is always valid
-      // const validatedIndex = typeof j === 'number' && j >= 0 && j < travelTimes.length && j < geoLocation.length ? j : -1;
-      // if (validatedIndex === -1) {
-      //   continue;
-      // }
       const rawWeightValue = travelTimes[j];
       const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
@@ -178,6 +173,9 @@ async getActivityList(
       
       // Validate array element access to prevent object injection
       const geoLocationItemValue = geoLocation[j];
+      if (!geoLocationItemValue || typeof geoLocationItemValue !== 'object') {
+        continue;
+      }
       const geoLocationItem = geoLocationItemValue;
       // TypeScript guarantees lat and lng exist on GeoLocation
       const rawLat = geoLocationItem.lat;
@@ -186,8 +184,9 @@ async getActivityList(
       const lng = typeof rawLng === 'number' && isFinite(rawLng) && rawLng >= -180 && rawLng <= 180 ? rawLng : 0;
       
       totalWeight += weight;
-      newLat += geoLocation[j].lat * weight;
-      newLng += geoLocation[j].lng * weight;
+      // Use validated lat and lng variables instead of accessing geoLocation[j] again
+      newLat += lat * weight;
+      newLng += lng * weight;
     }
     if (totalWeight === 0) {
           // Fallback to a simple geographic midpoint if weights are zero

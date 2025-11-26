@@ -184,7 +184,7 @@ async getActivityList(
       
       // Use helper function to safely access array element and prevent object injection
       const geoLocationItemValue = safeGetArrayElement(geoLocation, j);
-      if (!geoLocationItemValue || typeof geoLocationItemValue !== 'object') {
+      if (geoLocationItemValue === null || typeof geoLocationItemValue !== 'object') {
         continue;
       }
       const geoLocationItem = geoLocationItemValue;

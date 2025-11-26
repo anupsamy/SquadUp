@@ -12,9 +12,17 @@ router.get('/profile', userController.getProfile);
 router.post(
   '/profile',
   validateBody<UpdateProfileRequest>(updateProfileSchema),
-  userController.updateProfile
+  (req, res, next) => {
+    userController.updateProfile(req, res, next).catch((error: unknown) => {
+      next(error);
+    });
+  }
 );
 
-router.delete('/profile', userController.deleteProfile);
+router.delete('/profile', (req, res, next) => {
+  userController.deleteProfile(req, res, next).catch((error: unknown) => {
+    next(error);
+  });
+});
 
 export default router;

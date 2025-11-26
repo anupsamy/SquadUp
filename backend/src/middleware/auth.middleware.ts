@@ -3,11 +3,11 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { userModel } from '../user.model';
 
-export const authenticateToken: RequestHandler = async (
+export const authenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];

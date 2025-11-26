@@ -34,7 +34,11 @@ router.get(
 router.post( //have seperate endpoint for updating?
     '/create',
     validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
-    groupController.createGroup
+    (req, res, next) => {
+      groupController.createGroup(req, res, next).catch((error: unknown) => {
+        next(error);
+      });
+    }
 );
 
 router.post( //have seperate endpoint for updating?

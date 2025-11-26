@@ -11,12 +11,18 @@ const router = Router();
 
 router.use('/auth', authRoutes);
 
-router.use('/user', authenticateToken, usersRoutes);
+router.use('/user', (req, res, next) => {
+  authenticateToken(req, res, next).catch(next);
+}, usersRoutes);
 
-router.use('/media', authenticateToken, mediaRoutes);
+router.use('/media', (req, res, next) => {
+  authenticateToken(req, res, next).catch(next);
+}, mediaRoutes);
 
 router.use('/test', testRoutes);
 
-router.use('/group', authenticateToken, groupRoutes);
+router.use('/group', (req, res, next) => {
+  authenticateToken(req, res, next).catch(next);
+}, groupRoutes);
 
 export default router;

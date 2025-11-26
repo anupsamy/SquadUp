@@ -158,6 +158,14 @@ async getActivityList(
     let totalWeight = 0;
     let newLat = 0, newLng = 0;
 
+    // Helper function to safely access array elements and prevent object injection
+    const safeGetArrayElement = <T>(arr: T[], index: number): T | null => {
+      if (!Array.isArray(arr) || typeof index !== 'number' || index < 0 || index >= arr.length) {
+        return null;
+      }
+      return arr[index] ?? null;
+    };
+
     for (let j = 0; j < geoLocation.length; j++) {
       // Validate array access to prevent object injection: ensure index is in bounds for both arrays
       if (!Array.isArray(travelTimes) || !Array.isArray(geoLocation) || 
@@ -165,14 +173,17 @@ async getActivityList(
         continue;
       }
       
-      // Validate array element access to prevent object injection
-      const rawWeightValue = travelTimes[j];
+      // Use helper function to safely access array element and prevent object injection
+      const rawWeightValue = safeGetArrayElement(travelTimes, j);
+      if (rawWeightValue === null) {
+        continue;
+      }
       const rawWeight = typeof rawWeightValue === 'number' ? rawWeightValue : 0;
       // Validate weight to prevent object injection: ensure it's a finite number and non-negative
       const weight = isFinite(rawWeight) && rawWeight >= 0 ? rawWeight : 0;
       
-      // Validate array element access to prevent object injection
-      const geoLocationItemValue = geoLocation[j];
+      // Use helper function to safely access array element and prevent object injection
+      const geoLocationItemValue = safeGetArrayElement(geoLocation, j);
       if (!geoLocationItemValue || typeof geoLocationItemValue !== 'object') {
         continue;
       }

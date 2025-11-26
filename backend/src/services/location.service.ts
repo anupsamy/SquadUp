@@ -12,11 +12,15 @@ export class LocationService {
 
   async getTravelTime(origin: GeoLocation, destination: GeoLocation): Promise<number> {
     try {
+      const apiKey = process.env.MAPS_API_KEY;
+      if (!apiKey) {
+        throw new Error('MAPS_API_KEY is not configured');
+      }
       const response = await this.mapsClient.distancematrix({
         params: {
           origins: [`${origin.lat},${origin.lng}`],
           destinations: [`${destination.lat},${destination.lng}`],
-          key: process.env.MAPS_API_KEY!,
+          key: apiKey,
           mode: origin.transitType as any,
         },
       });
@@ -66,12 +70,16 @@ async getActivityList(
   maxResults: number = 10
 ): Promise<Activity[]> {
   try {
+    const apiKey = process.env.MAPS_API_KEY;
+    if (!apiKey) {
+      throw new Error('MAPS_API_KEY is not configured');
+    }
     const response = await this.mapsClient.placesNearby({
       params: {
         location: `${location.lat},${location.lng}`,
         radius,
         type,
-        key: process.env.MAPS_API_KEY!,
+        key: apiKey,
       },
     });
 
@@ -120,8 +128,8 @@ async getActivityList(
   let geoLocation: GeoLocation[] = locationInfo
   .filter(loc => loc.address.lat != null && loc.address.lng != null)
   .map(loc => {
-        const lat = loc.address.lat!!;
-        const lng = loc.address.lng!!;
+        const lat = loc.address.lat ?? 0;
+        const lng = loc.address.lng ?? 0;
         return {
           lat,
           lng,

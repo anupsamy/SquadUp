@@ -9,6 +9,8 @@ import { GetGroupResponse, UpdateGroupRequest, CreateGroupRequest, GetAllGroupsR
 //import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import { GeoLocation, getLocationResponse, LocationInfo } from '../types/location.types';
+import { Address } from '../types/address.types';
+import { TransitType } from '../types/transit.types';
 import { sendGroupJoinFCM, sendGroupLeaveFCM, sendActivitySelectedFCM } from '../services/fcm.service';
 
 export class GroupController {
@@ -294,8 +296,9 @@ export class GroupController {
       const locationInfo: LocationInfo[] = group.groupMemberIds
       .filter(member => member.address != null && member.transitType != null)
       .map(member => {
-        const address = member.address!!;
-        const transitType = member.transitType!!;
+        // Type assertion is safe here because we've already filtered for non-null values
+        const address = member.address as Address;
+        const transitType = member.transitType as TransitType;
         return {
           address,
           transitType,
@@ -361,8 +364,9 @@ async updateMidpointByJoinCode(
       const locationInfo: LocationInfo[] = group.groupMemberIds
       .filter(member => member.address != null && member.transitType != null)
       .map(member => {
-        const address = member.address!!;
-        const transitType = member.transitType!!;
+        // Type assertion is safe here because we've already filtered for non-null values
+        const address = member.address as Address;
+        const transitType = member.transitType as TransitType;
         return {
           address,
           transitType,

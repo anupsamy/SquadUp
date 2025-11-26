@@ -97,7 +97,7 @@ export class WebSocketService {
     if (!this.groupSubscriptions.has(joinCode)) {
       this.groupSubscriptions.set(joinCode, new Set());
     }
-    this.groupSubscriptions.get(joinCode)!.add(userId);
+    this.groupSubscriptions.get(joinCode)?.add(userId);
 
     logger.info(`User ${userId} subscribed to group ${joinCode}`);
   }

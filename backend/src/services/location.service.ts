@@ -163,7 +163,9 @@ async getActivityList(
       if (!Array.isArray(arr) || typeof index !== 'number' || index < 0 || index >= arr.length) {
         return null;
       }
-      return arr[index] ?? null;
+      // Use slice to avoid dynamic property access with bracket notation
+      const element = arr.slice(index, index + 1)[0];
+      return element ?? null;
     };
 
     for (let j = 0; j < geoLocation.length; j++) {

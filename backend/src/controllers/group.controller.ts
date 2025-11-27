@@ -1,10 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-
-import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
-import { MediaService } from '../services/media.service';
 import { groupModel } from '../models/group.model';
-import { userModel } from '../models/user.model';
 import {
   GetGroupResponse,
   UpdateGroupRequest,
@@ -13,7 +9,6 @@ import {
   IGroup,
   Activity,
 } from '../types/group.types';
-//import { getWebSocketService } from '../services/websocket.service';
 import { locationService } from '../services/location.service';
 import {
   GeoLocation,
@@ -27,45 +22,46 @@ import {
   sendGroupLeaveFCM,
   sendActivitySelectedFCM,
 } from '../services/fcm.service';
+import { AppErrorFactory } from '../utils/appError.util';
+import { groupService } from '../services/group.service';
 
 export class GroupController {
   async createGroup(
     req: Request<unknown, unknown, CreateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    res: Response<GetGroupResponse>
   ) {
-    try {
-      const {
-        groupName,
-        meetingTime,
-        groupLeaderId,
-        expectedPeople,
-        activityType,
-      } = req.body;
-      console.log(activityType);
-      const joinCode = Math.random().toString(36).slice(2, 8);
+    const { groupName, meetingTime, groupLeaderId, expectedPeople, activityType } = req.body;
 
-      // Use the GroupModel to create the group
-      const newGroup = await groupModel.create({
-        joinCode,
-        groupName,
-        groupLeaderId: groupLeaderId,
-        expectedPeople,
-        groupMemberIds: [groupLeaderId],
-        meetingTime: meetingTime, // Default to current time for now,
-        activityType: activityType,
-      });
-      //console.error('GroupController newGroup:', newGroup);
-      res.status(201).json({
-        message: `Group ${groupName} created successfully`,
-        data: {
-          group: newGroup,
-        },
-      });
-    } catch (error) {
-      logger.error('Failed to create group:', error);
-      next(error);
+    // Input validation
+    if (!groupName || typeof groupName !== 'string') {
+      throw AppErrorFactory.badRequest('groupName is required and must be a string');
     }
+    if (!meetingTime || typeof meetingTime !== 'string') {
+      throw AppErrorFactory.badRequest('meetingTime is required and must be a string');
+    }
+    if (!groupLeaderId || typeof groupLeaderId !== 'object') {
+      throw AppErrorFactory.badRequest('groupLeaderId is required and must be an object');
+    }
+    if (!activityType || typeof activityType !== 'string') {
+      throw AppErrorFactory.badRequest('activityType is required and must be a string');
+    }
+
+    // Call service to create group
+    const newGroup = await groupService.createGroup({
+      groupName,
+      meetingTime,
+      groupLeaderId,
+      expectedPeople: expectedPeople || 0,
+      groupMemberIds: [groupLeaderId],
+      activityType,
+    });
+
+    res.status(201).json({
+      message: `Group ${groupName} created successfully`,
+      data: {
+        group: newGroup,
+      },
+    });
   }
 
   async getAllGroups(

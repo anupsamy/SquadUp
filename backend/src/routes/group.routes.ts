@@ -40,7 +40,7 @@ router.post(
   '/create',
   validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
   (req, res, next) => {
-    groupController.createGroup(req, res, next).catch((error: unknown) => {
+    groupController.createGroup(req, res).catch((error: unknown) => {
       next(error);
     });
   }

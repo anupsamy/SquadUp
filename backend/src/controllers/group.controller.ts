@@ -345,8 +345,7 @@ export class GroupController {
           };
         });
 
-      const optimizedPoint =
-        await locationService.findOptimalMeetingPoint(locationInfo);
+      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       const activityList: Activity[] = [];
 
       const lat = optimizedPoint.lat;
@@ -418,8 +417,7 @@ export class GroupController {
           };
         });
 
-      const optimizedPoint =
-        await locationService.findOptimalMeetingPoint(locationInfo);
+      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
 
@@ -602,6 +600,8 @@ export class GroupController {
         joinCode,
         validatedActivity
       );
+
+      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
 
       // Send notifications to group members
       //const wsService = getWebSocketService();

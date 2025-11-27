@@ -15,6 +15,8 @@ import {
 import { addressSchema, userModel, UserModel } from './user.model';
 import { GoogleUserInfo } from './types/user.types';
 import logger from './utils/logger.util';
+import { LocationService } from './services/location.service';
+import { GeoLocation } from './types/location.types';
 
 const groupSchema = new Schema<IGroup>(
   {
@@ -237,6 +239,44 @@ export class GroupModel {
       throw new Error('Failed to update selected activity');
     }
   }
+
+  async updateMemberTravelTime(
+    group: IGroup | null,
+    locationService: LocationService
+  ): Promise<IGroup | null> {
+    if (!group) return null;
+    if (!group.selectedActivity) return group;
+    
+    const joinCode = group.joinCode;
+    const selectedActivity = group.selectedActivity;
+    const location: GeoLocation = {
+      lat: selectedActivity.latitude,
+      lng: selectedActivity.longitude,
+    };
+
+    // Update travel time
+    const updatedMembers: GroupUser[] = await Promise.all(
+      (group.groupMemberIds ?? []).map(async (user) => {
+        if (user.address?.lat != null && user.address?.lng != null) {
+          const travelTime = await locationService.getTravelTime(
+            { lat: user.address.lat, lng: user.address.lng, transitType: user.transitType },
+            location
+          );
+          return { ...user, travelTime: travelTime.toString() };
+        }
+        return user;
+      })
+    );
+
+    // Update in database
+    const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+      joinCode,
+      groupMemberIds: updatedMembers,
+    });
+
+    return updatedGroup;
+  }
+
 
   //TODO REMOVE
   async getActivities(joinCode: string): Promise<Activity[]> {

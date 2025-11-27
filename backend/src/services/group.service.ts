@@ -47,6 +47,25 @@ export class GroupService {
   private generateJoinCode(): string {
     return Math.random().toString(36).slice(2, 8).toUpperCase();
   }
+
+   /**
+   * Get all groups the user is a member of or leading
+   */
+  async getUserGroups(userId: string): Promise<IGroup[]> {
+    try {
+      const groups = await groupModel.findUserGroups(userId);
+      logger.info(`Fetched ${groups.length} groups for user ${userId}`);
+      return groups;
+    } catch (error) {
+      logger.error('Failed to fetch user groups:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to fetch groups',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
+
+  
 }
 
 export const groupService = GroupService.getInstance();

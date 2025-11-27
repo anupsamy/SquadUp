@@ -12,7 +12,7 @@ const router = Router();
 const groupController = new GroupController();
 
 router.get('/info', (req, res, next) => {
-  groupController.getAllGroups(req, res, next).catch((error: unknown) => {
+  groupController.getAllGroups(req, res).catch((error: unknown) => {
     next(error);
   });
 });

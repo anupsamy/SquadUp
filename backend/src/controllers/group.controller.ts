@@ -66,28 +66,25 @@ export class GroupController {
 
   async getAllGroups(
     req: Request,
-    res: Response<GetAllGroupsResponse>,
-    next: NextFunction
+    res: Response<GetAllGroupsResponse>
   ) {
-    try {
-      // Fetch all groups from the database
-      const groups = await groupModel.findAll();
-      // console.error('GroupController getAllGroups:', groups);
-      // console.error('GroupController groups[4].members:', groups[4].groupMemberIds);
-      //   console.error('GroupController groups[4]:', groups[4]);
-      const sanitizedGroups: IGroup[] = groups.map(group => ({
-        ...group.toObject(),
-        groupMemberIds: group.groupMemberIds ?? [], // Replace null/undefined with an empty array
-      }));
-      // console.error('GroupController sanitizedGroups:', sanitizedGroups[4]);
+    const userId = req.user?.id;
 
-      res.status(200).json({
-        message: 'Groups fetched successfully',
-        data: { groups: sanitizedGroups },
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch groups' });
+    if (!userId) {
+      throw AppErrorFactory.unauthorized('User not found in request');
     }
+
+    const groups = await groupService.getUserGroups(userId.toString());
+
+    const sanitizedGroups: IGroup[] = groups.map(group => ({
+      ...group.toObject(),
+      groupMemberIds: group.groupMemberIds ?? [],
+    }));
+
+    res.status(200).json({
+      message: 'Groups fetched successfully',
+      data: { groups: sanitizedGroups },
+    });
   }
 
   async getGroupByJoinCode(

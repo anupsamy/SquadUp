@@ -78,7 +78,7 @@ fun MainScreen(
     val snackBarHostState = remember { SnackbarHostState() }
 
     val currentUserId = profileUiState.user?._id
-    val filteredGroups = uiState.groups.filterUserGroups(currentUserId)
+    val filteredGroups = uiState.groups
 
     LaunchedEffect(Unit) { mainViewModel.fetchGroups(); profileViewModel.loadProfile() }
     LaunchedEffect(currentUserId, filteredGroups) { subscribeToUserGroups(currentUserId, filteredGroups) }
@@ -102,9 +102,9 @@ fun MainScreen(
     }
 }
 
-private fun List<GroupDataDetailed>.filterUserGroups(userId: String?) = filter { group ->
-    group.groupLeaderId?.id == userId || group.groupMemberIds?.any { it.id == userId } == true
-}
+//private fun List<GroupDataDetailed>.filterUserGroups(userId: String?) = filter { group ->
+//    group.groupLeaderId?.id == userId || group.groupMemberIds?.any { it.id == userId } == true
+//}
 
 private fun subscribeToUserGroups(userId: String?, groups: List<GroupDataDetailed>) {
     userId ?: return

@@ -122,13 +122,18 @@ export class GroupModel {
     }
   }
 
-  async findAll(): Promise<IGroup[]> {
+  async findUserGroups(userId: string): Promise<IGroup[]> {
     try {
-      const groups = await this.group.find(); // Fetch all groups
+      const groups = await this.group.find({
+        $or: [
+          { 'groupLeaderId.id': userId },
+          { 'groupMemberIds.id': userId }
+        ]
+      });
       return groups;
     } catch (error) {
-      //logger.error('Error fetching all groups:', error);
-      throw new Error('Failed to fetch all groups');
+      logger.error('Error fetching user groups:', error);
+      throw new Error('Failed to fetch user groups');
     }
   }
   //unused

@@ -178,7 +178,10 @@ export class GroupController {
   ) {
     const { joinCode, address, transitType, meetingTime, expectedPeople } =
       req.body;
-      logger.error('Request in groupSettings:', JSON.stringify(req.body, null, 2));
+    logger.error(
+      'Request in groupSettings:',
+      JSON.stringify(req.body, null, 2)
+    );
 
     const user = validateUserRequest(req.user);
     const validJoinCode = validateJoinCode(joinCode);
@@ -204,29 +207,18 @@ export class GroupController {
 
   async deleteGroupByJoinCode(
     req: Request<{ joinCode: string }>,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) {
-    try {
-      const { joinCode } = req.params;
+    const { joinCode } = req.params;
+    const user = validateUserRequest(req.user);
 
-      await groupModel.delete(joinCode); //NOTE: see if anything else needs to be removed first
+    validateJoinCode(joinCode);
 
-      res.status(200).json({
-        message: 'group deleted successfully',
-      });
-    } catch (error) {
-      logger.error('Failed to delete group:', error);
+    await groupService.deleteGroupByJoinCode(joinCode, user.id.toString());
 
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Failed to delete group';
-
-      return res.status(500).json({ message });
-    }
+    res.status(200).json({
+      message: 'Group deleted successfully',
+    });
   }
 
   async getMidpointByJoinCode(

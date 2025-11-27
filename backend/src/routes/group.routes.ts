@@ -71,11 +71,9 @@ router.post(
 router.delete(
   '/delete/:joinCode', // Define the route parameter
   (req, res, next) => {
-    groupController
-      .deleteGroupByJoinCode(req, res, next)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.deleteGroupByJoinCode(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 

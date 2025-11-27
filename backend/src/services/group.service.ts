@@ -192,10 +192,10 @@ export class GroupService {
         }
       }
 
-      const updatedGroup = await groupModel.updateGroupByJoinCode(
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+        ...updateData,
         joinCode,
-        { ...updateData, joinCode }
-      );
+      });
 
       if (!updatedGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
@@ -208,6 +208,35 @@ export class GroupService {
       logger.error('Failed to update group settings:', error);
       throw AppErrorFactory.internalServerError(
         'Failed to update group settings',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
+
+  async deleteGroupByJoinCode(joinCode: string, userId: string): Promise<void> {
+    try {
+      const group = await groupModel.findByJoinCode(joinCode);
+
+      if (!group) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      const isLeader = group.groupLeaderId.id === userId;
+
+      if (!isLeader) {
+        throw AppErrorFactory.forbidden(
+          'Only the group leader can delete the group'
+        );
+      }
+
+      await groupModel.delete(joinCode);
+
+      logger.info(`User ${userId} deleted group ${joinCode}`);
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to delete group:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to delete group',
         error instanceof Error ? error.message : undefined
       );
     }

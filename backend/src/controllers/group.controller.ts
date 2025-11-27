@@ -31,6 +31,7 @@ import {
   validateTransitType,
   validateUserRequest,
 } from '../utils/validation.util';
+import { geolocFromMidpoint } from '../utils/formatting.util';
 
 export class GroupController {
   async createGroup(
@@ -238,152 +239,49 @@ export class GroupController {
 
   async updateMidpointByJoinCode(
     req: Request<{ joinCode: string }>,
-    res: Response<getLocationResponse>,
-    next: NextFunction
+    res: Response<getLocationResponse>
   ) {
-    try {
-      const { joinCode } = req.params; // Extract the joinCode from the route parameters
+    const { joinCode } = req.params;
 
-      // Query the database for the group with the given joinCode
-      // Validate joinCode is a string before use
-      //IMPOSSIBLE TO HIT - will always be parsed as string in req
-      // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-      // if (!validatedJoinCodeForFind) {
-      //   res.status(400).json({
-      //     message: 'Invalid joinCode',
-      //     error: 'ValidationError'
-      //   });
-      //   return;
-      // }
-      const group = await groupModel.findByJoinCode(joinCode);
+    validateJoinCode(joinCode);
 
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
+    await groupService.invalidateMidpoint(joinCode);
+    const result = await groupService.getMidpointByJoinCode(joinCode);
 
-      const locationInfo: LocationInfo[] = (group.groupMemberIds ?? [])
-        .filter(member => member.address != null && member.transitType != null)
-        .map(member => {
-          // Type assertion is safe here because we've already filtered for non-null values
-          const address = member.address as Address;
-          const transitType = member.transitType as TransitType;
-          return {
-            address,
-            transitType,
-          };
-        });
-
-      const optimizedPoint =
-        await locationService.findOptimalMeetingPoint(locationInfo);
-      //const activityList = await locationService.getActivityList(optimizedPoint);
-      const activityList: Activity[] = [];
-
-      const lat = optimizedPoint.lat;
-      const lng = optimizedPoint.lng;
-
-      const midpoint = lat.toString() + ' ' + lng.toString();
-
-      // Need error handler
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
-        joinCode,
-        midpoint,
-      });
-
-      //console.log("Activities List: " , activityList);
-      res.status(200).json({
-        message: 'Get midpoint successfully!',
-        data: {
-          midpoint: {
-            location: {
-              lat: lat,
-              lng: lng,
-            },
-          },
-          activities: activityList,
-        },
-      });
-    } catch (error) {
-      logger.error('Failed to get midpoint joinCode:', error);
-      next(error);
-    }
+    res.status(200).json({
+      message: 'Updated midpoint successfully!',
+      data: result,
+    });
   }
 
-  async getActivities(req: Request, res: Response): Promise<void> {
-    try {
-      const { joinCode } = req.query;
+  //TODO: figure out if we can delete?
+  // async getActivities(req: Request, res: Response): Promise<void> {
+  //   const { joinCode } = req.query;
 
-      if (!joinCode || typeof joinCode !== 'string') {
-        res.status(400).json({
-          message: 'Join code is required',
-          data: null,
-          error: 'ValidationError',
-          details: null,
-        });
-        return;
-      }
-      //REDUNDANT CODACY FIX - joincode type already checked
-      // Validate joinCode is a string before use
-      // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-      // if (!validatedJoinCodeForFind) {
-      //   res.status(400).json({
-      //     message: 'Invalid joinCode',
-      //     data: null,
-      //     error: 'ValidationError',
-      //     details: null,
-      //   });
-      //   return;
-      // }
-      const group = await groupModel.findByJoinCode(joinCode);
+  //   const validJoinCode = validateJoinCode(joinCode);
 
-      if (!group) {
-        res.status(404).json({
-          message: 'Group not found',
-          data: null,
-          error: 'NotFound',
-          details: null,
-        });
-        return;
-      }
+  //   const group = await groupModel.findByJoinCode(validJoinCode);
 
-      if (!group.midpoint) {
-        res.status(404).json({
-          message: 'No midpoint available for this group',
-          data: null,
-          error: 'NoMidpoint',
-          details: null,
-        });
-        return;
-      }
+  //   if (!group) {
+  //     throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+  //   }
 
-      const parts = group.midpoint.trim().split(' ');
-      const location: GeoLocation = {
-        lat: Number(parts[0]),
-        lng: Number(parts[1]),
-      };
+  //   if (!group.midpoint) {
+  //     throw AppErrorFactory.badRequest('Group', 'missing midpoint');
+  //   }
 
-      const activities = await locationService.getActivityList(
-        location,
-        group.activityType
-      );
+  //   const location: GeoLocation = geolocFromMidpoint(group.midpoint);
 
-      res.status(200).json({
-        message: 'Fetched activities successfully',
-        data: activities,
-        error: null,
-        details: null,
-      });
-    } catch (error) {
-      logger.error('Error fetching activities:', error);
-      res.status(500).json({
-        message: 'Failed to fetch activities',
-        data: null,
-        error: error instanceof Error ? error.message : 'UnknownError',
-        details: null,
-      });
-    }
-  }
+  //   const activities = await locationService.getActivityList(
+  //     location,
+  //     group.activityType
+  //   );
+
+  //   res.status(200).json({
+  //     message: 'Fetched activities successfully',
+  //     data: activities,
+  //   });
+  // }
 
   // controller/activityController.ts
   async selectActivity(req: Request, res: Response): Promise<void> {

@@ -1,7 +1,7 @@
 import { GeoLocation } from '../types/location.types';
 
 export const GeoLocationToMidpoint = (geoLocation: GeoLocation): string => {
-  return `${geoLocation.lat},${geoLocation.lng}`;
+  return `${geoLocation.lat} ${geoLocation.lng}`;
 };
 
 export const latLngFromMidpoint = (
@@ -19,5 +19,10 @@ export const latLngFromMidpoint = (
     throw new Error(`Invalid numeric midpoint: "${midpoint}"`);
   }
 
+  return { lat, lng };
+};
+
+export const geolocFromMidpoint = (midpoint: string): GeoLocation => {
+  const { lat, lng } = latLngFromMidpoint(midpoint);
   return { lat, lng };
 };

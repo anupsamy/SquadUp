@@ -163,6 +163,7 @@ class GroupViewModel @Inject constructor(
                         val error = joinResult.exceptionOrNull()?.message ?: "Failed to update"
                         onError(error)
                     }
+                    resetMidpoint()
             } else {
                 val error = fetchResult.exceptionOrNull()?.message ?: "Failed to update member settings"
                 onError(error)
@@ -180,6 +181,7 @@ class GroupViewModel @Inject constructor(
 
     fun resetMidpoint() {
         _midpoint.value = null
+        _activities.value = emptyList()
     }
 
     fun clearMessages() {

@@ -10,11 +10,11 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface ActivityInterface {
-    @GET("group/activities")
-    suspend fun getActivities(
-        @Header("Authorization") authHeader: String,
-        @Query("joinCode") joinCode: String  // Changed from @Body to @Query
-    ): Response<ApiResponse<List<Activity>>>
+//    @GET("group/activities")
+//    suspend fun getActivities(
+//        @Header("Authorization") authHeader: String,
+//        @Query("joinCode") joinCode: String  // Changed from @Body to @Query
+//    ): Response<ApiResponse<List<Activity>>>
 
     @POST("group/activities/select")
     suspend fun selectActivity(

@@ -175,6 +175,10 @@ export class GroupModel {
           new: true,
         }
       );
+      logger.info(
+        `Model update result for ${joinCode}:`,
+        JSON.stringify(updatedGroup)
+      );
       return updatedGroup;
     } catch (error) {
       if (error instanceof z.ZodError) {

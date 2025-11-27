@@ -246,17 +246,17 @@ class GroupRepositoryImpl @Inject constructor(
 
     //activities
 
-    override suspend fun getActivities(joinCode: String): Result<List<Activity>> {
-        return try {
-            val response = activityInterface.getActivities("", joinCode)
-            val activities = response.body()?.data ?: emptyList()
-
-            Result.success(activities)
-        } catch (e: IOException) {
-            Log.e(TAG, "Error fetching activities", e)
-            Result.success(emptyList())
-        }
-    }
+//    override suspend fun getActivities(joinCode: String): Result<List<Activity>> {
+//        return try {
+//            val response = activityInterface.getActivities("", joinCode)
+//            val activities = response.body()?.data ?: emptyList()
+//
+//            Result.success(activities)
+//        } catch (e: IOException) {
+//            Log.e(TAG, "Error fetching activities", e)
+//            Result.success(emptyList())
+//        }
+//    }
 
 
     override suspend fun selectActivity(joinCode: String, activity: Activity): Result<Unit> {

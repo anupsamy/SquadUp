@@ -35,7 +35,7 @@ interface GroupRepository {
         joinCode: String, 
         userId: String
     ): Result<Unit>
-    suspend fun getActivities(joinCode: String): Result<List<Activity>>
+//    suspend fun getActivities(joinCode: String): Result<List<Activity>>
 
     suspend fun selectActivity(joinCode: String, activity: Activity): Result<Unit>
 

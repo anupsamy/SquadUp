@@ -19,7 +19,7 @@ router.get('/info', (req, res, next) => {
   });
 });
 
-router.get('/activities', groupController.getActivities.bind(groupController));
+// router.get('/activities', groupController.getActivities.bind(groupController));
 
 router.post(
   '/activities/select',

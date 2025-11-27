@@ -211,9 +211,15 @@ export class GroupService {
         joinCode,
       });
 
+      if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
       await this.invalidateMidpoint(joinCode);
 
-      if (!updatedGroup) {
+      const finalGroup = await groupModel.findByJoinCode(joinCode);
+
+      if (!finalGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
@@ -288,7 +294,7 @@ export class GroupService {
           midpoint: {
             location: { lat: parts.lat, lng: parts.lng },
           },
-          activities: group.activities || [], // Return cached activities as well
+          activities: group.activities || newActivities || [], // Return cached activities as well
         };
       }
 
@@ -366,14 +372,18 @@ export class GroupService {
     }
   }
 
-  private async invalidateMidpoint(joinCode: string): Promise<void> {
+  public async invalidateMidpoint(joinCode: string): Promise<void> {
     try {
+      logger.info(`Starting invalidation for group ${joinCode}`);
+
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
         midpoint: null,
         selectedActivity: undefined,
         activities: [],
       });
+
+      logger.info(`Invalidation result:`, JSON.stringify(updatedGroup));
 
       if (!updatedGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);

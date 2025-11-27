@@ -311,6 +311,7 @@ export class GroupController {
       //   return;
       // }
       const group = await groupModel.findByJoinCode(joinCode);
+      const activityList: Activity[] = [];
 
       if (!group) {
         return res.status(404).json({
@@ -329,6 +330,7 @@ export class GroupController {
                 lng: parseFloat(parts[1]),
               },
             },
+            activities: activityList,
           },
         });
       }
@@ -346,7 +348,6 @@ export class GroupController {
         });
 
       const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
-      const activityList: Activity[] = [];
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng;

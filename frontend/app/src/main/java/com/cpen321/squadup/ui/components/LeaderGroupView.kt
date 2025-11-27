@@ -139,7 +139,7 @@ fun LeaderGroupView(
     }
 
     val handleMidpointCalculation = {
-        groupViewModel.getMidpoint(group.joinCode)
+        groupViewModel.updateMidpoint(group.joinCode)
         activityPickerViewModel.loadActivities(group.joinCode)
     }
 

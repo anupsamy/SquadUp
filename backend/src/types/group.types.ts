@@ -89,7 +89,6 @@ export const basicGroupSchema = z.object({
     email: z.string().min(1, 'Email is required'),
     address: addressSchema.optional(),
     transitType: transitTypeSchema.optional(),
-    travelTime: z.string().optional()
   }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
   groupMemberIds: z
@@ -100,6 +99,7 @@ export const basicGroupSchema = z.object({
         email: z.string().min(1, 'Email is required'),
         address: addressSchema.optional(),
         transitType: transitTypeSchema.optional(),
+        travelTime: z.string().optional()
       })
     )
     .optional(),

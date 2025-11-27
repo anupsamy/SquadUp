@@ -74,6 +74,7 @@ const groupSchema = new Schema<IGroup>(
             required: false,
           },
           transitType: { type: String, required: false, trim: true },
+          travelTime: { type: String, required: false, trim: true }
         },
       ],
       required: false,
@@ -244,37 +245,53 @@ export class GroupModel {
     group: IGroup | null,
     locationService: LocationService
   ): Promise<IGroup | null> {
-    if (!group) return null;
-    if (!group.selectedActivity) return group;
+    try {
+      if (!group) return group;
+      if (!group.selectedActivity) return group;
 
-    const joinCode = group.joinCode;
-    const selectedActivity = group.selectedActivity;
-    const location: GeoLocation = {
-      lat: selectedActivity.latitude,
-      lng: selectedActivity.longitude,
-    };
+      const joinCode = group.joinCode;
+      const selectedActivity = group.selectedActivity;
+      const location: GeoLocation = {
+        lat: selectedActivity.latitude,
+        lng: selectedActivity.longitude,
+      };
 
-    // Update travel time
-    const updatedMembers: GroupUser[] = await Promise.all(
-      (group.groupMemberIds ?? []).map(async (user) => {
-        if (user.address?.lat != null && user.address?.lng != null) {
-          const travelTime = await locationService.getTravelTime(
-            { lat: user.address.lat, lng: user.address.lng, transitType: user.transitType },
-            location
-          );
-          return { ...user, travelTime: travelTime.toString() };
-        }
-        return user;
-      })
-    );
+      const existingGroupMemberIds = group.groupMemberIds;
+      if (!existingGroupMemberIds) return group;
 
-    // Update in database
-    const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
-      joinCode,
-      groupMemberIds: updatedMembers,
-    });
+      // Update travel time
+      const updatedMembers: GroupUser[] = await Promise.all(
+        (existingGroupMemberIds).map(async (user: GroupUser) => {
+          if (user.address?.lat != null && user.address?.lng != null) {
+            const travelTime = await locationService.getTravelTime(
+              { lat: user.address.lat, lng: user.address.lng, transitType: user.transitType },
+              location
+            );
 
-    return updatedGroup;
+            return {
+              id: user.id,
+              name: user.name,
+              address: user.address,
+              email: user.email,
+              transitType: user.transitType,
+              travelTime: travelTime.toFixed(2).toString()
+            };
+          }
+          return user;
+        })
+      );
+
+      // Update in database
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+        joinCode,
+        groupMemberIds: updatedMembers,
+      });
+
+      return updatedGroup;
+    } catch (error) {
+      console.error('Error: ', error);
+      throw new Error('Failed to update member travel time');
+    }
   }
 
 

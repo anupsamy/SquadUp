@@ -4,7 +4,10 @@ import express from 'express';
 import { createServer } from 'http';
 
 import { connectDB } from './database';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
+import {
+  errorHandler,
+  notFoundHandler,
+} from './middleware/errorHandler.middleware';
 import router from './routes';
 import path from 'path';
 import { initializeWebSocketService } from './services/websocket.service';
@@ -28,7 +31,7 @@ try {
   console.error('❌ Failed to initialize WebSocket service:', error);
 }
 
-connectDB();
+void connectDB();
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🔌 WebSocket server available at ws://localhost:${PORT}/ws`);

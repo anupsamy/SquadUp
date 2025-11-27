@@ -72,7 +72,6 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-
 export class UserModel {
   private user: mongoose.Model<IUser>;
 

@@ -3,11 +3,11 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { userModel } from '../user.model';
 
-export const authenticateToken: RequestHandler = async (
+export const authenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
@@ -20,18 +20,20 @@ export const authenticateToken: RequestHandler = async (
       return;
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: mongoose.Types.ObjectId;
-    };
-
-    if (!decoded || !decoded.id) {
-      res.status(401).json({
-        error: 'Invalid token',
-        message: 'Token verification failed',
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      res.status(500).json({
+        error: 'Server configuration error',
+        message: 'JWT_SECRET is not configured',
       });
       return;
     }
 
+    const decoded = jwt.verify(token, jwtSecret) as {
+      id: mongoose.Types.ObjectId;
+    };
+
+    // jwt.verify throws an error for invalid tokens, so if we reach here, decoded is valid
     const user = await userModel.findById(decoded.id);
 
     if (!user) {

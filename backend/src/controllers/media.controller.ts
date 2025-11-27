@@ -26,22 +26,23 @@ export class MediaController {
       }
 
       const rawFilePath = req.file.path;
-      const filePath: string = typeof rawFilePath === 'string' ? rawFilePath : '';
+      const filePath: string =
+        typeof rawFilePath === 'string' ? rawFilePath : '';
       const sanitizedFilePath = sanitizeInput(filePath);
-      
+
       const image = await MediaService.saveImage(
         sanitizedFilePath,
         user._id.toString()
       );
 
       if (!image) {
-        throw new Error("Error Saving Image");
+        throw new Error('Error Saving Image');
       }
 
       res.status(200).json({
         message: 'Image uploaded successfully',
         data: {
-          image
+          image,
         },
       });
     } catch (error) {
@@ -51,8 +52,8 @@ export class MediaController {
         error instanceof Error
           ? error.message
           : typeof error === 'string'
-          ? error
-          : 'Failed to upload profile picture';
+            ? error
+            : 'Failed to upload profile picture';
 
       res.status(500).json({ message });
     }

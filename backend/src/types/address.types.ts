@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 import mongoose from 'mongoose';
 
 const AddressComponentsSchema = new mongoose.Schema(
@@ -25,8 +25,8 @@ export const mongoAddressSchema = new mongoose.Schema(
 );
 
 export interface Address {
-  formatted: string;  // e.g. "1600 Amphitheatre Pkwy, Mountain View, CA"
-  placeId?: string;   // from Google Places API
+  formatted: string; // e.g. "1600 Amphitheatre Pkwy, Mountain View, CA"
+  placeId?: string; // from Google Places API
   lat?: number;
   lng?: number;
   components?: {
@@ -40,7 +40,7 @@ export interface Address {
 }
 
 export const zodAddressSchema = z.object({
-  formatted: z.string().min(1, "Formatted address is required"),
+  formatted: z.string().min(1, 'Formatted address is required'),
   placeId: z.string().optional(),
   lat: z.number().optional(),
   lng: z.number().optional(),

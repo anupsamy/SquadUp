@@ -42,7 +42,11 @@ export class AuthService {
   }
 
   private generateAccessToken(user: IUser): string {
-    return jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is not configured');
+    }
+    return jwt.sign({ id: user._id }, jwtSecret, {
       expiresIn: '19h',
     });
   }
@@ -73,7 +77,6 @@ export class AuthService {
   async signInWithGoogle(idToken: string): Promise<AuthResult> {
     try {
       const googleUserInfo = await this.verifyGoogleToken(idToken);
-      
 
       // Find existing user
       const user = await userModel.findByGoogleId(googleUserInfo.googleId);

@@ -23,7 +23,7 @@ export class MediaService {
 
   static async deleteImage(url: string): Promise<void> {
     try {
-      const filePath = path.join(process.cwd(),IMAGES_DIR, url);
+      const filePath = path.join(process.cwd(), IMAGES_DIR, url);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -43,7 +43,7 @@ export class MediaService {
 
       await Promise.all(userFiles.map(file => this.deleteImage(file)));
     } catch (error) {
-      console.error('Failed to delete user images:', error); 
+      console.error('Failed to delete user images:', error);
     }
   }
 }

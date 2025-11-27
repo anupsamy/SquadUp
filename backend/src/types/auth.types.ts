@@ -29,7 +29,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: IUser;
-      group?:IGroup;
+      group?: IGroup;
     }
   }
 }

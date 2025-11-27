@@ -57,12 +57,13 @@ private fun EmptyActivitiesState(modifier: Modifier = Modifier) {
 private fun ActivitiesList(
     activities: List<Activity>,
     selectedActivityId: String?,
-    onActivityClick: (String) -> Unit
+    onActivityClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = modifier
+            //.fillMaxSize()
+            .padding(horizontal = 16.dp)
     ) {
         items(activities) { activity ->
             val activityInfo = ActivityInfo(
@@ -94,7 +95,7 @@ private fun SelectActivityButton(
         onClick = onSelectClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .scale(if (isPressed) 0.95f else 1f),
         enabled = enabled,
         interactionSource = interactionSource
@@ -129,33 +130,41 @@ fun ActivityPicker(
         Unit
     }
 
-    if (activities.isEmpty()) {
-        EmptyActivitiesState(modifier = modifier)
-    } else {
-        Box(modifier = modifier.fillMaxSize()) {
+    // WRAP EVERYTHING IN A BOX
+    Box(modifier = modifier.fillMaxSize()) {
+        if (activities.isEmpty()) {
+            EmptyActivitiesState()
+        } else {
+            // The Column contains the List and the Button
             Column(modifier = Modifier.fillMaxSize()) {
+
+                // 1. The List takes up all available space
                 ActivitiesList(
                     activities = sortedActivities,
                     selectedActivityId = selectedActivityId,
-                    onActivityClick = { viewModel.selectActivity(it) }
+                    onActivityClick = { viewModel.selectActivity(it) },
+                    modifier = Modifier
+                        .weight(1f) // This pushes the button down
+                        .fillMaxWidth()
                 )
 
+                // 2. The Button sits at the bottom of the Column
                 SelectActivityButton(
                     enabled = selectedActivityId != null,
                     onSelectClick = handleSelectClick,
                     interactionSource = interactionSource
                 )
             }
-
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 80.dp)
-            )
         }
+
+        // The Snackbar sits on top of the Column, aligned to bottom
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
+
 
 data class ActivityInfo(
     val name: String,
@@ -181,7 +190,7 @@ fun ActivityCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         onClick = onClick

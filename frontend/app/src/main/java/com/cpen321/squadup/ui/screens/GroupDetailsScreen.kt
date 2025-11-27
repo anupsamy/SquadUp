@@ -110,7 +110,7 @@ fun GroupDetailsScreen(
             if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, selectedActivity = selectedActivity, modifier = Modifier.weight(1f))
             else MemberGroupView(profileUiState.user, group, groupViewModel, midpoint, selectedActivity, Modifier.weight(1f))
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
             JoinCodeSection(group.joinCode)
             Spacer(Modifier.height(8.dp))
             MembersHostSection(group)

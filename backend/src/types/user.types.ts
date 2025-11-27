@@ -1,6 +1,6 @@
 import mongoose, { Document } from 'mongoose';
 import z from 'zod';
-import {Address, zodAddressSchema} from './address.types';
+import { Address, zodAddressSchema } from './address.types';
 import { TransitType, transitTypeSchema } from './transit.types';
 
 // User model

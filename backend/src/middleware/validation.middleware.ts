@@ -21,7 +21,7 @@ export const validateBody = <T>(schema: z.ZodSchema<T>): RequestHandler => {
           })),
         });
       }
-    
+
       console.error('Unexpected validation error:', error);
       return res.status(500).json({
         error: 'Internal server error',

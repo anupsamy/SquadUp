@@ -1,6 +1,6 @@
-import type { Address } from "./address.types";
-import { Activity } from "./group.types";
-import type { TransitType } from "./transit.types";
+import type { Address } from './address.types';
+import { Activity } from './group.types';
+import type { TransitType } from './transit.types';
 
 export interface LocationInfo {
   address: Address;
@@ -8,10 +8,10 @@ export interface LocationInfo {
 }
 
 export interface GeoLocation {
-    formatted?: String,
-    lat: number,
-    lng: number,
-    transitType?: TransitType
+  formatted?: String;
+  lat: number;
+  lng: number;
+  transitType?: TransitType;
 }
 
 // types/location.ts (update existing)
@@ -22,7 +22,7 @@ export type getLocationResponse = {
       location: {
         lat: number;
         lng: number;
-      }
+      };
     };
     activities?: Activity[];
   };

@@ -26,12 +26,17 @@ export function initialize() {
     const serviceAccount = JSON.parse(keyJson as string) as ServiceAccount;
     // Normalize private_key newlines if the JSON contains escaped \n sequences
     if (typeof serviceAccount.private_key === 'string') {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      serviceAccount.private_key = serviceAccount.private_key.replace(
+        /\\n/g,
+        '\n'
+      );
     }
     // admin.credential.cert accepts string | ServiceAccount
     // Cast to unknown first, then to the expected type to satisfy TypeScript
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as unknown as admin.ServiceAccount),
+      credential: admin.credential.cert(
+        serviceAccount as unknown as admin.ServiceAccount
+      ),
     });
     initialized = true;
     logger.info('Firebase Admin initialized');
@@ -48,7 +53,8 @@ export type FcmPayload = {
 
 export async function sendToTokens(tokens: string[], payload: FcmPayload) {
   initialize();
-  if (!initialized || tokens.length === 0) return { success: 0, failure: tokens.length };
+  if (!initialized || tokens.length === 0)
+    return { success: 0, failure: tokens.length };
   try {
     const res = await admin.messaging().sendEachForMulticast({
       tokens,
@@ -80,7 +86,12 @@ export async function sendToTopic(topic: string, payload: FcmPayload) {
   }
 }
 
-export async function sendGroupJoinFCM(joinCode: string, userName: string, groupName: string, actingUserId: string) {
+export async function sendGroupJoinFCM(
+  joinCode: string,
+  userName: string,
+  groupName: string,
+  actingUserId: string
+) {
   const title = 'Group Member Joined';
   const body = `${userName} joined the group "${groupName}"`;
   return sendToTopic(joinCode, {
@@ -97,7 +108,12 @@ export async function sendGroupJoinFCM(joinCode: string, userName: string, group
   });
 }
 
-export async function sendGroupLeaveFCM(joinCode: string, userName: string, groupName: string, actingUserId: string) {
+export async function sendGroupLeaveFCM(
+  joinCode: string,
+  userName: string,
+  groupName: string,
+  actingUserId: string
+) {
   const title = 'Group Member Left';
   const body = `${userName} left the group "${groupName}"`;
   return sendToTopic(joinCode, {
@@ -114,7 +130,13 @@ export async function sendGroupLeaveFCM(joinCode: string, userName: string, grou
   });
 }
 
-export async function sendActivitySelectedFCM(joinCode: string, activityName: string, groupName: string, leaderId: string, activityData?: string) {
+export async function sendActivitySelectedFCM(
+  joinCode: string,
+  activityName: string,
+  groupName: string,
+  leaderId: string,
+  activityData?: string
+) {
   const title = 'Activity Selected';
   const body = `Group leader selected "${activityName}" for the group "${groupName}"`;
   return sendToTopic(joinCode, {

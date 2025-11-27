@@ -27,9 +27,9 @@ export class WebSocketService {
   constructor(server: Server) {
     console.log('🔧 Creating WebSocket server...');
     try {
-      this.wss = new WebSocketServer({  
+      this.wss = new WebSocketServer({
         server,
-        path: '/ws'
+        path: '/ws',
       });
 
       this.setupWebSocketServer();
@@ -78,7 +78,7 @@ export class WebSocketService {
           this.sendError(ws, 'Missing userId or joinCode for subscription');
         }
         break;
-      
+
       case 'unsubscribe':
         if (userId && joinCode) {
           this.unsubscribeFromGroup(ws, userId, joinCode);
@@ -86,11 +86,14 @@ export class WebSocketService {
           this.sendError(ws, 'Missing userId or joinCode for unsubscription');
         }
         break;
-      
+
       case 'ping':
-        this.sendMessage(ws, { type: 'pong', timestamp: new Date().toISOString() });
+        this.sendMessage(ws, {
+          type: 'pong',
+          timestamp: new Date().toISOString(),
+        });
         break;
-      
+
       default:
         this.sendError(ws, `Unknown message type: ${type}`);
     }
@@ -99,7 +102,7 @@ export class WebSocketService {
   private subscribeToGroup(ws: WebSocket, userId: string, joinCode: string) {
     // Store client connection
     this.clients.set(userId, ws);
-    
+
     // Add to group subscription
     if (!this.groupSubscriptions.has(joinCode)) {
       this.groupSubscriptions.set(joinCode, new Set());
@@ -109,7 +112,11 @@ export class WebSocketService {
     logger.info(`User ${userId} subscribed to group ${joinCode}`);
   }
 
-  private unsubscribeFromGroup(ws: WebSocket, userId: string, joinCode: string) {
+  private unsubscribeFromGroup(
+    ws: WebSocket,
+    userId: string,
+    joinCode: string
+  ) {
     // Remove from group subscription
     const subscribers = this.groupSubscriptions.get(joinCode);
     if (subscribers) {
@@ -127,15 +134,18 @@ export class WebSocketService {
     for (const [userId, clientWs] of this.clients.entries()) {
       if (clientWs === ws) {
         this.clients.delete(userId);
-        
+
         // Remove from all group subscriptions
-        for (const [joinCode, subscribers] of this.groupSubscriptions.entries()) {
+        for (const [
+          joinCode,
+          subscribers,
+        ] of this.groupSubscriptions.entries()) {
           subscribers.delete(userId);
           if (subscribers.size === 0) {
             this.groupSubscriptions.delete(joinCode);
           }
         }
-        
+
         logger.info(`User ${userId} disconnected`);
         break;
       }
@@ -143,7 +153,12 @@ export class WebSocketService {
   }
 
   // Public methods for sending notifications
-  public notifyGroupJoin(joinCode: string, userId: string, userName: string, groupName: string) {
+  public notifyGroupJoin(
+    joinCode: string,
+    userId: string,
+    userName: string,
+    groupName: string
+  ) {
     const message: WebSocketMessage = {
       type: 'group_join',
       groupId: '',
@@ -151,14 +166,19 @@ export class WebSocketService {
       userId,
       userName,
       message: `${userName} joined the group "${groupName}"`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     this.broadcastToGroup(joinCode, message);
     logger.info(`Notified group ${joinCode} about user ${userName} joining`);
   }
 
-  public notifyGroupLeave(joinCode: string, userId: string, userName: string, groupName: string) {
+  public notifyGroupLeave(
+    joinCode: string,
+    userId: string,
+    userName: string,
+    groupName: string
+  ) {
     const message: WebSocketMessage = {
       type: 'group_leave',
       groupId: '',
@@ -166,7 +186,7 @@ export class WebSocketService {
       userId,
       userName,
       message: `${userName} left the group "${groupName}"`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     this.broadcastToGroup(joinCode, message);
@@ -182,7 +202,7 @@ export class WebSocketService {
       userName: '',
       message,
       timestamp: new Date().toISOString(),
-      data
+      data,
     };
 
     this.broadcastToGroup(joinCode, wsMessage);
@@ -221,7 +241,9 @@ export class WebSocketService {
       }
     });
 
-    logger.info(`Broadcast to group ${joinCode}: ${successCount} success, ${failureCount} failures`);
+    logger.info(
+      `Broadcast to group ${joinCode}: ${successCount} success, ${failureCount} failures`
+    );
   }
 
   private sendMessage(ws: WebSocket, message: unknown) {
@@ -238,7 +260,7 @@ export class WebSocketService {
       userId: '',
       userName: '',
       message: errorMessage,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -247,11 +269,10 @@ export class WebSocketService {
       totalClients: this.clients.size,
       totalGroups: this.groupSubscriptions.size,
       groupSubscriptions: Object.fromEntries(
-        Array.from(this.groupSubscriptions.entries()).map(([joinCode, subscribers]) => [
-          joinCode,
-          subscribers.size
-        ])
-      )
+        Array.from(this.groupSubscriptions.entries()).map(
+          ([joinCode, subscribers]) => [joinCode, subscribers.size]
+        )
+      ),
     };
   }
 }
@@ -259,7 +280,9 @@ export class WebSocketService {
 // Singleton instance
 let wsService: WebSocketService | null = null;
 
-export const initializeWebSocketService = (server: Server): WebSocketService => {
+export const initializeWebSocketService = (
+  server: Server
+): WebSocketService => {
   if (!wsService) {
     wsService = new WebSocketService(server);
   }

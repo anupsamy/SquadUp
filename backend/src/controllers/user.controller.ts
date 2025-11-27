@@ -36,7 +36,7 @@ export class UserController {
       const updatedUser = await userModel.update(user._id, {
         name: name,
         transitType: transitType,
-        address, 
+        address,
       });
 
       if (!updatedUser) {
@@ -44,7 +44,7 @@ export class UserController {
           message: 'User not found',
         });
       }
-      
+
       res.status(200).json({
         message: 'User info updated successfully',
         data: { user: updatedUser },

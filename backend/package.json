@@ -8,7 +8,9 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "format": "prettier --check \"src/**/*.{ts,js,json}\"",
     "format:fix": "prettier --write \"src/**/*.{ts,js,json}\"",
-    "test": "jest --passWithNoTests --detectOpenHandles --runInBand"
+    "test": "jest --passWithNoTests --detectOpenHandles --runInBand",
+    "lint": "eslint \"src/**/*.{ts,js}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,js}\" --fix"
   },
   "author": "",
   "license": "ISC",
@@ -39,7 +41,12 @@
     "@types/node": "^20.19.24",
     "@types/supertest": "^6.0.3",
     "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "dotenv-cli": "^10.0.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
     "nodemon": "^3.0.0",
     "prettier": "^3.6.2",

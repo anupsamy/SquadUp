@@ -440,6 +440,42 @@ export class GroupService {
       );
     }
   }
+
+  async leaveGroup(joinCode: string, userId: string): Promise<void> {
+    try {
+      const group = await groupModel.findByJoinCode(joinCode);
+
+      if (!group) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      const isLeader = group.groupLeaderId.id === userId;
+      const updatedMembers = (group.groupMemberIds ?? []).filter(
+        member => member.id !== userId
+      );
+
+      if (isLeader && updatedMembers.length > 0) {
+        await groupModel.transferLeadership(
+          joinCode,
+          updatedMembers[0],
+          updatedMembers.slice(1)
+        );
+      } else if (isLeader && updatedMembers.length === 0) {
+        await groupModel.deleteGroup(joinCode);
+      } else {
+        await groupModel.removeUserFromGroup(joinCode, userId);
+      }
+
+      logger.info(`User ${userId} left group ${joinCode}`);
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to leave group:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to leave group',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
 }
 
 export const groupService = GroupService.getInstance();

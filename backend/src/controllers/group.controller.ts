@@ -284,33 +284,35 @@ export class GroupController {
   // }
 
   async selectActivity(
-  req: Request<unknown, unknown, { joinCode: string; activity: Activity }>,
-  res: Response<GetGroupResponse>
-) {
-  const { joinCode, activity } = req.body;
-  const user = validateUserRequest(req.user);
+    req: Request<unknown, unknown, { joinCode: string; activity: Activity }>,
+    res: Response<GetGroupResponse>
+  ) {
+    const { joinCode, activity } = req.body;
+    const user = validateUserRequest(req.user);
 
-  const validJoinCode = validateJoinCode(joinCode);
+    const validJoinCode = validateJoinCode(joinCode);
 
-  if (!activity || typeof activity !== 'object') {
-    throw AppErrorFactory.badRequest('activity is required and must be an object');
+    if (!activity || typeof activity !== 'object') {
+      throw AppErrorFactory.badRequest(
+        'activity is required and must be an object'
+      );
+    }
+
+    if (!activity.placeId || !activity.name) {
+      throw AppErrorFactory.badRequest('Activity must have placeId and name');
+    }
+
+    const updatedGroup = await groupService.selectActivity(
+      validJoinCode,
+      user.id.toString(),
+      activity
+    );
+
+    res.status(200).json({
+      message: 'Activity selected successfully',
+      data: { group: updatedGroup },
+    });
   }
-
-  if (!activity.placeId || !activity.name) {
-    throw AppErrorFactory.badRequest('Activity must have placeId and name');
-  }
-
-  const updatedGroup = await groupService.selectActivity(
-    validJoinCode,
-    user.id.toString(),
-    activity
-  );
-
-  res.status(200).json({
-    message: 'Activity selected successfully',
-    data: { group: updatedGroup },
-  });
-}
   //BELOW FOR SELECT ACTIVITy
   // Send notifications to group members
   //const wsService = getWebSocketService();
@@ -375,36 +377,21 @@ export class GroupController {
       );
     }*/
 
-  async leaveGroup(
-    req: Request<{ joinCode: string }, unknown, { userId: string }>,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      const { joinCode } = req.params;
-      const { userId } = req.body;
+  async leaveGroup(req: Request<{ joinCode: string }>, res: Response) {
+    const { joinCode } = req.params;
+    const user = validateUserRequest(req.user);
 
-      // Get the current group to get user info before they leave
-      const currentGroup = await groupModel.findByJoinCode(joinCode);
-      if (!currentGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
+    const validJoinCode = validateJoinCode(joinCode);
 
-      // Find the user who is leaving
-      const leavingUser =
-        (currentGroup.groupMemberIds ?? []).find(
-          member => member.id === userId
-        ) ||
-        (currentGroup.groupLeaderId.id === userId
-          ? currentGroup.groupLeaderId
-          : null);
+    await groupService.leaveGroup(validJoinCode, user.id.toString());
 
-      const result = await groupModel.leaveGroup(joinCode, userId);
-
-      // Send WebSocket notification for user leaving
-      /*const wsService = getWebSocketService();
+    res.status(200).json({
+      message: 'Left group successfully',
+    });
+  }
+  //leave group notif
+  // Send WebSocket notification for user leaving
+  /*const wsService = getWebSocketService();
       if (wsService && leavingUser) {
         wsService.notifyGroupLeave(
           joinCode,
@@ -438,25 +425,6 @@ export class GroupController {
             { newLeader: result.newLeader }
           );
         }*/
-
-      res.status(200).json({
-        message: 'Left group successfully',
-        data: result.newLeader ? { newLeader: result.newLeader } : undefined,
-      });
-      //}
-    } catch (error) {
-      logger.error('Failed to leave group:', error);
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Failed to leave group';
-
-      return res.status(500).json({ message });
-    }
-  }
 
   // Test endpoint for WebSocket notifications
   /* async testWebSocketNotification(

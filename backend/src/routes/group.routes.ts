@@ -90,7 +90,7 @@ router.post(
 router.post(
   '/leave/:joinCode', // Define the route parameter
   (req, res, next) => {
-    groupController.leaveGroup(req, res, next).catch((error: unknown) => {
+    groupController.leaveGroup(req, res).catch((error: unknown) => {
       next(error);
     });
   }

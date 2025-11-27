@@ -13,7 +13,10 @@ import { TransitType } from '../types/transit.types';
 import { locationService } from './location.service';
 import { GeoLocation, LocationInfo } from '../types/location.types';
 import { Address } from '../types/address.types';
-import { GeoLocationToMidpoint, latLngFromMidpoint } from '../utils/formatting.util';
+import {
+  GeoLocationToMidpoint,
+  latLngFromMidpoint,
+} from '../utils/formatting.util';
 
 export class GroupService {
   private static instance: GroupService;
@@ -121,6 +124,8 @@ export class GroupService {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
+      await this.invalidateMidpoint(joinCode);
+
       logger.info(`User ${userId} joined group ${joinCode}`);
       return updatedGroup;
     } catch (error) {
@@ -206,6 +211,8 @@ export class GroupService {
         joinCode,
       });
 
+      await this.invalidateMidpoint(joinCode);
+
       if (!updatedGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
@@ -257,18 +264,29 @@ export class GroupService {
   }> {
     try {
       const group = await groupModel.findByJoinCode(joinCode);
-      logger.error('Group fetched for midpoint calculation:', JSON.stringify(group));
+      logger.error(
+        'Group fetched for midpoint calculation:',
+        JSON.stringify(group)
+      );
 
       if (!group) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
       // Return cached midpoint if it exists
+      let newActivities;
       if (group.midpoint) {
         const parts = latLngFromMidpoint(group.midpoint);
+        //TODO: figure out why midpoint persists but activities do not - below is hacky fix
+        if (!group.activities) {
+          newActivities = await locationService.getActivityList(
+            { lat: parts.lat, lng: parts.lng },
+            group.activityType
+          );
+        }
         return {
           midpoint: {
-            location: { lat: parts.lat, lng: parts.lng},
+            location: { lat: parts.lat, lng: parts.lng },
           },
           activities: group.activities || [], // Return cached activities as well
         };
@@ -281,8 +299,10 @@ export class GroupService {
       const optimizedPoint = await this.getMidpointSafe(locationInfo);
       logger.error('Midpoint Calculated:', JSON.stringify(optimizedPoint));
 
-      const activityList =
-        await locationService.getActivityList(optimizedPoint, group.activityType);
+      const activityList = await locationService.getActivityList(
+        optimizedPoint,
+        group.activityType
+      );
 
       logger.error('Activity List:', JSON.stringify(activityList));
 
@@ -345,7 +365,30 @@ export class GroupService {
       );
     }
   }
-  //TODO: invalidate cached midpoint method
+
+  private async invalidateMidpoint(joinCode: string): Promise<void> {
+    try {
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+        joinCode,
+        midpoint: null,
+        selectedActivity: undefined,
+        activities: [],
+      });
+
+      if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      logger.info(`Invalidated midpoint and activity for group ${joinCode}`);
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to invalidate midpoint:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to invalidate midpoint',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
 }
 
 export const groupService = GroupService.getInstance();

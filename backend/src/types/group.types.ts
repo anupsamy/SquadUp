@@ -16,7 +16,7 @@ export interface IGroup extends Document {
   groupLeaderId: GroupUser;
   expectedPeople: number;
   groupMemberIds?: GroupUser[]; //Change to object of users later maybe, optional in schema
-  midpoint: string;
+  midpoint?: string | null;
   activityType: string;
   selectedActivity?: Activity;
   activities?: Activity[];
@@ -101,7 +101,7 @@ export const updateGroupSchema = z.object({
     )
     .optional(),
   meetingTime: z.string().optional(),
-  midpoint: z.string().default('').optional(),
+  midpoint: z.string().nullable().optional(),
   activityType: z.string().optional(),
   activities: z.array(activityZodSchema).optional(),
 });
@@ -146,7 +146,6 @@ export const activitySchema = new Schema(
   },
   { _id: false }
 ); // _id: false prevents creating an _id for subdocument
-
 
 //Activity model
 

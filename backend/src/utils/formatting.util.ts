@@ -1,9 +1,8 @@
-import { GeoLocation } from "../types/location.types";
-
+import { GeoLocation } from '../types/location.types';
 
 export const GeoLocationToMidpoint = (geoLocation: GeoLocation): string => {
   return `${geoLocation.lat},${geoLocation.lng}`;
-}
+};
 
 export const latLngFromMidpoint = (
   midpoint: string

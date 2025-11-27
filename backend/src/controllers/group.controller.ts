@@ -24,6 +24,8 @@ import {
 } from '../services/fcm.service';
 import { AppErrorFactory } from '../utils/appError.util';
 import { groupService } from '../services/group.service';
+import '../types/express.types';
+import { validateUserRequest } from '../utils/validation.util';
 
 export class GroupController {
   async createGroup(
@@ -123,45 +125,39 @@ export class GroupController {
     });
   }
 
-  //unused
-  // getGroup(req: Request, res: Response<GetGroupResponse>) {
-  //   const group = req.group!;
-  //   res.status(200).json({
-  //     message: 'Group fetched successfully',
-  //     data: { group },
-  //   });
-  // }
-
   async joinGroupByJoinCode(
-    req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    req: Request<unknown, unknown, { joinCode: string }>,
+    res: Response<GetGroupResponse>
   ) {
-    try {
-      const { joinCode, expectedPeople, groupMemberIds } = req.body;
+    const { joinCode } = req.body;
+    const user = validateUserRequest(req.user);
 
-      // Get the current group to compare member changes
-      const currentGroup = await groupModel.findByJoinCode(joinCode);
-      if (!currentGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
+    if (!joinCode || typeof joinCode !== 'string') {
+      throw AppErrorFactory.badRequest(
+        'joinCode is required and must be a string'
+      );
+    }
+
+    const updatedGroup = await groupService.joinGroupByJoinCode(
+      joinCode,
+      user.id.toString(),
+      {
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+        address: user.address,
+        transitType: user.transitType,
       }
+    );
 
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
-        joinCode,
-        expectedPeople,
-        groupMemberIds: groupMemberIds || [],
-      });
-
-      if (!updatedGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
-
-      // Send WebSocket notifications for new members
-      /*const wsService = getWebSocketService();
+    res.status(200).json({
+      message: 'Joined group successfully',
+      data: { group: updatedGroup },
+    });
+  }
+  //TODO: add back to join grou in group service?
+  // Send WebSocket notifications for new members
+  /*const wsService = getWebSocketService();
       if (wsService) {
         const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
         const newMemberIds = (groupMemberIds || []).map(member => member.id);
@@ -183,24 +179,6 @@ export class GroupController {
           void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
         });
       }*/
-
-      res.status(200).json({
-        message: 'Group info updated successfully',
-        data: { group: updatedGroup },
-      });
-    } catch (error) {
-      logger.error('Failed to update group info:', error);
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Failed to update group info';
-
-      return res.status(500).json({ message });
-    }
-  }
 
   async updateGroupByJoinCode(
     req: Request<unknown, unknown, UpdateGroupRequest>,

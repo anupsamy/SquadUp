@@ -126,13 +126,11 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun joinGroup(joinCode: String, expectedPeople: Number, updatedMembers: List<GroupUser>): Result<Unit> {
+    override suspend fun joinGroup(joinCode: String): Result<Unit> {
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val request = UpdateGroupRequest(
-                joinCode = joinCode,
-                expectedPeople = expectedPeople,
-                groupMemberIds = updatedMembers
+                joinCode = joinCode
             )
 
             val response = groupInterface.joinGroup(

@@ -17,6 +17,7 @@ import com.cpen321.squadup.data.remote.dto.GroupUser
 
 import com.cpen321.squadup.data.repository.GroupRepository
 import android.util.Log
+import retrofit2.HttpException
 
 data class MainUiState(
     val groups: List<GroupDataDetailed> = emptyList(),
@@ -93,48 +94,30 @@ class MainViewModel @Inject constructor(
     }
 
     fun joinGroup(
-    joinCode: String,
-    currentUser: GroupUser, // Pass the current user as a parameter
-    onSuccess: (String) -> Unit,
-    onError: (String) -> Unit
+        joinCode: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            // Step 1: Fetch the group details by join code
-            val fetchResult = groupRepository.getGroupByJoinCode(joinCode)
-            Log.d(TAG, "MainViewModel fetchResult: ${fetchResult}")
-            if (fetchResult.isSuccess) {
-                val group = fetchResult.getOrNull()
-                Log.d(TAG, "MainViewModel group: ${group}")
-                if (group != null) {
-                    // Step 2: Add the current user to the list of group members
-                    Log.d(TAG, "MainViewModel group not null")
-                    val updatedMembers: MutableList<GroupUser> = group.groupMemberIds?.toMutableList() ?: mutableListOf()
-                    if (updatedMembers.none { member:GroupUser -> member.id == currentUser.id }) {
-                        updatedMembers.add(currentUser)
-                    }
-                    val expectedPeople = group.expectedPeople ?: 0
-
-                    Log.d(TAG, "MainViewModel updatedMembers: ${updatedMembers}")
-
-                    // Step 3: Call the joinGroup function with the updated members
-                    val joinResult = groupRepository.joinGroup(
-                        joinCode = joinCode,
-                        expectedPeople = expectedPeople,
-                        updatedMembers = updatedMembers // Pass the updated list
-                    )
-                    Log.d(TAG, "MainViewModel joinResult: ${joinResult}")
-                    if (joinResult.isSuccess) {
-                        onSuccess("Successfully joined the group!")
-                        fetchGroups() // Refresh the group list
-                    } else {
-                        val error = joinResult.exceptionOrNull()?.message ?: "Failed to join group"
-                        onError(error)
-                    }
-                } else {
-                    onError("Group not found")
-                }
+            val joinResult = groupRepository.joinGroup(
+                joinCode = joinCode
+            )
+            Log.d(TAG, "MainViewModel joinResult: ${joinResult}")
+            if (joinResult.isSuccess) {
+                onSuccess("Successfully joined the group!")
+                fetchGroups()
             } else {
-                val error = fetchResult.exceptionOrNull()?.message ?: "Failed to fetch group details"
+                val error = when (val exception = joinResult.exceptionOrNull()) {
+                    is HttpException -> {
+                        when (exception.code()) {
+                            404 -> "Group not found"
+                            409 -> "You are already in this group"
+                            500 -> "Failed to join group. Please try again"
+                            else -> exception.message() ?: "Failed to join group"
+                        }
+                    }
+                    else -> exception?.message ?: "Failed to join group"
+                }
                 onError(error)
             }
         }

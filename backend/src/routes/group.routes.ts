@@ -27,11 +27,9 @@ router.post(
 router.get(
   '/:joinCode', // Define the route parameter
   (req, res, next) => {
-    groupController
-      .getGroupByJoinCode(req, res)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.getGroupByJoinCode(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 // Route to create a group
@@ -51,11 +49,9 @@ router.post(
   '/join',
   validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
   (req, res, next) => {
-    groupController
-      .joinGroupByJoinCode(req, res, next)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.joinGroupByJoinCode(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 

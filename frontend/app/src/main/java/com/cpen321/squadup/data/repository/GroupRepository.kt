@@ -20,10 +20,8 @@ interface GroupRepository {
     suspend fun getGroupByJoinCode(joinCode: String): Result<GroupDataDetailed>
     suspend fun deleteGroupByJoinCode(joinCode:String): Result<Unit>
     suspend fun joinGroup(
-        joinCode: String,
-        expectedPeople: Number,
-        updatedMembers: List<GroupUser>,
-    ): Result<Unit> //add exp members later
+        joinCode: String
+    ): Result<Unit>
     suspend fun updateGroup(
         joinCode: String,
         expectedPeople: Number?,

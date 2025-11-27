@@ -2,7 +2,7 @@
 
 import logger from '../utils/logger.util';
 import { groupModel } from '../models/group.model';
-import { BasicGroupInfo, IGroup } from '../types/group.types';
+import { BasicGroupInfo, GroupUser, IGroup } from '../types/group.types';
 import { AppError, AppErrorFactory } from '../utils/appError.util';
 
 export class GroupService {
@@ -73,9 +73,51 @@ export class GroupService {
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Failed to fetch group by joinCode:', error);
-      
+
       throw AppErrorFactory.internalServerError(
         'Failed to fetch group by joinCode',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
+  async joinGroupByJoinCode(
+    joinCode: string,
+    userId: string,
+    userInfo: GroupUser
+  ): Promise<IGroup> {
+    try {
+      const group = await groupModel.findByJoinCode(joinCode);
+
+      if (!group) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      // Check if user is already a member or leader
+      const isLeader = group.groupLeaderId.id === userId;
+      const isMember = (group.groupMemberIds ?? []).some(
+        member => member.id === userId
+      );
+
+      if (isLeader || isMember) {
+        throw AppErrorFactory.conflict('User is already in this group');
+      }
+
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+        joinCode,
+        groupMemberIds: [...(group.groupMemberIds ?? []), userInfo],
+      });
+
+      if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      logger.info(`User ${userId} joined group ${joinCode}`);
+      return updatedGroup;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to join group:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to join group',
         error instanceof Error ? error.message : undefined
       );
     }

@@ -26,6 +26,8 @@ import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,6 +113,11 @@ fun CreateGroupScreen(
             )
 
             DateTimePickerSection(context) { meetingDateTime = it }
+            val parsed = try {
+                OffsetDateTime.parse(meetingDateTime).toLocalDateTime()
+            } catch (e: Exception) {
+                null
+            }
 
             TextField(
                 value = expectedPeople,
@@ -133,6 +140,7 @@ fun CreateGroupScreen(
                     when {
                         groupName.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Group name is required")
                         meetingDateTime.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Meeting date and time are required")
+                        parsed != null && parsed.isBefore(LocalDateTime.now()) -> snackbarHostState.showMessage(coroutineScope, "Meeting time must be in the future")
                         expectedPeople.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Expected people is required")
                         expectedPeople.toIntOrNull() == null || expectedPeople.toInt() <= 0 ->
                             snackbarHostState.showMessage(coroutineScope, "Expected people must be a positive number")

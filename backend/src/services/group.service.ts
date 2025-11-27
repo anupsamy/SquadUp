@@ -399,6 +399,47 @@ export class GroupService {
       );
     }
   }
+
+  async selectActivity(
+    joinCode: string,
+    userId: string,
+    activity: Activity
+  ): Promise<IGroup> {
+    try {
+      const group = await groupModel.findByJoinCode(joinCode);
+
+      if (!group) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      const isLeader = group.groupLeaderId.id === userId;
+
+      if (!isLeader) {
+        throw AppErrorFactory.forbidden(
+          'Only the group leader can select an activity'
+        );
+      }
+
+      const updatedGroup = await groupModel.updateSelectedActivity(
+        joinCode,
+        activity
+      );
+
+      if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      logger.info(`User ${userId} selected activity for group ${joinCode}`);
+      return updatedGroup;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to select activity:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to select activity',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
 }
 
 export const groupService = GroupService.getInstance();

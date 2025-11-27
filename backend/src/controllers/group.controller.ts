@@ -283,116 +283,70 @@ export class GroupController {
   //   });
   // }
 
-  // controller/activityController.ts
-  async selectActivity(req: Request, res: Response): Promise<void> {
-    try {
-      const { joinCode, activity } = req.body;
+  async selectActivity(
+  req: Request<unknown, unknown, { joinCode: string; activity: Activity }>,
+  res: Response<GetGroupResponse>
+) {
+  const { joinCode, activity } = req.body;
+  const user = validateUserRequest(req.user);
 
-      if (!joinCode || !activity || typeof joinCode !== 'string') {
-        res.status(400).json({
-          message: 'Join code as string and activity are required',
-          data: null,
-          error: 'ValidationError',
-          details: null,
-        });
-        return;
-      }
+  const validJoinCode = validateJoinCode(joinCode);
 
-      // Validate required activity fields
-      if (!activity.placeId || !activity.name) {
-        res.status(400).json({
-          message: 'Activity must have placeId and name',
-          data: null,
-          error: 'ValidationError',
-          details: null,
-        });
-        return;
-      }
+  if (!activity || typeof activity !== 'object') {
+    throw AppErrorFactory.badRequest('activity is required and must be an object');
+  }
 
-      //REDUNDANT CODACY FIX
-      // Validate joinCode is a string before use
-      // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-      // if (!validatedJoinCodeForFind) {
-      //   res.status(400).json({
-      //     message: 'Invalid joinCode',
-      //     data: null,
-      //     error: 'ValidationError',
-      //     details: null,
-      //   });
-      //   return;
-      // }
-      const group = await groupModel.findByJoinCode(joinCode);
-      if (!group) {
-        res.status(404).json({
-          message: 'Group not found',
-          data: null,
-          error: 'NotFound',
-          details: null,
-        });
-        return;
-      }
+  if (!activity.placeId || !activity.name) {
+    throw AppErrorFactory.badRequest('Activity must have placeId and name');
+  }
 
-      // Update the group with the selected activity
-      // Validate activity type before passing to model
-      const validatedActivity: Activity =
-        typeof activity === 'object' &&
-        activity !== null &&
-        'placeId' in activity &&
-        'name' in activity
-          ? (activity as Activity)
-          : {
-              placeId: '',
-              name: '',
-              address: '',
-              rating: 0,
-              userRatingsTotal: 0,
-              priceLevel: 0,
-              type: '',
-              latitude: 0,
-              longitude: 0,
-              businessStatus: '',
-              isOpenNow: false,
-            };
-      const updatedGroup = await groupModel.updateSelectedActivity(
-        joinCode,
-        validatedActivity
-      );
+  const updatedGroup = await groupService.selectActivity(
+    validJoinCode,
+    user.id.toString(),
+    activity
+  );
 
-      // Send notifications to group members
-      //const wsService = getWebSocketService();
-      // if (wsService && updatedGroup) {
-      //   const leaderId = updatedGroup.groupLeaderId.id || '';
-      //   const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
-      //   const rawActivityName = activity.name;
-      //   const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
+  res.status(200).json({
+    message: 'Activity selected successfully',
+    data: { group: updatedGroup },
+  });
+}
+  //BELOW FOR SELECT ACTIVITy
+  // Send notifications to group members
+  //const wsService = getWebSocketService();
+  // if (wsService && updatedGroup) {
+  //   const leaderId = updatedGroup.groupLeaderId.id || '';
+  //   const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
+  //   const rawActivityName = activity.name;
+  //   const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
 
-      //   // Send WebSocket notification
-      //   wsService.notifyGroupUpdate(
-      //     joinCode,
-      //     `${leaderName} selected "${activityName}" for the group`,
-      //     {
-      //       type: 'activity_selected',
-      //       activity,
-      //       leaderId,
-      //       leaderName
-      //     }
-      //   );
+  //   // Send WebSocket notification
+  //   wsService.notifyGroupUpdate(
+  //     joinCode,
+  //     `${leaderName} selected "${activityName}" for the group`,
+  //     {
+  //       type: 'activity_selected',
+  //       activity,
+  //       leaderId,
+  //       leaderName
+  //     }
+  //   );
 
-      //   // Send FCM notification (will be suppressed in foreground on client side)
-      //   const activityDataStr = JSON.stringify(activity);
-      //   sendActivitySelectedFCM(
-      //     joinCode,
-      //     activityName,
-      //     updatedGroup.groupName,
-      //     leaderId,
-      //     activityDataStr
-      //   ).catch((error: unknown) => {
-      //     logger.error('Failed to send activity selected FCM notification:', error);
-      //   });
-      // }
+  //   // Send FCM notification (will be suppressed in foreground on client side)
+  //   const activityDataStr = JSON.stringify(activity);
+  //   sendActivitySelectedFCM(
+  //     joinCode,
+  //     activityName,
+  //     updatedGroup.groupName,
+  //     leaderId,
+  //     activityDataStr
+  //   ).catch((error: unknown) => {
+  //     logger.error('Failed to send activity selected FCM notification:', error);
+  //   });
+  // }
 
-      // Send notifications to group members
-      /*const wsService = getWebSocketService();
+  // Send notifications to group members
+  /*const wsService = getWebSocketService();
     if (wsService && updatedGroup) {
       const leaderId = updatedGroup.groupLeaderId?.id || '';
       const leaderName = updatedGroup.groupLeaderId?.name || 'Group leader';
@@ -420,23 +374,6 @@ export class GroupController {
         activityDataStr
       );
     }*/
-
-      res.status(200).json({
-        message: 'Activity selected successfully',
-        data: updatedGroup,
-        error: null,
-        details: null,
-      });
-    } catch (error) {
-      logger.error('Error selecting activity:', error);
-      res.status(500).json({
-        message: 'Failed to select activity',
-        data: null,
-        error: error instanceof Error ? error.message : 'UnknownError',
-        details: null,
-      });
-    }
-  }
 
   async leaveGroup(
     req: Request<{ joinCode: string }, unknown, { userId: string }>,

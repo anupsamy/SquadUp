@@ -163,10 +163,7 @@ export class GroupModel {
     group: Partial<IGroup>
   ): Promise<IGroup | null> {
     try {
-      //console.error('GroupModel joinCode:', joinCode);
-      //console.error('GroupModel update by joinCode group:', group);
       const validatedData = updateGroupSchema.parse(group);
-      //console.error('GroupModel validatedData:', validatedData);
       const updatedGroup = await this.group.findOneAndUpdate(
         { joinCode },
         validatedData,

@@ -1,7 +1,6 @@
-// utils/validation.util.ts
-
 import { IUser } from '../types/user.types';
 import { AppErrorFactory } from './appError.util';
+import { TRANSIT_TYPES, TransitType } from '../types/transit.types';
 
 export const validateUserRequest = (user: IUser | undefined): IUser => {
   if (!user) {
@@ -13,4 +12,22 @@ export const validateUserRequest = (user: IUser | undefined): IUser => {
   }
 
   return user;
+};
+
+export const validateJoinCode = (joinCode: unknown): string => {
+  if (!joinCode || typeof joinCode !== 'string') {
+    throw AppErrorFactory.badRequest(
+      'joinCode is required and must be a string'
+    );
+  }
+  return joinCode;
+};
+
+export const validateTransitType = (transitType: unknown): TransitType => {
+  if (!TRANSIT_TYPES.includes(transitType as TransitType)) {
+    throw AppErrorFactory.badRequest(
+      `Invalid transitType. Must be one of: ${TRANSIT_TYPES.join(', ')}`
+    );
+  }
+  return transitType as TransitType;
 };

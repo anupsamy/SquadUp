@@ -11,10 +11,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.GeoLocation
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.asStateFlow
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.data.remote.dto.TransitType
 
 data class GroupUiState(
     val isCreatingGroup: Boolean = false,
@@ -133,8 +135,9 @@ class GroupViewModel @Inject constructor(
 
     fun updateMember(
         joinCode: String,
+        address: Address?,
+        transitType: TransitType?,
         expectedPeople: Number,
-        updatedMembers: List<GroupUser>,
         meetingTime: String,
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
@@ -142,11 +145,12 @@ class GroupViewModel @Inject constructor(
         viewModelScope.launch {
             val fetchResult = groupRepository.getGroupByJoinCode(joinCode)
             if (fetchResult.isSuccess) {
-                    val joinResult = groupRepository.updateGroup(
+                    val joinResult = groupRepository.updateGroupSettings(
                         joinCode = joinCode,
+                        address = address,
+                        transitType = transitType,
+                        meetingTime = meetingTime,
                         expectedPeople = expectedPeople,
-                        updatedMembers = updatedMembers,
-                        meetingTime = meetingTime
                     )
                     if (joinResult.isSuccess) {
                         onSuccess("Successfully updated!")

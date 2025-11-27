@@ -9,10 +9,11 @@ data class CreateGroupRequest(
 )
 
 data class UpdateGroupRequest(
-    val joinCode: String? = null,
-    val expectedPeople: Number? = null,
-    val groupMemberIds: List<GroupUser>?= null,
-    val meetingTime: String? = null
+    val joinCode: String,
+    val address: Address?,
+    val transitType: TransitType?,
+    val meetingTime: String?,
+    val expectedPeople: Number?
 )
 
 data class LeaveGroupRequest(

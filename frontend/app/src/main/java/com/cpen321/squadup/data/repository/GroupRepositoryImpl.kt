@@ -17,9 +17,11 @@ import javax.inject.Singleton
 
 import com.cpen321.squadup.data.remote.api.SelectActivityRequest
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.google.gson.JsonParseException
 import retrofit2.HttpException
 import java.io.IOException
@@ -130,7 +132,11 @@ class GroupRepositoryImpl @Inject constructor(
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val request = UpdateGroupRequest(
-                joinCode = joinCode
+                joinCode,
+                null,
+                null,
+                null,
+                null
             )
 
             val response = groupInterface.joinGroup(
@@ -150,19 +156,21 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateGroup(
+    override suspend fun updateGroupSettings(
         joinCode: String,
-        expectedPeople: Number?,
-        updatedMembers: List<GroupUser>?,
-        meetingTime: String?
+        address: Address?,
+        transitType: TransitType?,
+        meetingTime: String?,
+        expectedPeople: Number?
     ): Result<Unit> {
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val request = UpdateGroupRequest(
                 joinCode = joinCode,
+                address = address,
+                transitType = transitType,
+                meetingTime = meetingTime,
                 expectedPeople = expectedPeople,
-                groupMemberIds = updatedMembers,
-                meetingTime = meetingTime
             )
 
             val response = groupInterface.updateGroup(

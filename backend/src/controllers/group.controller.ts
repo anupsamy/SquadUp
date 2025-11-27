@@ -8,6 +8,7 @@ import {
   GetAllGroupsResponse,
   IGroup,
   Activity,
+  UpdateGroupSettingsRequest,
 } from '../types/group.types';
 import { locationService } from '../services/location.service';
 import {
@@ -16,7 +17,7 @@ import {
   LocationInfo,
 } from '../types/location.types';
 import { Address } from '../types/address.types';
-import { TransitType } from '../types/transit.types';
+import { TRANSIT_TYPES, TransitType } from '../types/transit.types';
 import {
   sendGroupJoinFCM,
   sendGroupLeaveFCM,
@@ -25,7 +26,11 @@ import {
 import { AppErrorFactory } from '../utils/appError.util';
 import { groupService } from '../services/group.service';
 import '../types/express.types';
-import { validateUserRequest } from '../utils/validation.util';
+import {
+  validateJoinCode,
+  validateTransitType,
+  validateUserRequest,
+} from '../utils/validation.util';
 
 export class GroupController {
   async createGroup(
@@ -81,12 +86,8 @@ export class GroupController {
   }
 
   async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>) {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      throw AppErrorFactory.unauthorized('User not found in request');
-    }
-
+    const user = validateUserRequest(req.user);
+    const userId = user.id;
     const groups = await groupService.getUserGroups(userId.toString());
 
     const sanitizedGroups: IGroup[] = groups.map(group => ({
@@ -105,12 +106,7 @@ export class GroupController {
     res: Response<GetGroupResponse>
   ) {
     const { joinCode } = req.params;
-
-    if (!joinCode || typeof joinCode !== 'string') {
-      throw AppErrorFactory.badRequest(
-        'joinCode is required and must be a string'
-      );
-    }
+    const validJoinCode = validateJoinCode(joinCode);
 
     const group = await groupService.getGroupByJoinCode(joinCode);
 
@@ -131,15 +127,10 @@ export class GroupController {
   ) {
     const { joinCode } = req.body;
     const user = validateUserRequest(req.user);
-
-    if (!joinCode || typeof joinCode !== 'string') {
-      throw AppErrorFactory.badRequest(
-        'joinCode is required and must be a string'
-      );
-    }
+    const validJoinCode = validateJoinCode(joinCode);
 
     const updatedGroup = await groupService.joinGroupByJoinCode(
-      joinCode,
+      validJoinCode,
       user.id.toString(),
       {
         id: user.id.toString(),
@@ -180,43 +171,35 @@ export class GroupController {
         });
       }*/
 
-  async updateGroupByJoinCode(
-    req: Request<unknown, unknown, UpdateGroupRequest>,
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+  //only called from group settings page
+  async updateGroupSettings(
+    req: Request<unknown, unknown, UpdateGroupSettingsRequest>,
+    res: Response<GetGroupResponse>
   ) {
-    try {
-      const { joinCode, expectedPeople, groupMemberIds, meetingTime } =
-        req.body;
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
-        joinCode,
-        expectedPeople,
-        groupMemberIds: groupMemberIds || [],
+    const { joinCode, address, transitType, meetingTime, expectedPeople } =
+      req.body;
+      logger.error('Request in groupSettings:', JSON.stringify(req.body, null, 2));
+
+    const user = validateUserRequest(req.user);
+    const validJoinCode = validateJoinCode(joinCode);
+    const validTransitType = transitType
+      ? validateTransitType(transitType)
+      : undefined;
+
+    const updatedGroup = await groupService.updateGroupSettings(
+      validJoinCode,
+      user.id.toString(),
+      {
+        address,
+        transitType: validTransitType,
         meetingTime,
-      });
-
-      if (!updatedGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
+        expectedPeople,
       }
-
-      res.status(200).json({
-        message: 'Group info updated successfully',
-        data: { group: updatedGroup },
-      });
-    } catch (error) {
-      logger.error('Failed to update group info:', error);
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Failed to update group info';
-
-      return res.status(500).json({ message });
-    }
+    );
+    res.status(200).json({
+      message: 'Group settings updated successfully',
+      data: { group: updatedGroup },
+    });
   }
 
   async deleteGroupByJoinCode(

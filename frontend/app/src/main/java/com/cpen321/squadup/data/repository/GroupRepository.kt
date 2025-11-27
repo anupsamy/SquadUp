@@ -1,12 +1,12 @@
 package com.cpen321.squadup.data.repository
 
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.GroupData
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
-import com.cpen321.squadup.data.remote.dto.SquadGoal
-import com.google.android.gms.maps.model.LatLng
+import com.cpen321.squadup.data.remote.dto.TransitType
 
 interface GroupRepository {
     suspend fun getGroups(): Result<List<GroupDataDetailed>>
@@ -22,11 +22,12 @@ interface GroupRepository {
     suspend fun joinGroup(
         joinCode: String
     ): Result<Unit>
-    suspend fun updateGroup(
+    suspend fun updateGroupSettings(
         joinCode: String,
-        expectedPeople: Number?,
-        updatedMembers: List<GroupUser>?,
-        meetingTime: String?
+        address: Address?,
+        transitType: TransitType?,
+        meetingTime: String?,
+        expectedPeople: Number?
     ): Result<Unit>
     suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>
     suspend fun updateMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>

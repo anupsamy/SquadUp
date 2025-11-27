@@ -6,6 +6,8 @@ import {
   createGroupSchema,
   UpdateGroupRequest,
   updateGroupSchema,
+  UpdateGroupSettingsRequest,
+  updateGroupSettingsSchema,
 } from '../types/group.types';
 
 const router = Router();
@@ -56,14 +58,13 @@ router.post(
 );
 
 router.post(
+  //used to update group settings like meeting time, transit type, address, expected people
   '/update',
-  validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
+  validateBody<UpdateGroupSettingsRequest>(updateGroupSettingsSchema), // Validate the request body
   (req, res, next) => {
-    groupController
-      .updateGroupByJoinCode(req, res, next)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.updateGroupSettings(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 

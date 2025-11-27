@@ -90,6 +90,14 @@ export const updateGroupSchema = z.object({
   activityType: z.string().optional(),
 });
 
+export const updateGroupSettingsSchema = z.object({
+  joinCode: z.string().min(6, 'Join code is required'),
+  address: addressSchema.optional(),
+  transitType: z.string().optional(),
+  meetingTime: z.string().optional(),
+  expectedPeople: z.number().optional(),
+});
+
 //Activity model
 
 export interface Activity {
@@ -204,4 +212,12 @@ export type GroupUser = {
   email: string;
   address?: Address;
   transitType?: TransitType;
+};
+
+export type UpdateGroupSettingsRequest = {
+  joinCode: string;
+  address?: { formatted: string; lat?: number; lng?: number };
+  transitType?: string;
+  meetingTime?: string;
+  expectedPeople?: number;
 };

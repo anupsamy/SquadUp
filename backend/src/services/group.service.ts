@@ -4,6 +4,7 @@ import logger from '../utils/logger.util';
 import { groupModel } from '../models/group.model';
 import { BasicGroupInfo, GroupUser, IGroup } from '../types/group.types';
 import { AppError, AppErrorFactory } from '../utils/appError.util';
+import { TransitType } from '../types/transit.types';
 
 export class GroupService {
   private static instance: GroupService;
@@ -118,6 +119,95 @@ export class GroupService {
       logger.error('Failed to join group:', error);
       throw AppErrorFactory.internalServerError(
         'Failed to join group',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
+  async updateGroupSettings(
+    joinCode: string,
+    userId: string,
+    updates: {
+      address?: { formatted: string; lat?: number; lng?: number };
+      transitType?: TransitType;
+      meetingTime?: string;
+      expectedPeople?: number;
+    }
+  ): Promise<IGroup> {
+    try {
+      const group = await groupModel.findByJoinCode(joinCode);
+
+      if (!group) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      const isLeader = group.groupLeaderId.id === userId;
+      const memberIndex = (group.groupMemberIds ?? []).findIndex(
+        member => member.id === userId
+      );
+      const isMember = memberIndex !== -1;
+
+      if (!isLeader && !isMember) {
+        throw AppErrorFactory.notFound('User', 'in this group');
+      }
+
+      // Build update object
+      const updateData: Partial<IGroup> = {};
+
+      // Update leader-only fields ONLY if user is leader
+      if (isLeader) {
+        if (updates.meetingTime !== undefined) {
+          updateData.meetingTime = updates.meetingTime;
+        }
+        if (updates.expectedPeople !== undefined) {
+          updateData.expectedPeople = updates.expectedPeople;
+        }
+      }
+
+      // Update user fields (address/transitType)
+      const hasUserFields =
+        updates.address !== undefined || updates.transitType !== undefined;
+      if (hasUserFields) {
+        if (isLeader) {
+          // Update leader info in groupLeaderId
+          updateData.groupLeaderId = { ...group.groupLeaderId };
+          if (updates.address) {
+            updateData.groupLeaderId.address = updates.address;
+          }
+          if (updates.transitType) {
+            updateData.groupLeaderId.transitType = updates.transitType;
+          }
+        }
+
+        // Update in groupMemberIds array (leader is also in this array)
+        if (isMember) {
+          const updatedMembers = [...(group.groupMemberIds ?? [])];
+          const member = updatedMembers[memberIndex];
+          if (updates.address) {
+            member.address = updates.address;
+          }
+          if (updates.transitType) {
+            member.transitType = updates.transitType;
+          }
+          updateData.groupMemberIds = updatedMembers;
+        }
+      }
+
+      const updatedGroup = await groupModel.updateGroupByJoinCode(
+        joinCode,
+        { ...updateData, joinCode }
+      );
+
+      if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      logger.info(`User ${userId} updated group settings for ${joinCode}`);
+      return updatedGroup;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to update group settings:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to update group settings',
         error instanceof Error ? error.message : undefined
       );
     }

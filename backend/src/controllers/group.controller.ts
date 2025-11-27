@@ -30,20 +30,34 @@ export class GroupController {
     req: Request<unknown, unknown, CreateGroupRequest>,
     res: Response<GetGroupResponse>
   ) {
-    const { groupName, meetingTime, groupLeaderId, expectedPeople, activityType } = req.body;
+    const {
+      groupName,
+      meetingTime,
+      groupLeaderId,
+      expectedPeople,
+      activityType,
+    } = req.body;
 
     // Input validation
     if (!groupName || typeof groupName !== 'string') {
-      throw AppErrorFactory.badRequest('groupName is required and must be a string');
+      throw AppErrorFactory.badRequest(
+        'groupName is required and must be a string'
+      );
     }
     if (!meetingTime || typeof meetingTime !== 'string') {
-      throw AppErrorFactory.badRequest('meetingTime is required and must be a string');
+      throw AppErrorFactory.badRequest(
+        'meetingTime is required and must be a string'
+      );
     }
     if (!groupLeaderId || typeof groupLeaderId !== 'object') {
-      throw AppErrorFactory.badRequest('groupLeaderId is required and must be an object');
+      throw AppErrorFactory.badRequest(
+        'groupLeaderId is required and must be an object'
+      );
     }
     if (!activityType || typeof activityType !== 'string') {
-      throw AppErrorFactory.badRequest('activityType is required and must be a string');
+      throw AppErrorFactory.badRequest(
+        'activityType is required and must be a string'
+      );
     }
 
     // Call service to create group
@@ -64,10 +78,7 @@ export class GroupController {
     });
   }
 
-  async getAllGroups(
-    req: Request,
-    res: Response<GetAllGroupsResponse>
-  ) {
+  async getAllGroups(req: Request, res: Response<GetAllGroupsResponse>) {
     const userId = req.user?.id;
 
     if (!userId) {
@@ -88,49 +99,28 @@ export class GroupController {
   }
 
   async getGroupByJoinCode(
-    req: Request<{ joinCode: string }>, // always a string
-    res: Response<GetGroupResponse>,
-    next: NextFunction
+    req: Request<{ joinCode: string }>,
+    res: Response<GetGroupResponse>
   ) {
-    try {
-      const { joinCode } = req.params; // Extract the joinCode from the route parameters
+    const { joinCode } = req.params;
 
-      // Query the database for the group with the given joinCode
-      // Validate joinCode is a string before use
-      // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-      // if (!validatedJoinCodeForFind) {
-      //   res.status(400).json({
-      //     message: 'Invalid joinCode',
-      //     data: {} as any,
-      //     error: Error('ValidationError')
-      //   });
-      //   return;
-      // }
-      const group = await groupModel.findByJoinCode(joinCode);
-      // console.error('GroupController getGroupByJoinCode:', group);
-
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
-
-      res.status(200).json({
-        message: 'Group fetched successfully',
-        data: {
-          group: {
-            ...group.toObject(),
-            groupMemberIds: group.groupMemberIds || [], // Replace null with an empty array
-          },
-        },
-      });
-    } catch (error) {
-      logger.error('Failed to fetch group by joinCode:', error);
-      res
-        .status(500)
-        .json({ message: 'Failed to fetch group by joinCode: ' + error });
-      //next(error);
+    if (!joinCode || typeof joinCode !== 'string') {
+      throw AppErrorFactory.badRequest(
+        'joinCode is required and must be a string'
+      );
     }
+
+    const group = await groupService.getGroupByJoinCode(joinCode);
+
+    res.status(200).json({
+      message: 'Group fetched successfully',
+      data: {
+        group: {
+          ...group.toObject(),
+          groupMemberIds: group.groupMemberIds || [],
+        },
+      },
+    });
   }
 
   //unused

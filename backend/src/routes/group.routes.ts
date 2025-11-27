@@ -28,7 +28,7 @@ router.get(
   '/:joinCode', // Define the route parameter
   (req, res, next) => {
     groupController
-      .getGroupByJoinCode(req, res, next)
+      .getGroupByJoinCode(req, res)
       .catch((error: unknown) => {
         next(error);
       });

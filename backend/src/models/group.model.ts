@@ -125,10 +125,7 @@ export class GroupModel {
   async findUserGroups(userId: string): Promise<IGroup[]> {
     try {
       const groups = await this.group.find({
-        $or: [
-          { 'groupLeaderId.id': userId },
-          { 'groupMemberIds.id': userId }
-        ]
+        $or: [{ 'groupLeaderId.id': userId }, { 'groupMemberIds.id': userId }],
       });
       return groups;
     } catch (error) {
@@ -202,11 +199,9 @@ export class GroupModel {
 
   async findByJoinCode(joinCode: string): Promise<IGroup | null> {
     try {
-      const group = await this.group.findOne({ joinCode }); // Query the database
-      //console.error('GroupModel findByJoinCode:', group);
+      const group = await this.group.findOne({ joinCode });
       return group;
     } catch (error) {
-      //logger.error('Error finding group by joinCode:', error);
       throw new Error('Failed to find group by joinCode');
     }
   }

@@ -72,6 +72,20 @@ export const createGroupSchema = z.object({
   activityType: z.string().min(1, 'Activity type is required'),
 });
 
+export const activityZodSchema = z.object({
+  name: z.string(),
+  placeId: z.string(),
+  address: z.string(),
+  rating: z.number(),
+  userRatingsTotal: z.number(),
+  priceLevel: z.number(),
+  type: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  businessStatus: z.string(),
+  isOpenNow: z.boolean(),
+});
+
 export const updateGroupSchema = z.object({
   joinCode: z.string().min(6, 'Join code is required'),
   expectedPeople: z.number().max(100).optional(),
@@ -89,6 +103,7 @@ export const updateGroupSchema = z.object({
   meetingTime: z.string().optional(),
   midpoint: z.string().default('').optional(),
   activityType: z.string().optional(),
+  activities: z.array(activityZodSchema).optional(),
 });
 
 export const updateGroupSettingsSchema = z.object({
@@ -132,19 +147,6 @@ export const activitySchema = new Schema(
   { _id: false }
 ); // _id: false prevents creating an _id for subdocument
 
-export const activityZodSchema = z.object({
-  name: z.string(),
-  placeId: z.string(),
-  address: z.string(),
-  rating: z.number(),
-  userRatingsTotal: z.number(),
-  priceLevel: z.number(),
-  type: z.string(),
-  latitude: z.number(),
-  longitude: z.number(),
-  businessStatus: z.string(),
-  isOpenNow: z.boolean(),
-});
 
 //Activity model
 

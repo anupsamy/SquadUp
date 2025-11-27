@@ -132,15 +132,11 @@ fun LeaderGroupView(
     modifier: Modifier = Modifier
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
-    val activities by activityPickerViewModel.activities.collectAsState()
+    val activities by groupViewModel.activities.collectAsState()
 
-    LaunchedEffect(Unit) {
-        activityPickerViewModel.loadActivities(group.joinCode)
-    }
 
     val handleMidpointCalculation = {
         groupViewModel.getMidpoint(group.joinCode)
-        activityPickerViewModel.loadActivities(group.joinCode)
     }
 
     Column(
@@ -161,6 +157,7 @@ fun LeaderGroupView(
         if (midpoint != null && !isCalculatingMidpoint) {
             ActivityPicker(
                 viewModel = activityPickerViewModel,
+                activities = activities,
                 joinCode = group.joinCode,
                 modifier = Modifier
                     .fillMaxWidth()

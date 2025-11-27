@@ -2,9 +2,18 @@
 
 import logger from '../utils/logger.util';
 import { groupModel } from '../models/group.model';
-import { BasicGroupInfo, GroupUser, IGroup } from '../types/group.types';
+import {
+  Activity,
+  BasicGroupInfo,
+  GroupUser,
+  IGroup,
+} from '../types/group.types';
 import { AppError, AppErrorFactory } from '../utils/appError.util';
 import { TransitType } from '../types/transit.types';
+import { locationService } from './location.service';
+import { GeoLocation, LocationInfo } from '../types/location.types';
+import { Address } from '../types/address.types';
+import { GeoLocationToMidpoint, latLngFromMidpoint } from '../utils/formatting.util';
 
 export class GroupService {
   private static instance: GroupService;
@@ -241,6 +250,102 @@ export class GroupService {
       );
     }
   }
+
+  async getMidpointByJoinCode(joinCode: string): Promise<{
+    midpoint: { location: { lat: number; lng: number } };
+    activities: Activity[];
+  }> {
+    try {
+      const group = await groupModel.findByJoinCode(joinCode);
+      logger.error('Group fetched for midpoint calculation:', JSON.stringify(group));
+
+      if (!group) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      // Return cached midpoint if it exists
+      if (group.midpoint) {
+        const parts = latLngFromMidpoint(group.midpoint);
+        return {
+          midpoint: {
+            location: { lat: parts.lat, lng: parts.lng},
+          },
+          activities: group.activities || [], // Return cached activities as well
+        };
+      }
+
+      // Build location info from group members
+      const locationInfo: LocationInfo[] = this.getLocationListFromGroup(group);
+      logger.error('Location info:', JSON.stringify(locationInfo));
+
+      const optimizedPoint = await this.getMidpointSafe(locationInfo);
+      logger.error('Midpoint Calculated:', JSON.stringify(optimizedPoint));
+
+      const activityList =
+        await locationService.getActivityList(optimizedPoint, group.activityType);
+
+      logger.error('Activity List:', JSON.stringify(activityList));
+
+      const lat = optimizedPoint.lat;
+      const lng = optimizedPoint.lng;
+      const midpoint = GeoLocationToMidpoint(optimizedPoint);
+
+      // Update group with calculated midpoint
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+        joinCode,
+        midpoint,
+        activities: activityList,
+      });
+
+      if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      logger.info(`Calculated and cached midpoint for group ${joinCode}`);
+
+      return {
+        midpoint: {
+          location: { lat, lng },
+        },
+        activities: activityList,
+      };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to get midpoint:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to get midpoint',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
+
+  private getLocationListFromGroup(group: IGroup): LocationInfo[] {
+    return (group.groupMemberIds ?? [])
+      .filter(member => member.address != null && member.transitType != null)
+      .map(member => {
+        const address = member.address as Address;
+        const transitType = member.transitType as TransitType;
+        return {
+          address,
+          transitType,
+        };
+      });
+  }
+
+  private async getMidpointSafe(
+    locationInfo: LocationInfo[]
+  ): Promise<GeoLocation> {
+    try {
+      return await locationService.findOptimalMeetingPoint(locationInfo);
+    } catch (error) {
+      logger.error('Failed to calculate optimal meeting point:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to calculate meeting point',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
+  //TODO: invalidate cached midpoint method
 }
 
 export const groupService = GroupService.getInstance();

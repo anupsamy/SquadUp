@@ -19,6 +19,7 @@ export interface IGroup extends Document {
   midpoint: string;
   activityType: string;
   selectedActivity?: Activity;
+  activities?: Activity[];
   createdAt: Date;
 }
 

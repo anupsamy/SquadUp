@@ -91,6 +91,10 @@ const groupSchema = new Schema<IGroup>(
       required: true,
       trim: true,
     },
+    activities: {
+      type: [activitySchema],
+      required: false,
+    },
   },
   {
     timestamps: true,

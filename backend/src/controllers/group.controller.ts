@@ -220,95 +220,20 @@ export class GroupController {
       message: 'Group deleted successfully',
     });
   }
-
   async getMidpointByJoinCode(
-    //TODO: decide whether to incorporate activities here
-    req: Request<{ joinCode: string }>, // Define the route parameter type
-    res: Response<getLocationResponse>,
-    next: NextFunction
+    req: Request<{ joinCode: string }>,
+    res: Response<getLocationResponse>
   ) {
-    try {
-      const { joinCode } = req.params; // Extract the joinCode from the route parameters
+    const { joinCode } = req.params;
 
-      //JOIN CODE MUST BE STRING FROM REQ - validation not possible to hit as it will always be parsed as string
-      //TODO: standardize req params vs body handling
-      // Query the database for the group with the given joinCode
-      // Validate joinCode is a string before use
-      // const validatedJoinCodeForFind: string = typeof joinCode === 'string' ? joinCode : '';
-      // if (!validatedJoinCodeForFind) {
-      //   res.status(400).json({
-      //     message: 'Invalid joinCode',
-      //     error: 'ValidationError'
-      //   });
-      //   return;
-      // }
-      const group = await groupModel.findByJoinCode(joinCode);
+    validateJoinCode(joinCode);
 
-      if (!group) {
-        return res.status(404).json({
-          message: `Group with joinCode '${joinCode}' not found`,
-        });
-      }
+    const result = await groupService.getMidpointByJoinCode(joinCode);
 
-      if (group.midpoint) {
-        const parts = group.midpoint.trim().split(' ');
-        res.status(200).json({
-          message: 'Get midpoint successfully!',
-          data: {
-            midpoint: {
-              location: {
-                lat: parseFloat(parts[0]),
-                lng: parseFloat(parts[1]),
-              },
-            },
-          },
-        });
-      }
-
-      const locationInfo: LocationInfo[] = (group.groupMemberIds ?? [])
-        .filter(member => member.address != null && member.transitType != null)
-        .map(member => {
-          // Type assertion is safe here because we've already filtered for non-null values
-          const address = member.address as Address;
-          const transitType = member.transitType as TransitType;
-          return {
-            address,
-            transitType,
-          };
-        });
-
-      const optimizedPoint =
-        await locationService.findOptimalMeetingPoint(locationInfo);
-      const activityList: Activity[] = [];
-
-      const lat = optimizedPoint.lat;
-      const lng = optimizedPoint.lng;
-
-      const midpoint = lat.toString() + ' ' + lng.toString();
-
-      // Need error handler
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
-        joinCode,
-        midpoint,
-      });
-
-      console.log('Activities List: ', activityList);
-      res.status(200).json({
-        message: 'Get midpoint successfully!',
-        data: {
-          midpoint: {
-            location: {
-              lat: lat,
-              lng: lng,
-            },
-          },
-          activities: activityList,
-        },
-      });
-    } catch (error) {
-      logger.error('Failed to get midpoint joinCode:', error);
-      next(error);
-    }
+    res.status(200).json({
+      message: 'Get midpoint successfully!',
+      data: result,
+    });
   }
 
   async updateMidpointByJoinCode(
@@ -614,48 +539,6 @@ export class GroupController {
       });
     }
   }
-
-  // async getMidpoints(req: Request, res: Response): Promise<void> {
-  //   try {
-  //     const joinCode = req.query.joinCode;
-
-  //     if (!joinCode || typeof joinCode !== 'string') {
-  //       res.status(400).json({
-  //         success: false,
-  //         message: 'Join code is required',
-  //       });
-  //       return;
-  //     }
-
-  //     // Verify the group exists
-  //     const group = await groupModel.findByJoinCode(joinCode);
-  //     if (!group) {
-  //       res.status(404).json({
-  //         success: false,
-  //         message: 'Group not found',
-  //       });
-  //       return;
-  //     }
-
-  //     // Return dummy midpoint data (3 locations in Vancouver area)
-  //     const midpoints = [
-  //       { latitude: 49.2827, longitude: -123.1207 },
-  //       { latitude: 49.2606, longitude: -123.2460 },
-  //       { latitude: 49.2488, longitude: -123.1163 }
-  //     ];
-
-  //     res.status(200).json({
-  //       success: true,
-  //       data: midpoints,
-  //     });
-  //   } catch (error) {
-  //     logger.error('Error fetching midpoints:', error);
-  //     res.status(500).json({
-  //       success: false,
-  //       message: 'Failed to fetch midpoints',
-  //     });
-  //   }
-  // }
 
   async leaveGroup(
     req: Request<{ joinCode: string }, unknown, { userId: string }>,

@@ -2,6 +2,7 @@ import { Client, TravelMode } from '@googlemaps/google-maps-services-js';
 import type { LocationInfo, GeoLocation } from '../types/location.types';
 import { format } from 'path';
 import { Activity } from '../types/group.types';
+import logger from '../utils/logger.util';
 
 export class LocationService {
   private mapsClient: Client;
@@ -131,7 +132,7 @@ export class LocationService {
         .filter((p): p is Activity => p !== null)
         .slice(0, maxResults);
     } catch (err) {
-      console.error('Error fetching nearby places:', err);
+      logger.error('Error fetching nearby places:', err);
       return [];
     }
   }

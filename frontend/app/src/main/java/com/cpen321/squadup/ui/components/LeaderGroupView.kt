@@ -110,7 +110,7 @@ private fun MapStatusBox(
 private fun RecalculateButton(
     onRecalculate: () -> Unit
 ) {
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(8.dp))
     Button(
         onClick = onRecalculate,
         modifier = Modifier
@@ -119,6 +119,7 @@ private fun RecalculateButton(
     ) {
         Text(text = "Recalculate Midpoint")
     }
+    Spacer(modifier = Modifier.height(4.dp))
 }
 
 @Composable
@@ -156,8 +157,6 @@ fun LeaderGroupView(
         if (midpoint != null && !isCalculatingMidpoint) {
             RecalculateButton(onRecalculate = handleMidpointCalculation)
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         if (midpoint != null && !isCalculatingMidpoint) {
             ActivityPicker(

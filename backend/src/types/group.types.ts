@@ -5,6 +5,8 @@ import { UserModel, userModel } from '../user.model';
 import { GoogleUserInfo } from '../types/user.types';
 import { Address } from './address.types';
 import { TransitType, transitTypeSchema } from './transit.types';
+import { Address } from './address.types';
+import { TransitType, transitTypeSchema } from './transit.types';
 import { GeoLocation } from './location.types';
 
 // Group model
@@ -28,6 +30,7 @@ export interface IGroup extends Document {
 // ------------------------------------------------------------
 const addressSchema = z.object({
   formatted: z.string().min(1, 'Formatted address is required'),
+  formatted: z.string().min(1, 'Formatted address is required'),
   lat: z.number().optional(),
   lng: z.number().optional(),
 });
@@ -47,7 +50,24 @@ export interface Activity {
   businessStatus: string;
   isOpenNow: boolean;
 }
+}
 
+export const activitySchema = new Schema(
+  {
+    name: { type: String, required: true },
+    placeId: { type: String, required: true },
+    address: { type: String, required: true },
+    rating: { type: Number, required: true },
+    userRatingsTotal: { type: Number, required: true },
+    priceLevel: { type: Number, required: true },
+    type: { type: String, required: true },
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
+    businessStatus: { type: String, required: true },
+    isOpenNow: { type: Boolean, required: true },
+  },
+  { _id: false }
+); // _id: false prevents creating an _id for subdocument
 export const activitySchema = new Schema(
   {
     name: { type: String, required: true },

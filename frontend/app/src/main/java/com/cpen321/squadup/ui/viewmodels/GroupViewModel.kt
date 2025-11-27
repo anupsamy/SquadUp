@@ -138,6 +138,7 @@ class GroupViewModel @Inject constructor(
         updatedMembers: List<GroupUser>,
         meetingTime: String,
         autoMidpoint: Boolean,
+        activityType: String,
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -149,7 +150,8 @@ class GroupViewModel @Inject constructor(
                         expectedPeople = expectedPeople,
                         updatedMembers = updatedMembers,
                         meetingTime = meetingTime,
-                        autoMidpoint = autoMidpoint
+                        autoMidpoint = autoMidpoint,
+                        activityType = activityType
                     )
                     if (joinResult.isSuccess) {
                         onSuccess("Successfully updated!")

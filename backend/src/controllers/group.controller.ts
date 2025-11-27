@@ -227,14 +227,15 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const { joinCode, expectedPeople, groupMemberIds, meetingTime, autoMidpoint } =
+      const { joinCode, expectedPeople, groupMemberIds, meetingTime, autoMidpoint, activityType } =
         req.body;
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
         expectedPeople,
         groupMemberIds: groupMemberIds || [],
         meetingTime,
-        autoMidpoint
+        autoMidpoint,
+        activityType
       });
 
       if (!updatedGroup) {

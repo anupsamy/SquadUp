@@ -30,7 +30,8 @@ interface GroupRepository {
         expectedPeople: Number?,
         updatedMembers: List<GroupUser>?,
         meetingTime: String?,
-        autoMidpoint: Boolean?
+        autoMidpoint: Boolean?,
+        activityType: String?
     ): Result<Unit>
     suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>
     suspend fun updateMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>

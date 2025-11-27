@@ -22,14 +22,12 @@ import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.navigation.NavRoutes
-import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
 import android.app.TimePickerDialog
 import android.app.DatePickerDialog
-import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -87,7 +85,8 @@ data class MemberSettingsState(
     val expectedPeople: String,
     val meetingTimeError: String?,
     val expectedPeopleError: String?,
-    val existingMemberInfo: GroupUser?
+    val existingMemberInfo: GroupUser?,
+    val autoMidpoint: Boolean
 )
 
 data class MemberSettingsHandlers(
@@ -98,7 +97,8 @@ data class MemberSettingsHandlers(
     val onAddressChange: (Address?) -> Unit,
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onMeetingTimeChange: (String, String?) -> Unit,
-    val onExpectedPeopleChange: (String) -> Unit
+    val onExpectedPeopleChange: (String) -> Unit,
+    val onAutoMidpointChange: (Boolean) -> Unit
 )
 
 @Composable
@@ -124,6 +124,8 @@ private fun MemberSettingsContent(
 
         // Transit dropdown
         TransitTypeDropdown(selectedType = state.transitType, onTypeSelected = handlers.onTransitTypeChange)
+
+        AutoMidpointToggle(checked = state.autoMidpoint, onCheckedChange = handlers.onAutoMidpointChange)
 
         // Only group leader can edit meetingTime & expectedPeople
         if (state.group.groupLeaderId?.id == state.currentUserId) {
@@ -174,10 +176,11 @@ fun MemberSettingsScreen(
 
     var address by remember { mutableStateOf(existingMemberInfo?.address) }
     var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
-    var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
-    var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
+    var meetingTime by remember { mutableStateOf(group.meetingTime) }
+    var expectedPeople by remember { mutableStateOf(group.expectedPeople.toString()) }
     var meetingTimeError by remember { mutableStateOf<String?>(null) }
     var expectedPeopleError by remember { mutableStateOf<String?>(null) }
+    var autoMidpoint by remember { mutableStateOf(group.autoMidpoint) }
 
     val state = MemberSettingsState(
         group = group,
@@ -188,7 +191,8 @@ fun MemberSettingsScreen(
         expectedPeople = expectedPeople,
         meetingTimeError = meetingTimeError,
         expectedPeopleError = expectedPeopleError,
-        existingMemberInfo = existingMemberInfo
+        existingMemberInfo = existingMemberInfo,
+        autoMidpoint = autoMidpoint
     )
 
     val handlers = MemberSettingsHandlers(
@@ -205,7 +209,8 @@ fun MemberSettingsScreen(
         onExpectedPeopleChange = {
             expectedPeople = it
             expectedPeopleError = null
-        }
+        },
+        onAutoMidpointChange = { autoMidpoint = it }
     )
 
     Scaffold(
@@ -342,15 +347,18 @@ fun SaveSettingsButton(
                 updatedMembers = updatedMembers,
                 meetingTime = state.meetingTime,
                 expectedPeople = state.expectedPeople.toInt(),
+                autoMidpoint = state.autoMidpoint,
                 onSuccess = { coroutineScope.launch { snackbarHostState.showSnackbar("Settings saved successfully!") } },
                 onError = { coroutineScope.launch { snackbarHostState.showSnackbar("Error saving!") } }
             )
 
             // update midpoint if address/transit changed for the current user
-            val existingAddr = (state.existingMemberInfo as? GroupUser)?.address
-            val existingTransit = (state.existingMemberInfo as? GroupUser)?.transitType
-            if (existingAddr != state.address || existingTransit != state.transitType) {
-                groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
+            if (state.autoMidpoint) {
+                val existingAddr = (state.existingMemberInfo as? GroupUser)?.address
+                val existingTransit = (state.existingMemberInfo as? GroupUser)?.transitType
+                if (existingAddr != state.address || existingTransit != state.transitType) {
+                    groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
+                }
             }
         },
         enabled = state.address != null && state.transitType != null
@@ -358,6 +366,3 @@ fun SaveSettingsButton(
         Text("Save")
     }
 }
-
-
-

@@ -15,7 +15,8 @@ interface GroupRepository {
         meetingTime: String,
         groupLeaderId: GroupUser,
         expectedPeople: Number,
-        activityType: String
+        activityType: String,
+        autoMidpoint: Boolean
     ): Result<GroupData>
     suspend fun getGroupByJoinCode(joinCode: String): Result<GroupDataDetailed>
     suspend fun deleteGroupByJoinCode(joinCode:String): Result<Unit>
@@ -28,7 +29,8 @@ interface GroupRepository {
         joinCode: String,
         expectedPeople: Number?,
         updatedMembers: List<GroupUser>?,
-        meetingTime: String?
+        meetingTime: String?,
+        autoMidpoint: Boolean?
     ): Result<Unit>
     suspend fun getMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>
     suspend fun updateMidpointByJoinCode(joinCode: String): Result<MidpointActivitiesResponse>

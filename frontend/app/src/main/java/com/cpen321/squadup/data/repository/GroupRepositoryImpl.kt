@@ -75,7 +75,8 @@ class GroupRepositoryImpl @Inject constructor(
         meetingTime: String,
         groupLeaderId: GroupUser,
         expectedPeople: Number,
-        activityType: String
+        activityType: String,
+        autoMidpoint: Boolean
         ): Result<GroupData> {
         return try {
             val request = CreateGroupRequest(
@@ -83,7 +84,8 @@ class GroupRepositoryImpl @Inject constructor(
                 meetingTime = meetingTime,
                 groupLeaderId = groupLeaderId,
                 expectedPeople = expectedPeople,
-                activityType = activityType
+                activityType = activityType,
+                autoMidpoint = autoMidpoint
             )
             val response = groupInterface.createGroup("", request)
 
@@ -156,7 +158,8 @@ class GroupRepositoryImpl @Inject constructor(
         joinCode: String,
         expectedPeople: Number?,
         updatedMembers: List<GroupUser>?,
-        meetingTime: String?
+        meetingTime: String?,
+        autoMidpoint: Boolean?
     ): Result<Unit> {
         return try {
             val authToken = tokenManager.getToken() ?: ""
@@ -164,7 +167,8 @@ class GroupRepositoryImpl @Inject constructor(
                 joinCode = joinCode,
                 expectedPeople = expectedPeople,
                 groupMemberIds = updatedMembers,
-                meetingTime = meetingTime
+                meetingTime = meetingTime,
+                autoMidpoint = autoMidpoint
             )
 
             val response = groupInterface.updateGroup(

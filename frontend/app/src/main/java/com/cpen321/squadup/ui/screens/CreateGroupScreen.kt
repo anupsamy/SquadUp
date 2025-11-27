@@ -51,6 +51,7 @@ fun CreateGroupScreen(
     var meetingDateTime by remember { mutableStateOf("") }
     var expectedPeople by remember { mutableStateOf("") }
     var selectedActivity by remember { mutableStateOf<ActivityType?>(null) }
+    var autoMidpoint by remember { mutableStateOf(false) }
 
     // show snackbar on backend error coming from ViewModel
     LaunchedEffect(uiState.errorMessage) {
@@ -119,6 +120,11 @@ fun CreateGroupScreen(
                 null
             }
 
+            AutoMidpointToggle(
+                checked = autoMidpoint,
+                onCheckedChange = { autoMidpoint = it }
+            )
+
             TextField(
                 value = expectedPeople,
                 onValueChange = { expectedPeople = it },
@@ -156,11 +162,12 @@ fun CreateGroupScreen(
                             )
 
                             groupViewModel.createGroup(
-                                groupName,
-                                meetingDateTime,
-                                groupLeader,
-                                expectedPeople.toInt(),
-                                selectedActivity!!.storedValue
+                                groupName = groupName,
+                                meetingTime = meetingDateTime,
+                                groupLeaderId = groupLeader,
+                                expectedPeople = expectedPeople.toInt(),
+                                activityType = selectedActivity!!.storedValue,
+                                autoMidpoint = autoMidpoint
                             )
                         }
                     }
@@ -279,3 +286,26 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
         }
     }
 }
+
+@Composable
+fun AutoMidpointToggle(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+        Text(
+            "Automatic Midpoint Update",
+            modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+

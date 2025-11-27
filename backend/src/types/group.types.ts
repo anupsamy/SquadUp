@@ -18,6 +18,7 @@ export interface IGroup extends Document {
   expectedPeople: number;
   groupMemberIds?: GroupUser[]; //Change to object of users later maybe, optional in schema
   midpoint: string;
+  autoMidpoint: boolean,
   activityType: string;
   selectedActivity?: Activity;
   createdAt: Date;
@@ -55,6 +56,7 @@ export const basicGroupSchema = z.object({
     )
     .optional(),
   midpoint: z.string().default('').optional(),
+  autoMidpoint: z.boolean().default(false),
   activityType: z.string().min(1, 'Activity type is required'),
 });
 
@@ -70,6 +72,7 @@ export const createGroupSchema = z.object({
   }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
   activityType: z.string().min(1, 'Activity type is required'),
+  autoMidpoint: z.boolean().default(false)
 });
 
 export const updateGroupSchema = z.object({
@@ -87,7 +90,8 @@ export const updateGroupSchema = z.object({
     )
     .optional(),
   meetingTime: z.string().optional(),
-  midpoint: z.string().default('').optional(),
+  midpoint: z.string().optional(),
+  autoMidpoint: z.boolean().optional(),
   activityType: z.string().optional(),
 });
 
@@ -183,6 +187,7 @@ export type BasicGroupInfo = {
   expectedPeople: number;
   groupMemberIds?: GroupUser[];
   activityType: string;
+  autoMidpoint: boolean;
 };
 
 export type CreateGroupInfo = {
@@ -191,12 +196,14 @@ export type CreateGroupInfo = {
   groupLeaderId: GroupUser;
   expectedPeople: number;
   activityType: string;
+  autoMidpoint: boolean;
 };
 
 export type UpdateInfo = {
   joinCode: string;
   expectedPeople: number;
   groupMemberIds: GroupUser[];
+  autoMidpoint: boolean;
 };
 
 export type GroupUser = {

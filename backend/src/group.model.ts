@@ -82,6 +82,10 @@ const groupSchema = new Schema<IGroup>(
       required: false,
       trim: true,
     },
+    autoMidpoint: {
+      type: Boolean,
+      required: true
+    },
     selectedActivity: {
       type: activitySchema,
       required: false,

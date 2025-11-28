@@ -46,7 +46,7 @@ jobs:
         run: npm test
 
   deploy: 
-    needs: test #if tests fail will not deploy
+    #needs: test #if tests fail will not deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

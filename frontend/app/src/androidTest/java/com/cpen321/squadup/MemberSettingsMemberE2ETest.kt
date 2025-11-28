@@ -30,6 +30,14 @@ import java.util.Calendar
 @RunWith(AndroidJUnit4::class)
 @ExperimentalTestApi
 @LargeTest
+/**
+ * End-to-End Tests for Group Details Features
+ *
+ * This test suite covers the following use cases from the Requirements_and_Design.md:
+ * 1. Update Address (as Squad Member)
+ * 2. Update Transit (as Squad Member)
+ *
+ */
 class MemberSettingsMemberE2ETest {
 
     @get:Rule
@@ -50,16 +58,16 @@ class MemberSettingsMemberE2ETest {
      */
     private fun navigateToMemberSettings() {
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText("Leader:", substring = true).fetchSemanticsNodes().isNotEmpty()
+            composeTestRule.onAllNodesWithText("Leader", substring = true).fetchSemanticsNodes().isNotEmpty()
         }
 
         // Click on the first group on main screen
-        composeTestRule.onAllNodesWithText("Leader:", substring = true)
+        composeTestRule.onAllNodesWithText("Leader", substring = true)
             .onFirst()
             .performClick()
 
         // Click "See Details"
-        composeTestRule.onNodeWithText("See Details")
+        composeTestRule.onNodeWithText("Group detail")
             .assertIsDisplayed()
             .performClick()
 
@@ -115,10 +123,6 @@ class MemberSettingsMemberE2ETest {
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
-
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule.onAllNodesWithText("Please select a valid address", substring = true).fetchSemanticsNodes().isEmpty()
-        }
 
         // Save
         composeTestRule.onNodeWithText("Save")

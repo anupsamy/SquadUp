@@ -61,7 +61,8 @@ class GroupManagementE2ETest {
      * 4. User clicks "Confirm Date-Time" button
      * 5. User inputs Expected People into the input field
      * 6. User selects Activity Type from the dropdown field
-     * 7. User clicks "Create Group" button
+     * 7. User selects Activity Type from the dropdown field
+     * 8. User clicks "Create Group" button
      */
     @Test
     fun createGroup_mainSuccessScenario_groupCreatedSuccessfully() {
@@ -122,14 +123,6 @@ class GroupManagementE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(500)
         
-        // Step 5: Confirm Date-Time
-        composeTestRule.onNodeWithText("Confirm Date-Time")
-            .assertIsDisplayed()
-            .performClick()
-        
-        composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        
         // Step 6: Input Expected People
         composeTestRule.onNodeWithText("Expected People")
             .assertIsDisplayed()
@@ -150,9 +143,16 @@ class GroupManagementE2ETest {
         composeTestRule.onNodeWithText("RESTAURANT")
             .assertIsDisplayed()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
         Thread.sleep(500) // Wait for activity selection to update button state
+
+        composeTestRule.onNodeWithText("Automatic Midpoint Update")
+            .assertExists("Automatic Midpoint checkbox not found")
+            .performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(1000)
         
         // Step 8: Click Create Group button using testTag
         composeTestRule.onNodeWithTag("createGroupButton")
@@ -407,6 +407,11 @@ class GroupManagementE2ETest {
             .performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_MONTH, 1)  // next day
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        device.wait(Until.hasObject(By.clazz("android.widget.TimePicker")), 2000)
+        device.findObject(By.text(day.toString()))?.click()
         device.findObject(By.text("OK"))?.click()
         
         // Select time
@@ -415,11 +420,6 @@ class GroupManagementE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
         device.findObject(By.text("OK"))?.click()
-        
-        // Confirm date-time
-        composeTestRule.onNodeWithText("Confirm Date-Time")
-            .performClick()
-        composeTestRule.waitForIdle()
         
         // Fill expected people
         composeTestRule.onNodeWithText("Expected People")

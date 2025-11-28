@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -58,16 +59,17 @@ class MemberSettingsMemberE2ETest {
      */
     private fun navigateToMemberSettings() {
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText("Leader", substring = true).fetchSemanticsNodes().isNotEmpty()
+            composeTestRule.onAllNodesWithTag("groupButton")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
-
-        // Click on the first group on main screen
-        composeTestRule.onAllNodesWithText("Leader", substring = true)
+        composeTestRule.onAllNodesWithTag("groupButton")
             .onFirst()
+            .assertIsDisplayed()
             .performClick()
 
         // Click "See Details"
-        composeTestRule.onNodeWithText("Group detail")
+        composeTestRule.onNodeWithText("Group details")
             .assertIsDisplayed()
             .performClick()
 
@@ -90,8 +92,6 @@ class MemberSettingsMemberE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(500)
         composeTestRule.onNode(hasText("Address")).performTextInput("Some random text")
-
-        device.pressBack()
 
         composeTestRule.onNodeWithText("Save")
             .performClick()
@@ -123,6 +123,10 @@ class MemberSettingsMemberE2ETest {
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithText("Please select a valid address", substring = true).fetchSemanticsNodes().isEmpty()
+        }
 
         // Save
         composeTestRule.onNodeWithText("Save")

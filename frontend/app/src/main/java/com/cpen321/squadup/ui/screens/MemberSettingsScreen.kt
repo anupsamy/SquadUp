@@ -143,10 +143,8 @@ private fun MemberSettingsContent(
                 meetingTimeError = state.meetingTimeError,
                 onMeetingTimeSelected = handlers.onMeetingTimeChange
             )
+            AutoMidpointToggle(checked = state.autoMidpoint, onCheckedChange = handlers.onAutoMidpointChange)
         }
-
-        AutoMidpointToggle(checked = state.autoMidpoint, onCheckedChange = handlers.onAutoMidpointChange)
-
         // Save button
         SaveSettingsButton(
             state = state,

@@ -109,6 +109,7 @@ fun ActivityPicker(
     viewModel: ActivityPickerViewModel,
     activities: List<Activity>,
     joinCode: String,
+    onSelectActivity: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val selectedActivityId by viewModel.selectedActivityId.collectAsState()
@@ -127,7 +128,7 @@ fun ActivityPicker(
                 duration = SnackbarDuration.Short
             )
         }
-        Unit
+        onSelectActivity()
     }
 
     // WRAP EVERYTHING IN A BOX

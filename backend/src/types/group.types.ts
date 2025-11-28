@@ -9,19 +9,20 @@ import { GeoLocation } from './location.types';
 // Group model
 // ------------------------------------------------------------
 export interface IGroup extends Document {
-  _id: mongoose.Types.ObjectId;
-  groupName: string;
-  meetingTime: string;
-  joinCode: string;
-  groupLeaderId: GroupUser;
-  expectedPeople: number;
-  groupMemberIds?: GroupUser[]; //Change to object of users later maybe, optional in schema
-  midpoint?: string | null;
-  activityType: string;
-  selectedActivity?: Activity;
-  activities?: Activity[];
-  createdAt: Date;
-}
+    _id: mongoose.Types.ObjectId;
+    groupName:string;
+    meetingTime: string;
+    joinCode: string;
+    groupLeaderId: GroupUser;
+    expectedPeople: number;
+    groupMemberIds: GroupUser[]; //Change to object of users later maybe,
+    midpoint?: string | null;
+    autoMidpoint: Boolean;
+    activityType: string,
+    selectedActivity?: Activity;
+    activities?: Activity[];
+    createdAt: Date;
+  }
 
 // Zod schemas
 // ------------------------------------------------------------
@@ -70,6 +71,7 @@ export const createGroupSchema = z.object({
   }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
   activityType: z.string().min(1, 'Activity type is required'),
+  autoMidpoint: z.boolean(),
 });
 
 export const activityZodSchema = z.object({
@@ -147,21 +149,8 @@ export const activitySchema = new Schema(
   { _id: false }
 ); // _id: false prevents creating an _id for subdocument
 
-//Activity model
 
-export interface Activity {
-  name: string;
-  placeId: string;
-  address: string;
-  rating: number;
-  userRatingsTotal: number;
-  priceLevel: number;
-  type: string;
-  latitude: number;
-  longitude: number;
-  businessStatus: string;
-  isOpenNow: boolean;
-}
+
 
 // Request types
 // ------------------------------------------------------------
@@ -192,6 +181,7 @@ export type BasicGroupInfo = {
   expectedPeople: number;
   groupMemberIds?: GroupUser[];
   activityType: string;
+  autoMidpoint: boolean;
 };
 
 export type CreateGroupInfo = {
@@ -200,12 +190,14 @@ export type CreateGroupInfo = {
   groupLeaderId: GroupUser;
   expectedPeople: number;
   activityType: string;
+  autoMidpoint: boolean;
 };
 
 export type UpdateInfo = {
   joinCode: string;
   expectedPeople: number;
   groupMemberIds: GroupUser[];
+  autoMidpoint: boolean;
 };
 
 export type GroupUser = {
@@ -214,12 +206,15 @@ export type GroupUser = {
   email: string;
   address?: Address;
   transitType?: TransitType;
+  travelTime?: string;
 };
 
-export type UpdateGroupSettingsRequest = {
+export type UpdateGroupSettingsRequest = { //TODO add auto midpoint and other fields
   joinCode: string;
   address?: { formatted: string; lat?: number; lng?: number };
   transitType?: string;
   meetingTime?: string;
   expectedPeople?: number;
+  autoMidpoint?: boolean;
+  activityType?: string;
 };

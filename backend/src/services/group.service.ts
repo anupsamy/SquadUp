@@ -145,6 +145,8 @@ export class GroupService {
       transitType?: TransitType;
       meetingTime?: string;
       expectedPeople?: number;
+      autoMidpoint?: boolean;
+      activityType?: string;
     }
   ): Promise<IGroup> {
     try {
@@ -174,6 +176,12 @@ export class GroupService {
         }
         if (updates.expectedPeople !== undefined) {
           updateData.expectedPeople = updates.expectedPeople;
+        }
+        if (updates.autoMidpoint !== undefined) {
+          updateData.autoMidpoint = updates.autoMidpoint;
+        }
+        if (updates.activityType !== undefined) {
+          updateData.activityType = updates.activityType;
         }
       }
 

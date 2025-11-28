@@ -44,6 +44,7 @@ export class GroupController {
       groupLeaderId,
       expectedPeople,
       activityType,
+      autoMidpoint
     } = req.body;
 
     // Input validation
@@ -68,6 +69,12 @@ export class GroupController {
       );
     }
 
+    if (!autoMidpoint || typeof autoMidpoint !== 'boolean') {
+      throw AppErrorFactory.badRequest(
+        'autoMidpoint is required and must be a boolean'
+      );
+    }
+
     // Call service to create group
     const newGroup = await groupService.createGroup({
       groupName,
@@ -76,6 +83,7 @@ export class GroupController {
       expectedPeople: expectedPeople || 0,
       groupMemberIds: [groupLeaderId],
       activityType,
+      autoMidpoint
     });
 
     res.status(201).json({
@@ -177,7 +185,7 @@ export class GroupController {
     req: Request<unknown, unknown, UpdateGroupSettingsRequest>,
     res: Response<GetGroupResponse>
   ) {
-    const { joinCode, address, transitType, meetingTime, expectedPeople } =
+    const { joinCode, address, transitType, meetingTime, expectedPeople, autoMidpoint, activityType } =
       req.body;
     logger.error(
       'Request in groupSettings:',
@@ -198,6 +206,8 @@ export class GroupController {
         transitType: validTransitType,
         meetingTime,
         expectedPeople,
+        autoMidpoint,
+        activityType
       }
     );
     res.status(200).json({
@@ -230,6 +240,10 @@ export class GroupController {
     validateJoinCode(joinCode);
 
     const result = await groupService.getMidpointByJoinCode(joinCode);
+    //TODO add the following to service
+    /*
+const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
+    */
 
     res.status(200).json({
       message: 'Get midpoint successfully!',
@@ -254,7 +268,7 @@ export class GroupController {
     });
   }
 
-  //TODO: figure out if we can delete?
+  //TODO: figure out if we can delete (NEED TO BE ADDED BACK)
   // async getActivities(req: Request, res: Response): Promise<void> {
   //   const { joinCode } = req.query;
 

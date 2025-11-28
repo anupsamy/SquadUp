@@ -16,8 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -128,15 +131,18 @@ fun LeaderGroupView(
     groupViewModel: GroupViewModel,
     activityPickerViewModel: ActivityPickerViewModel,
     selectedActivity: Activity?,
-    midpoint: com.cpen321.squadup.data.remote.dto.SquadGoal?,
+    midpoint: SquadGoal?,
+    onUpdate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
     val activities by groupViewModel.activities.collectAsState()
 
 
-    val handleMidpointCalculation = {
-        groupViewModel.getMidpoint(group.joinCode)
+    val handleMidpointCalculation = { //TODO Figure out how this fits with getting activites at the same time
+        groupViewModel.updateMidpoint(group.joinCode) //activites retrieved from here
+        //activityPickerViewModel.loadActivities(group.joinCode)
+        onUpdate()
     }
 
     Column(
@@ -159,6 +165,7 @@ fun LeaderGroupView(
                 viewModel = activityPickerViewModel,
                 activities = activities,
                 joinCode = group.joinCode,
+                onSelectActivity = { onUpdate() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)

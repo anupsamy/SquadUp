@@ -27,6 +27,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -34,7 +36,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.testTag
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
@@ -77,7 +79,9 @@ fun GroupDetailsScreen(
     val midpoint = groupViewModel.midpoint.collectAsState().value ?: parseMidpointString(group.midpoint)
     val selectedActivity = activityPickerVM.selectedActivity.collectAsState().value ?: group.selectedActivity
     val currentUserId = profileUiState.user?._id
+    val travelTime = group.groupMemberIds?.find { it.id == currentUserId }?.travelTime
     val isLeader = group.groupLeaderId?.id == currentUserId
+    var isUpdated by remember { mutableStateOf(false) }
 
     fun refresh() {
         navController.navigate(NavRoutes.MAIN) { popUpTo(NavRoutes.MAIN) { inclusive = false } }
@@ -95,7 +99,12 @@ fun GroupDetailsScreen(
 
     LaunchedEffect(isDeleted) { if (isDeleted) { unsubscribeFromGroupTopic(group.joinCode); navController.navigate(NavRoutes.MAIN) { popUpTo(0) { inclusive = true } }; groupViewModel.resetGroupDeletedState() } }
     LaunchedEffect(isLeft) { if (isLeft) { navController.navigate(NavRoutes.MAIN) { popUpTo(0) { inclusive = true } }; groupViewModel.resetGroupLeftState() } }
-
+    LaunchedEffect(isUpdated) {
+        if (isUpdated) {
+            refresh()
+            isUpdated = false
+        }
+    }
     Scaffold(
         topBar = { GroupDetailsTopBar(navController, group.joinCode, group.groupName, group.meetingTime, ::refresh) }
     ) { padding ->
@@ -106,13 +115,14 @@ fun GroupDetailsScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, selectedActivity = selectedActivity, modifier = Modifier.weight(1f))
+            if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, selectedActivity = selectedActivity, onUpdate = { isUpdated = true }, modifier = Modifier.weight(1f))
             else MemberGroupView(profileUiState.user, group, groupViewModel, midpoint, selectedActivity, Modifier.weight(1f))
 
-            Spacer(Modifier.height(8.dp))
-            JoinCodeSection(group.joinCode)
+            TravelTimeSection(travelTime)
             Spacer(Modifier.height(8.dp))
             MembersHostSection(group)
+            Spacer(Modifier.height(8.dp))
+            JoinCodeSection(group.joinCode)
             Spacer(Modifier.height(16.dp))
             SeeDetailsButton(navController, group.joinCode)
         }
@@ -205,6 +215,42 @@ private fun GroupDetailsTopBar(nav: NavController, joinCode: String, name: Strin
         }
     }
 }
+
+fun formatTravelTime(travelTimeStr: String?): String {
+    val minutesDecimal = travelTimeStr?.toDoubleOrNull() ?: return "N/A"
+    val totalSeconds = (minutesDecimal * 60).toInt()
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+
+    return when {
+        hours > 0 -> "${hours} hr ${minutes} min"
+        minutes > 0 -> "${minutes} min ${seconds} sec"
+        else -> "${seconds} sec"
+    }
+}
+
+@Composable
+private fun TravelTimeSection(travelTime: String?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            "Travel Time",
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            travelTime?.let { formatTravelTime(travelTime) } ?: "N/A",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 
 @Composable
 private fun SeeDetailsButton(nav: NavController, joinCode: String) {

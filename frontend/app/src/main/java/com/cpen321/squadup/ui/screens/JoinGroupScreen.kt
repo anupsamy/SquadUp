@@ -41,6 +41,8 @@ fun JoinGroupScreen(
     var groupName by remember { mutableStateOf<String?>(null) }
     var address by remember { mutableStateOf(profileUiState.user?.address) }
     var transitType by remember { mutableStateOf(profileUiState.user?.transitType) }
+    var showAlreadyMemberDialog by remember { mutableStateOf(false) }
+    var showAlreadyLeaderDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         transitType = profileUiState.user?.transitType
@@ -48,6 +50,38 @@ fun JoinGroupScreen(
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
+    }
+
+    if (showAlreadyMemberDialog) {
+        AlertDialog(
+            onDismissRequest = { showAlreadyMemberDialog = false },
+            title = { Text("Already a Member") },
+            text = { Text("You are already a member of this group.") },
+            confirmButton = {
+                Button(onClick = { 
+                    showAlreadyMemberDialog = false
+                    navController.popBackStack()
+                }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showAlreadyLeaderDialog) {
+        AlertDialog(
+            onDismissRequest = { showAlreadyLeaderDialog = false },
+            title = { Text("Group Leader") },
+            text = { Text("You are the leader of this group. You cannot join your own group as a member.") },
+            confirmButton = {
+                Button(onClick = { 
+                    showAlreadyLeaderDialog = false
+                    navController.popBackStack()
+                }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -95,7 +129,7 @@ fun JoinGroupScreen(
                             onSuccess = { group ->
                                 groupExists = true
                                 groupName = group.groupName
-                                groupMeetingTime = group.meetingTime // Fetch meeting time
+                                groupMeetingTime = group.meetingTime 
                                 joinGroupMessage = ""
                             },
                             onError = {
@@ -190,7 +224,17 @@ fun JoinGroupScreen(
                                 navController.popBackStack()    // Navigate back after joining
                             },
                             onError = { error ->
-                                joinGroupMessage = error
+                                when {
+                                    error.contains("leader", ignoreCase = true) -> {
+                                        showAlreadyLeaderDialog = true
+                                    }
+                                    error.contains("already a member", ignoreCase = true) -> {
+                                        showAlreadyMemberDialog = true
+                                    }
+                                    else -> {
+                                        joinGroupMessage = error
+                                    }
+                                }
                             }
                         )
                     },

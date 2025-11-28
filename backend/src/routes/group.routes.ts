@@ -19,6 +19,7 @@ router.get('/info', (req, res, next) => {
   });
 });
 
+//TODO figure out if get activities still used and required (probably yes, need if activities change but midpoint not)
 // router.get('/activities', groupController.getActivities.bind(groupController));
 
 router.post(

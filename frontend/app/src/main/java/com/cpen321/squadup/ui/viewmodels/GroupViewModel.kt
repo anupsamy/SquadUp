@@ -49,11 +49,11 @@ class GroupViewModel @Inject constructor(
     val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
 
 
-    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String) {
+    fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String, autoMidpoint: Boolean) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isCreatingGroup = true, errorMessage = null)
 
-            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople, activityType)
+            val result = groupRepository.createGroup(groupName, meetingTime, groupLeaderId, expectedPeople, activityType, autoMidpoint)
             if (result.isSuccess) {
                 val group = result.getOrNull()
                 Log.d(TAG, "GroupViewModel createGroup: ${group}")
@@ -67,6 +67,7 @@ class GroupViewModel @Inject constructor(
                         "meetingTime" to (group?.group?.meetingTime ?: ""),
                         "expectedPeople" to (group?.group?.expectedPeople ?: ""),
                         "activityType" to (group?.group?.activityType ?: ""),
+                        "autoMidpoint" to (group?.group?.autoMidpoint ?: "")
                     )
                 )
             } else {
@@ -115,6 +116,7 @@ class GroupViewModel @Inject constructor(
             val result = groupRepository.updateMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
                 _midpoint.value = result.getOrNull()?.midpoint
+                _activities.value = result.getOrNull()?.activities ?: emptyList()
                 Log.e(TAG, "Updated midpoint!")
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
@@ -142,8 +144,10 @@ class GroupViewModel @Inject constructor(
         joinCode: String,
         address: Address?,
         transitType: TransitType?,
-        expectedPeople: Number,
+        expectedPeople: Int,
         meetingTime: String,
+        autoMidpoint: Boolean,
+        activityType: String,
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -156,6 +160,8 @@ class GroupViewModel @Inject constructor(
                         transitType = transitType,
                         meetingTime = meetingTime,
                         expectedPeople = expectedPeople,
+                        autoMidpoint = autoMidpoint,
+                        activityType = activityType
                     )
                     if (joinResult.isSuccess) {
                         onSuccess("Successfully updated!")

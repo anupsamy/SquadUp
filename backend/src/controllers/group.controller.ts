@@ -41,6 +41,7 @@ export class GroupController {
         groupLeaderId,
         expectedPeople,
         activityType,
+        autoMidpoint
       } = req.body;
       console.log(activityType);
       const joinCode = Math.random().toString(36).slice(2, 8);
@@ -54,6 +55,7 @@ export class GroupController {
         groupMemberIds: [groupLeaderId],
         meetingTime: meetingTime, // Default to current time for now,
         activityType: activityType,
+        autoMidpoint: autoMidpoint
       });
       //console.error('GroupController newGroup:', newGroup);
       res.status(201).json({
@@ -225,13 +227,15 @@ export class GroupController {
     next: NextFunction
   ) {
     try {
-      const { joinCode, expectedPeople, groupMemberIds, meetingTime } =
+      const { joinCode, expectedPeople, groupMemberIds, meetingTime, autoMidpoint, activityType } =
         req.body;
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
         expectedPeople,
         groupMemberIds: groupMemberIds || [],
         meetingTime,
+        autoMidpoint,
+        activityType
       });
 
       if (!updatedGroup) {
@@ -307,6 +311,7 @@ export class GroupController {
       //   return;
       // }
       const group = await groupModel.findByJoinCode(joinCode);
+      const activityList: Activity[] = [];
 
       if (!group) {
         return res.status(404).json({
@@ -325,6 +330,7 @@ export class GroupController {
                 lng: parseFloat(parts[1]),
               },
             },
+            activities: activityList,
           },
         });
       }
@@ -341,9 +347,7 @@ export class GroupController {
           };
         });
 
-      const optimizedPoint =
-        await locationService.findOptimalMeetingPoint(locationInfo);
-      const activityList: Activity[] = [];
+      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng;
@@ -353,8 +357,9 @@ export class GroupController {
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
-        midpoint,
+        midpoint
       });
+      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
 
       console.log('Activities List: ', activityList);
       res.status(200).json({
@@ -414,8 +419,7 @@ export class GroupController {
           };
         });
 
-      const optimizedPoint =
-        await locationService.findOptimalMeetingPoint(locationInfo);
+      const optimizedPoint = await locationService.findOptimalMeetingPoint(locationInfo);
       //const activityList = await locationService.getActivityList(optimizedPoint);
       const activityList: Activity[] = [];
 
@@ -429,6 +433,8 @@ export class GroupController {
         joinCode,
         midpoint,
       });
+
+      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
 
       //console.log("Activities List: " , activityList);
       res.status(200).json({
@@ -598,6 +604,8 @@ export class GroupController {
         joinCode,
         validatedActivity
       );
+
+      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService, true);
 
       // Send notifications to group members
       //const wsService = getWebSocketService();

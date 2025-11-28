@@ -26,6 +26,9 @@ import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeParseException
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +52,7 @@ fun CreateGroupScreen(
     var meetingDateTime by remember { mutableStateOf("") }
     var expectedPeople by remember { mutableStateOf("") }
     var selectedActivity by remember { mutableStateOf<ActivityType?>(null) }
+    var autoMidpoint by remember { mutableStateOf(false) }
 
     // show snackbar on backend error coming from ViewModel
     LaunchedEffect(uiState.errorMessage) {
@@ -111,6 +115,16 @@ fun CreateGroupScreen(
             )
 
             DateTimePickerSection(context) { meetingDateTime = it }
+            val parsed = try {
+                OffsetDateTime.parse(meetingDateTime).toLocalDateTime()
+            } catch (e: DateTimeParseException) {
+                null
+            }
+
+            AutoMidpointToggle(
+                checked = autoMidpoint,
+                onCheckedChange = { autoMidpoint = it }
+            )
 
             TextField(
                 value = expectedPeople,
@@ -133,6 +147,7 @@ fun CreateGroupScreen(
                     when {
                         groupName.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Group name is required")
                         meetingDateTime.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Meeting date and time are required")
+                        parsed != null && parsed.isBefore(LocalDateTime.now()) -> snackbarHostState.showMessage(coroutineScope, "Meeting time must be in the future")
                         expectedPeople.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Expected people is required")
                         expectedPeople.toIntOrNull() == null || expectedPeople.toInt() <= 0 ->
                             snackbarHostState.showMessage(coroutineScope, "Expected people must be a positive number")
@@ -148,11 +163,12 @@ fun CreateGroupScreen(
                             )
 
                             groupViewModel.createGroup(
-                                groupName,
-                                meetingDateTime,
-                                groupLeader,
-                                expectedPeople.toInt(),
-                                selectedActivity!!.storedValue
+                                groupName = groupName,
+                                meetingTime = meetingDateTime,
+                                groupLeaderId = groupLeader,
+                                expectedPeople = expectedPeople.toInt(),
+                                activityType = selectedActivity!!.storedValue,
+                                autoMidpoint = autoMidpoint
                             )
                         }
                     }
@@ -271,3 +287,26 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
         }
     }
 }
+
+@Composable
+fun AutoMidpointToggle(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+        Text(
+            "Automatic Midpoint Update",
+            modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+

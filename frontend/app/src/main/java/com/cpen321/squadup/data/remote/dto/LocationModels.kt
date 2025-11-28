@@ -82,6 +82,12 @@ enum class ActivityType(val storedValue: String, val displayName: String) {
     MOVIE_THEATER("movie_theater", "MOVIE THEATER"),
     NIGHT_CLUB("night_club", "NIGHT CLUB"),
     AMUSEMENT_PARK("amusement_park", "AMUSEMENT PARK"),
-    MUSEUM("museum", "MUSEUM")
+    MUSEUM("museum", "MUSEUM");
+
+    companion object {
+        fun getActivity(value: String): ActivityType? {
+            return entries.find { it.storedValue == value }
+        }
+    }
 }
 

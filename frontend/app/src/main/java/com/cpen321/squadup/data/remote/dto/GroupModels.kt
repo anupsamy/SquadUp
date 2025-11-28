@@ -5,14 +5,17 @@ data class CreateGroupRequest(
     val meetingTime: String? = null,
     val groupLeaderId: GroupUser? = null,
     val expectedPeople: Number? = null,
-    val activityType: String? = null
+    val activityType: String? = null,
+    val autoMidpoint: Boolean? = null
 )
 
 data class UpdateGroupRequest(
     val joinCode: String? = null,
     val expectedPeople: Number? = null,
     val groupMemberIds: List<GroupUser>?= null,
-    val meetingTime: String? = null
+    val meetingTime: String? = null,
+    val autoMidpoint: Boolean? = null,
+    val activityType: String? = null
 )
 
 data class LeaveGroupRequest(
@@ -35,7 +38,8 @@ data class GroupDataDetailed(
     val groupMemberIds: List<GroupUser>? = null,
     val midpoint: String? = null,
     val selectedActivity: Activity? = null,
-    val activityType: String ?= null
+    val activityType: String,
+    val autoMidpoint: Boolean
 )
 
 data class GroupUser(
@@ -43,7 +47,8 @@ data class GroupUser(
     val name: String,
     val email: String,
     val address: Address? = null,
-    val transitType: TransitType ?= null
+    val transitType: TransitType ?= null,
+    val travelTime: String ?= null
 )
 
 data class ActivityCoordinates (

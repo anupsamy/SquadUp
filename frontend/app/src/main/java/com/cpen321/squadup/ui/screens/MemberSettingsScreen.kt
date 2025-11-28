@@ -22,17 +22,16 @@ import com.cpen321.squadup.data.remote.dto.GroupUser
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.navigation.NavRoutes
-import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
 import android.app.TimePickerDialog
 import android.app.DatePickerDialog
-import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.cpen321.squadup.data.remote.dto.ActivityType
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -87,7 +86,9 @@ data class MemberSettingsState(
     val expectedPeople: String,
     val meetingTimeError: String?,
     val expectedPeopleError: String?,
-    val existingMemberInfo: GroupUser?
+    val existingMemberInfo: GroupUser?,
+    val autoMidpoint: Boolean,
+    val activityType: String
 )
 
 data class MemberSettingsHandlers(
@@ -98,7 +99,9 @@ data class MemberSettingsHandlers(
     val onAddressChange: (Address?) -> Unit,
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onMeetingTimeChange: (String, String?) -> Unit,
-    val onExpectedPeopleChange: (String) -> Unit
+    val onExpectedPeopleChange: (String) -> Unit,
+    val onAutoMidpointChange: (Boolean) -> Unit,
+    val onActivityChange: (ActivityType) -> Unit
 )
 
 @Composable
@@ -127,20 +130,21 @@ private fun MemberSettingsContent(
 
         // Only group leader can edit meetingTime & expectedPeople
         if (state.group.groupLeaderId?.id == state.currentUserId) {
+            ActivityDropdown(selected = ActivityType.getActivity(state.activityType), onSelect = handlers.onActivityChange)
+            ExpectedPeopleField(
+                value = state.expectedPeople,
+                error = state.expectedPeopleError,
+                onValueChange = handlers.onExpectedPeopleChange
+            )
+
             MeetingTimePickerButton(
                 context = context,
                 meetingTime = state.meetingTime,
                 meetingTimeError = state.meetingTimeError,
                 onMeetingTimeSelected = handlers.onMeetingTimeChange
             )
-
-            ExpectedPeopleField(
-                value = state.expectedPeople,
-                error = state.expectedPeopleError,
-                onValueChange = handlers.onExpectedPeopleChange
-            )
+            AutoMidpointToggle(checked = state.autoMidpoint, onCheckedChange = handlers.onAutoMidpointChange)
         }
-
         // Save button
         SaveSettingsButton(
             state = state,
@@ -174,10 +178,12 @@ fun MemberSettingsScreen(
 
     var address by remember { mutableStateOf(existingMemberInfo?.address) }
     var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
-    var meetingTime by remember { mutableStateOf(group.meetingTime ?: "") }
-    var expectedPeople by remember { mutableStateOf(group.expectedPeople?.toString() ?: "") }
+    var meetingTime by remember { mutableStateOf(group.meetingTime) }
+    var expectedPeople by remember { mutableStateOf(group.expectedPeople.toString()) }
     var meetingTimeError by remember { mutableStateOf<String?>(null) }
     var expectedPeopleError by remember { mutableStateOf<String?>(null) }
+    var autoMidpoint by remember { mutableStateOf(group.autoMidpoint) }
+    var activityType by remember { mutableStateOf<String>(group.activityType) }
 
     val state = MemberSettingsState(
         group = group,
@@ -188,7 +194,9 @@ fun MemberSettingsScreen(
         expectedPeople = expectedPeople,
         meetingTimeError = meetingTimeError,
         expectedPeopleError = expectedPeopleError,
-        existingMemberInfo = existingMemberInfo
+        existingMemberInfo = existingMemberInfo,
+        autoMidpoint = autoMidpoint,
+        activityType = activityType
     )
 
     val handlers = MemberSettingsHandlers(
@@ -205,7 +213,9 @@ fun MemberSettingsScreen(
         onExpectedPeopleChange = {
             expectedPeople = it
             expectedPeopleError = null
-        }
+        },
+        onAutoMidpointChange = { autoMidpoint = it },
+        onActivityChange = { activityType = it.storedValue }
     )
 
     Scaffold(
@@ -342,22 +352,26 @@ fun SaveSettingsButton(
                 updatedMembers = updatedMembers,
                 meetingTime = state.meetingTime,
                 expectedPeople = state.expectedPeople.toInt(),
-                onSuccess = { coroutineScope.launch { snackbarHostState.showSnackbar("Settings saved successfully!") } },
+                autoMidpoint = state.autoMidpoint,
+                activityType = state.activityType,
+                onSuccess = {
+                    coroutineScope.launch { snackbarHostState.showSnackbar("Settings saved successfully!") }
+
+                    // update midpoint if address/transit changed for the current user
+                    if (state.autoMidpoint) {
+                        val addressUpdate = (state.existingMemberInfo as? GroupUser)?.address != state.address
+                        val transitUpdate = (state.existingMemberInfo as? GroupUser)?.transitType != state.transitType
+                        val activityUpdate = state.group.activityType != state.activityType
+                        if (addressUpdate || transitUpdate || activityUpdate) {
+                            groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
+                        }
+                    }
+                },
                 onError = { coroutineScope.launch { snackbarHostState.showSnackbar("Error saving!") } }
             )
-
-            // update midpoint if address/transit changed for the current user
-            val existingAddr = (state.existingMemberInfo as? GroupUser)?.address
-            val existingTransit = (state.existingMemberInfo as? GroupUser)?.transitType
-            if (existingAddr != state.address || existingTransit != state.transitType) {
-                groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
-            }
         },
         enabled = state.address != null && state.transitType != null
     ) {
         Text("Save")
     }
 }
-
-
-

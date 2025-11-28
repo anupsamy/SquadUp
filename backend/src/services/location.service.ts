@@ -2,13 +2,23 @@ import { Client, TravelMode } from '@googlemaps/google-maps-services-js';
 import type { LocationInfo, GeoLocation } from '../types/location.types';
 import { format } from 'path';
 import { Activity } from '../types/group.types';
+import { TransitType } from '../types/transit.types';
+
 
 export class LocationService {
   private mapsClient: Client;
+  private static readonly COORD_EPSILON = 1e-6;
 
   constructor() {
     this.mapsClient = new Client({});
   }
+
+  private coordinatesAreIdentical(origin: GeoLocation, destination: GeoLocation): boolean {
+  return (
+    Math.abs(origin.lat - destination.lat) <= LocationService.COORD_EPSILON &&
+    Math.abs(origin.lng - destination.lng) <= LocationService.COORD_EPSILON
+  );
+}
 
   async getTravelTime(
     origin: GeoLocation,
@@ -19,18 +29,26 @@ export class LocationService {
       if (!apiKey) {
         throw new Error('MAPS_API_KEY is not configured');
       }
+
+      // If origin and destination are identical (or extremely close)
+      if (this.coordinatesAreIdentical(origin, destination)) {
+        return 0;
+      }
+
       // Google Maps API expects mode as TravelMode enum
       // TransitType values ("driving", "walking", "bicycling", "transit") match the API expectations
       // Map TransitType to TravelMode enum
-      const transitTypeToTravelMode: Record<string, TravelMode> = {
+      const transitTypeToTravelMode: Record<TransitType, TravelMode> = {
         driving: TravelMode.driving,
         walking: TravelMode.walking,
         bicycling: TravelMode.bicycling,
         transit: TravelMode.transit,
       };
+
       const travelMode = origin.transitType
         ? transitTypeToTravelMode[origin.transitType] || TravelMode.driving
         : TravelMode.driving;
+
       const response = await this.mapsClient.distancematrix({
         params: {
           origins: [`${origin.lat},${origin.lng}`],
@@ -84,7 +102,7 @@ export class LocationService {
   async getActivityList(
     location: GeoLocation,
     type: string = 'restaurant',
-    radius: number = 1000,
+    radius: number = 5000,
     maxResults: number = 10
   ): Promise<Activity[]> {
     try {

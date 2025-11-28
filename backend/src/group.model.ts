@@ -15,6 +15,8 @@ import {
 import { addressSchema, userModel, UserModel } from './user.model';
 import { GoogleUserInfo } from './types/user.types';
 import logger from './utils/logger.util';
+import { LocationService } from './services/location.service';
+import { GeoLocation } from './types/location.types';
 
 const groupSchema = new Schema<IGroup>(
   {
@@ -72,6 +74,7 @@ const groupSchema = new Schema<IGroup>(
             required: false,
           },
           transitType: { type: String, required: false, trim: true },
+          travelTime: { type: String, required: false, trim: true }
         },
       ],
       required: false,
@@ -81,6 +84,10 @@ const groupSchema = new Schema<IGroup>(
       type: String,
       required: false,
       trim: true,
+    },
+    autoMidpoint: {
+      type: Boolean,
+      required: true
     },
     selectedActivity: {
       type: activitySchema,
@@ -233,6 +240,79 @@ export class GroupModel {
       throw new Error('Failed to update selected activity');
     }
   }
+
+  async updateMemberTravelTime(
+    group: IGroup | null,
+    locationService: LocationService,
+    hasSelect: boolean = false
+  ): Promise<IGroup | null> {
+    try {
+       if (!group) return group;
+
+      const joinCode = group.joinCode;
+      const selectedActivity = group.selectedActivity;
+      const unknownTravelTime = 'N/A'
+
+      const existingGroupMemberIds = group.groupMemberIds;
+      if (!existingGroupMemberIds) return group;
+
+      // assign "N/A" if no activity has been selected
+      if (!selectedActivity || !hasSelect) {
+        const updatedMembers: GroupUser[] = (group.groupMemberIds ?? []).map((user: GroupUser) => ({
+          id: user.id,
+          name: user.name,
+          address: user.address,
+          email: user.email,
+          transitType: user.transitType,
+          travelTime: unknownTravelTime
+        }));
+
+        return await groupModel.updateGroupByJoinCode(group.joinCode, {
+          joinCode: group.joinCode,
+          groupMemberIds: updatedMembers,
+        });
+      }
+
+      const location: GeoLocation = {
+        lat: selectedActivity.latitude,
+        lng: selectedActivity.longitude,
+      };
+
+      // Update travel time
+      const updatedMembers: GroupUser[] = await Promise.all(
+        (existingGroupMemberIds).map(async (user: GroupUser) => {
+          if (user.address?.lat != null && user.address?.lng != null) {
+            const travelTime = await locationService.getTravelTime(
+              { lat: user.address.lat, lng: user.address.lng, transitType: user.transitType },
+              location
+            );
+
+            return {
+              id: user.id,
+              name: user.name,
+              address: user.address,
+              email: user.email,
+              transitType: user.transitType,
+              travelTime: travelTime.toFixed(2).toString()
+            };
+          }
+          return user;
+        })
+      );
+
+      // Update in database
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+        joinCode,
+        groupMemberIds: updatedMembers,
+      });
+
+      return updatedGroup;
+    } catch (error) {
+      console.error('Error: ', error);
+      throw new Error('Failed to update member travel time');
+    }
+  }
+
 
   //TODO REMOVE
   async getActivities(joinCode: string): Promise<Activity[]> {

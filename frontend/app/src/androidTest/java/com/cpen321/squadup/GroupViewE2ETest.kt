@@ -44,8 +44,6 @@ class GroupViewE2ETest {
         device.wait(Until.hasObject(By.pkg(TestData.APP_PACKAGE_NAME)), TestData.TEST_TIMEOUT_LONG)
         composeTestRule.waitForIdle()
         
-        // Wait for main screen to load - check for either Create Group button or SquadUp title
-        // This is more reliable than waiting for specific groups
         composeTestRule.waitUntil(timeoutMillis = 30000) {
             try {
                 // Try Create Group icon button first (use unmerged tree because Icon hides semantics when merged)
@@ -93,7 +91,6 @@ class GroupViewE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        // Navigate to a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
@@ -111,9 +108,6 @@ class GroupViewE2ETest {
         composeTestRule.onNodeWithContentDescription("Back")
             .assertIsDisplayed()
         
-        // Verify event time is displayed in the top bar (time is shown as text in title, not testTag)
-        // The time is displayed in the TopAppBar title, so we just verify the screen loaded correctly
-        // by checking for other elements like "Join Code"
         composeTestRule.onNodeWithText("Join Code")
             .assertIsDisplayed()
     }
@@ -136,9 +130,6 @@ class GroupViewE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1500)
         
-        // Event time should be visible in group details
-        // (In top bar as subtitle)
-        
         // Navigate to Group details (member list)
         composeTestRule.onNodeWithText("Group details")
             .performClick()
@@ -146,8 +137,6 @@ class GroupViewE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
         
-        // Event time is not necessarily shown in member list
-        // but we verify the screen loaded correctly
         composeTestRule.onNodeWithText("Members")
             .assertIsDisplayed()
         
@@ -160,20 +149,11 @@ class GroupViewE2ETest {
         composeTestRule.onNodeWithContentDescription("Back")
             .assertIsDisplayed()
         
-        // Verify event time is displayed in the top bar
-        // The time is displayed as text in the TopAppBar title (subtitle)
-        // The time format is ISO (e.g., "2024-01-15T14:30:00Z")
-        // Since the time is displayed as text in the TopAppBar and we can't easily access nested text,
-        // we verify the screen loaded correctly by checking for elements that should be present
-        // The presence of these elements confirms the group details screen (and its time) is displayed
         composeTestRule.onNodeWithText("Join Code")
             .assertIsDisplayed()
         composeTestRule.onNodeWithText("Group details")
             .assertIsDisplayed()
-        
-        // The meeting time is displayed in the TopAppBar title as the second Text element
-        // We verify it's there indirectly by ensuring the TopAppBar is present (via Back button)
-        // and the screen has loaded correctly (via Join Code and Group details elements)
+    
     }
 
     /**
@@ -233,7 +213,6 @@ class GroupViewE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
         
-        // Navigate to a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
@@ -275,8 +254,7 @@ class GroupViewE2ETest {
                 false
             }
 
-            // Wait for calculation to complete
-            Thread.sleep(5000) // Midpoint calculation may take time
+            Thread.sleep(5000)
             
             composeTestRule.waitForIdle()
             
@@ -318,7 +296,6 @@ class GroupViewE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        // Navigate to a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
@@ -332,10 +309,6 @@ class GroupViewE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(1500)
 
-        // Look for "Find midpoint" or "Recalculate Midpoint" button
-        // These buttons only appear for leaders
-
-        // Try to find the "Find midpoint" button (shown when no midpoint exists)
         val findMidpointExists = try {
             composeTestRule.onNodeWithText("Find midpoint")
                 .assertExists()
@@ -345,17 +318,15 @@ class GroupViewE2ETest {
         }
 
         if (findMidpointExists) {
-            // Click to calculate midpoint
             composeTestRule.onNodeWithText("Find midpoint")
                 .performClick()
 
             composeTestRule.waitForIdle()
 
-            // Should show "Getting midpoint..." during calculation
             composeTestRule.waitForNodeWithText("Getting midpoint...", timeoutMillis = 2000)
 
             // Wait for calculation to complete
-            Thread.sleep(5000) // Midpoint calculation may take time
+            Thread.sleep(5000)
 
             composeTestRule.waitForIdle()
 

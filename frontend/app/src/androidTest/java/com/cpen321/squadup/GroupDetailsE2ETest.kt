@@ -38,8 +38,6 @@ class GroupDetailsE2ETest {
         device.wait(Until.hasObject(By.pkg(TestData.APP_PACKAGE_NAME)), TestData.TEST_TIMEOUT_LONG)
         composeTestRule.waitForIdle()
         
-        // Wait for main screen to load (check for Create Group button or SquadUp title)
-        // This is more reliable than waiting for specific groups
         composeTestRule.waitUntil(timeoutMillis = 30000) {
             try {
                 composeTestRule.onNodeWithContentDescription("Create Group")
@@ -50,11 +48,9 @@ class GroupDetailsE2ETest {
             }
         }
         
-        // Give additional time for authentication and navigation
         Thread.sleep(3000)
         composeTestRule.waitForIdle()
         
-        // Wait for any "Group Update" messages to disappear (if they exist)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithText("Group Update", substring = true).fetchSemanticsNodes().isEmpty()
         }
@@ -314,7 +310,6 @@ class GroupDetailsE2ETest {
         }
 
         if (hasGroups) {
-            // Navigate to a group (using testTag for reliability)
             composeTestRule.onAllNodesWithTag("groupButton")
                 .onFirst()
                 .assertIsDisplayed()
@@ -374,7 +369,6 @@ class GroupDetailsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        // Navigate to a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
@@ -492,7 +486,6 @@ class GroupDetailsE2ETest {
         composeTestRule.onNodeWithText("Group details").assertIsDisplayed()
 
         // Step 9: Navigate back to main screen
-        // Use the back button in the top bar which explicitly navigates to MAIN
         composeTestRule.onNodeWithContentDescription("Back")
             .assertIsDisplayed()
             .performClick()
@@ -500,7 +493,6 @@ class GroupDetailsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000) // Wait for navigation to complete
 
-        // Should be on main screen - wait for it to load
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             try {
                 composeTestRule.onNodeWithContentDescription("Create Group")
@@ -523,7 +515,6 @@ class GroupDetailsE2ETest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        // Navigate to a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()

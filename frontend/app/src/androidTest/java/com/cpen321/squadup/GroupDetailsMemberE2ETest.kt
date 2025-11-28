@@ -31,6 +31,9 @@ class GroupDetailsMemberE2ETest {
 
     private lateinit var device: UiDevice
 
+    // Note: These tests assume a group with midpoint is calculated, and
+    // an activity is selected from the list of activities.
+
     @Before
     fun setup() {
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
@@ -40,17 +43,22 @@ class GroupDetailsMemberE2ETest {
     }
 
     private fun navigateToFirstGroup() {
-        // Click the first group (by "Leader:" label)
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText("Leader:", substring = true).fetchSemanticsNodes().isNotEmpty()
-        }
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
-        composeTestRule.onAllNodesWithText("Leader:", substring = true)
+        // Step 1: From main screen, click on a group (using testTag for reliability)
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithTag("groupButton")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.onAllNodesWithTag("groupButton")
             .onFirst()
+            .assertIsDisplayed()
             .performClick()
 
         composeTestRule.waitForIdle()
-        Thread.sleep(3000)
+        Thread.sleep(1500)
     }
 
     private fun navigateToGroupList() {
@@ -58,7 +66,7 @@ class GroupDetailsMemberE2ETest {
         Thread.sleep(2000)
 
         // Click "See Details"
-        composeTestRule.onNodeWithText("See Details")
+        composeTestRule.onNodeWithText("Group details")
             .assertIsDisplayed()
             .performClick()
 

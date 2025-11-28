@@ -31,6 +31,9 @@ class GroupDetailsLeaderE2ETest {
 
     private lateinit var device: UiDevice
 
+    //Note: These tests assume a group with midpoint is calculated, and
+    // an activity is selected from the list of activities.
+
     @Before
     fun setup() {
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())

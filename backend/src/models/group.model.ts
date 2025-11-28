@@ -11,12 +11,12 @@ import {
   activityZodSchema,
   GroupUser,
   Activity,
-} from './types/group.types';
-import { addressSchema, userModel, UserModel } from './user.model';
-import { GoogleUserInfo } from './types/user.types';
-import logger from './utils/logger.util';
-import { LocationService } from './services/location.service';
-import { GeoLocation } from './types/location.types';
+} from '../types/group.types';
+import { addressSchema, userModel, UserModel } from '../models/user.model';
+import { GoogleUserInfo } from '../types/user.types';
+import logger from '../utils/logger.util';
+import { LocationService } from '../services/location.service';
+import { GeoLocation } from '../types/location.types';
 
 const groupSchema = new Schema<IGroup>(
   {
@@ -73,8 +73,8 @@ const groupSchema = new Schema<IGroup>(
             },
             required: false,
           },
-          transitType: { type: String, required: false, trim: true },
-          travelTime: { type: String, required: false, trim: true }
+        transitType: { type: String, required: false, trim: true },
+        travelTime: { type: String, required: false, trim: true }
         },
       ],
       required: false,
@@ -97,6 +97,10 @@ const groupSchema = new Schema<IGroup>(
       type: String,
       required: true,
       trim: true,
+    },
+    activities: {
+      type: [activitySchema],
+      required: false,
     },
   },
   {
@@ -129,13 +133,15 @@ export class GroupModel {
     }
   }
 
-  async findAll(): Promise<IGroup[]> {
+  async findUserGroups(userId: string): Promise<IGroup[]> {
     try {
-      const groups = await this.group.find(); // Fetch all groups
+      const groups = await this.group.find({
+        $or: [{ 'groupLeaderId.id': userId }, { 'groupMemberIds.id': userId }],
+      });
       return groups;
     } catch (error) {
-      //logger.error('Error fetching all groups:', error);
-      throw new Error('Failed to fetch all groups');
+      logger.error('Error fetching user groups:', error);
+      throw new Error('Failed to fetch user groups');
     }
   }
   //unused
@@ -168,16 +174,17 @@ export class GroupModel {
     group: Partial<IGroup>
   ): Promise<IGroup | null> {
     try {
-      //console.error('GroupModel joinCode:', joinCode);
-      //console.error('GroupModel update by joinCode group:', group);
       const validatedData = updateGroupSchema.parse(group);
-      //console.error('GroupModel validatedData:', validatedData);
       const updatedGroup = await this.group.findOneAndUpdate(
         { joinCode },
         validatedData,
         {
           new: true,
         }
+      );
+      logger.info(
+        `Model update result for ${joinCode}:`,
+        JSON.stringify(updatedGroup)
       );
       return updatedGroup;
     } catch (error) {
@@ -204,11 +211,9 @@ export class GroupModel {
 
   async findByJoinCode(joinCode: string): Promise<IGroup | null> {
     try {
-      const group = await this.group.findOne({ joinCode }); // Query the database
-      //console.error('GroupModel findByJoinCode:', group);
+      const group = await this.group.findOne({ joinCode });
       return group;
     } catch (error) {
-      //logger.error('Error finding group by joinCode:', error);
       throw new Error('Failed to find group by joinCode');
     }
   }
@@ -238,6 +243,58 @@ export class GroupModel {
       }
       //logger.error('Error updating selected activity:', error);
       throw new Error('Failed to update selected activity');
+    }
+  }
+
+  async removeUserFromGroup(joinCode: string, userId: string): Promise<void> {
+    try {
+      const result = await this.group.findOneAndUpdate(
+        { joinCode },
+        { $pull: { groupMemberIds: { id: userId } } }
+      );
+
+      if (!result) {
+        throw new Error(`Group with joinCode '${joinCode}' not found`);
+      }
+    } catch (error) {
+      logger.error('Error removing user from group:', error);
+      throw new Error('Failed to remove user from group');
+    }
+  }
+
+  async transferLeadership(
+    joinCode: string,
+    newLeader: GroupUser,
+    remainingMembers: GroupUser[]
+  ): Promise<void> {
+    try {
+      const result = await this.group.findOneAndUpdate(
+        { joinCode },
+        {
+          groupLeaderId: newLeader,
+          groupMemberIds: remainingMembers,
+        }
+      );
+
+      if (!result) {
+        throw new Error(`Group with joinCode '${joinCode}' not found`);
+      }
+    } catch (error) {
+      logger.error('Error transferring leadership:', error);
+      throw new Error('Failed to transfer leadership');
+    }
+  }
+
+  async deleteGroup(joinCode: string): Promise<void> {
+    try {
+      const result = await this.group.findOneAndDelete({ joinCode });
+
+      if (!result) {
+        throw new Error(`Group with joinCode '${joinCode}' not found`);
+      }
+    } catch (error) {
+      logger.error('Error deleting group:', error);
+      throw new Error('Failed to delete group');
     }
   }
 
@@ -310,136 +367,6 @@ export class GroupModel {
     } catch (error) {
       console.error('Error: ', error);
       throw new Error('Failed to update member travel time');
-    }
-  }
-
-
-  //TODO REMOVE
-  async getActivities(joinCode: string): Promise<Activity[]> {
-    try {
-      // Verify the group exists (optional but good practice)
-      const group = await this.group.findOne({ joinCode });
-      if (!group) {
-        throw new Error(`Group with joinCode '${joinCode}' not found`);
-      }
-
-      // Return hardcoded dummy data
-      return this.getDefaultActivities();
-    } catch (error) {
-      //logger.error('Error getting activities:', error);
-      throw new Error('Failed to get activities');
-    }
-  }
-
-  //TODO REMOVE
-  private getDefaultActivities(): Activity[] {
-    return [
-      {
-        name: 'Sushi Palace one',
-        placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY58',
-        address: '5678 Oak St, Vancouver',
-        rating: 4.7,
-        userRatingsTotal: 512,
-        priceLevel: 3,
-        type: 'restaurant',
-        latitude: 49.2627,
-        longitude: -123.1407,
-        businessStatus: 'OPERATIONAL',
-        isOpenNow: true,
-      },
-      {
-        name: 'Pizza Garden two',
-        placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY47',
-        address: '1234 Main St, Vancouver',
-        rating: 4.3,
-        userRatingsTotal: 256,
-        priceLevel: 2,
-        type: 'restaurant',
-        latitude: 49.2827,
-        longitude: -123.1207,
-        businessStatus: 'OPERATIONAL',
-        isOpenNow: true,
-      },
-      {
-        name: 'Brew Bros Coffee three',
-        placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY59',
-        address: '9010 Broadway, Vancouver',
-        rating: 4.5,
-        userRatingsTotal: 318,
-        priceLevel: 1,
-        type: 'cafe',
-        latitude: 49.275,
-        longitude: -123.13,
-        businessStatus: 'OPERATIONAL',
-        isOpenNow: true,
-      },
-    ];
-  }
-
-  async leaveGroup(
-    joinCode: string,
-    userId: string
-  ): Promise<{ success: boolean; deleted: boolean; newLeader?: GroupUser }> {
-    try {
-      const group = await this.group.findOne({ joinCode });
-
-      if (!group) {
-        throw new Error(`Group with joinCode '${joinCode}' not found`);
-      }
-
-      // Check if the user is the group leader
-      const isLeader = group.groupLeaderId.id === userId;
-
-      // Remove user from group members
-      const updatedMembers = (group.groupMemberIds ?? []).filter(
-        member => member.id !== userId
-      );
-
-      // If the user is the leader and there are other members, transfer leadership
-      if (isLeader && updatedMembers.length > 0) {
-        // Transfer leadership to the first member (next person who joined)
-        const newLeader = updatedMembers[0];
-        const remainingMembers = updatedMembers.slice(1);
-
-        const updatedGroup = await this.group.findOneAndUpdate(
-          { joinCode },
-          {
-            groupLeaderId: newLeader,
-            groupMemberIds: remainingMembers,
-          },
-          { new: true }
-        );
-
-        return {
-          success: true,
-          deleted: false,
-          newLeader: newLeader,
-        };
-      }
-      // If the user is the leader and there are no other members, delete the group
-      else if (isLeader && updatedMembers.length === 0) {
-        await this.group.findOneAndDelete({ joinCode });
-        return {
-          success: true,
-          deleted: true,
-        };
-      }
-      // If the user is not the leader, just remove them from members
-      else {
-        const updatedGroup = await this.group.findOneAndUpdate(
-          { joinCode },
-          { groupMemberIds: updatedMembers },
-          { new: true }
-        );
-
-        return {
-          success: true,
-          deleted: false,
-        };
-      }
-    } catch (error) {
-      logger.error('Error leaving group:', error);
-      throw new Error('Failed to leave group');
     }
   }
 }

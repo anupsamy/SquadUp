@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import z from 'zod';
-import { HOBBIES } from '../hobbies';
-import { UserModel, userModel } from '../user.model';
+import { UserModel, userModel } from '../models/user.model';
 import { GoogleUserInfo } from '../types/user.types';
 import { Address } from './address.types';
 import { TransitType, transitTypeSchema } from './transit.types';
@@ -10,19 +9,20 @@ import { GeoLocation } from './location.types';
 // Group model
 // ------------------------------------------------------------
 export interface IGroup extends Document {
-  _id: mongoose.Types.ObjectId;
-  groupName: string;
-  meetingTime: string;
-  joinCode: string;
-  groupLeaderId: GroupUser;
-  expectedPeople: number;
-  groupMemberIds?: GroupUser[]; //Change to object of users later maybe, optional in schema
-  midpoint: string;
-  autoMidpoint: boolean,
-  activityType: string;
-  selectedActivity?: Activity;
-  createdAt: Date;
-}
+    _id: mongoose.Types.ObjectId;
+    groupName:string;
+    meetingTime: string;
+    joinCode: string;
+    groupLeaderId: GroupUser;
+    expectedPeople: number;
+    groupMemberIds: GroupUser[]; //Change to object of users later maybe,
+    midpoint?: string | null;
+    autoMidpoint: Boolean;
+    activityType: string,
+    selectedActivity?: Activity;
+    activities?: Activity[];
+    createdAt: Date;
+  }
 
 // Zod schemas
 // ------------------------------------------------------------
@@ -30,6 +30,90 @@ const addressSchema = z.object({
   formatted: z.string().min(1, 'Formatted address is required'),
   lat: z.number().optional(),
   lng: z.number().optional(),
+});
+
+export const basicGroupSchema = z.object({
+  joinCode: z.string().min(6, 'Join code is required'),
+  groupName: z.string().min(1, 'Group name is required'),
+  meetingTime: z.string().min(1, 'Meeting time is required'),
+  groupLeaderId: z.object({
+    id: z.string().min(1, 'User ID is required'),
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().min(1, 'Email is required'),
+    address: addressSchema.optional(),
+    transitType: transitTypeSchema.optional(),
+  }),
+  expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
+  groupMemberIds: z
+    .array(
+      z.object({
+        id: z.string().min(1, 'User ID is required'),
+        name: z.string().min(1, 'Name is required'),
+        email: z.string().min(1, 'Email is required'),
+        address: addressSchema.optional(),
+        transitType: transitTypeSchema.optional(),
+      })
+    )
+    .optional(),
+  midpoint: z.string().default('').optional(),
+  activityType: z.string().min(1, 'Activity type is required'),
+});
+
+export const createGroupSchema = z.object({
+  groupName: z.string().min(1, 'Group name is required'),
+  meetingTime: z.string().min(1, 'Meeting time is required'),
+  groupLeaderId: z.object({
+    id: z.string().min(1, 'User ID is required'),
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().min(1, 'Email is required'),
+    address: addressSchema.optional(),
+    transitType: transitTypeSchema.optional(),
+  }),
+  expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
+  activityType: z.string().min(1, 'Activity type is required'),
+  autoMidpoint: z.boolean(),
+});
+
+export const activityZodSchema = z.object({
+  name: z.string(),
+  placeId: z.string(),
+  address: z.string(),
+  rating: z.number(),
+  userRatingsTotal: z.number(),
+  priceLevel: z.number(),
+  type: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  businessStatus: z.string(),
+  isOpenNow: z.boolean(),
+});
+
+export const updateGroupSchema = z.object({
+  joinCode: z.string().min(6, 'Join code is required'),
+  expectedPeople: z.number().max(100).optional(),
+  groupMemberIds: z
+    .array(
+      z.object({
+        id: z.string().min(1, 'User ID is required'),
+        name: z.string().min(1, 'Name is required'),
+        email: z.string().min(1, 'Email is required'),
+        address: addressSchema.optional(),
+        transitType: transitTypeSchema.optional(),
+      })
+    )
+    .optional(),
+  meetingTime: z.string().optional(),
+  midpoint: z.string().nullable().optional(),
+  activityType: z.string().optional(),
+  activities: z.array(activityZodSchema).optional(),
+});
+
+export const updateGroupSettingsSchema = z.object({
+  joinCode: z.string().min(6, 'Join code is required'),
+  address: addressSchema.optional(),
+  transitType: z.string().optional(),
+  meetingTime: z.string().optional(),
+  expectedPeople: z.number().optional(),
 });
 
 //Activity model
@@ -65,86 +149,8 @@ export const activitySchema = new Schema(
   { _id: false }
 ); // _id: false prevents creating an _id for subdocument
 
-export const activityZodSchema = z.object({
-  name: z.string(),
-  placeId: z.string(),
-  address: z.string(),
-  rating: z.number(),
-  userRatingsTotal: z.number(),
-  priceLevel: z.number(),
-  type: z.string(),
-  latitude: z.number(),
-  longitude: z.number(),
-  businessStatus: z.string(),
-  isOpenNow: z.boolean(),
-});
 
-export const basicGroupSchema = z.object({
-  joinCode: z.string().min(6, 'Join code is required'),
-  groupName: z.string().min(1, 'Group name is required'),
-  meetingTime: z.string().min(1, 'Meeting time is required'),
-  groupLeaderId: z.object({
-    id: z.string().min(1, 'User ID is required'),
-    name: z.string().min(1, 'Name is required'),
-    email: z.string().min(1, 'Email is required'),
-    address: addressSchema.optional(),
-    transitType: transitTypeSchema.optional(),
-  }),
-  expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
-  groupMemberIds: z
-    .array(
-      z.object({
-        id: z.string().min(1, 'User ID is required'),
-        name: z.string().min(1, 'Name is required'),
-        email: z.string().min(1, 'Email is required'),
-        address: addressSchema.optional(),
-        transitType: transitTypeSchema.optional(),
-        travelTime: z.string().optional()
-      })
-    )
-    .optional(),
-  midpoint: z.string().default('').optional(),
-  autoMidpoint: z.boolean().default(false),
-  activityType: z.string().min(1, 'Activity type is required'),
-});
 
-export const createGroupSchema = z.object({
-  groupName: z.string().min(1, 'Group name is required'),
-  meetingTime: z.string().min(1, 'Meeting time is required'),
-  groupLeaderId: z.object({
-    id: z.string().min(1, 'User ID is required'),
-    name: z.string().min(1, 'Name is required'),
-    email: z.string().min(1, 'Email is required'),
-    address: addressSchema.optional(),
-    transitType: transitTypeSchema.optional(),
-    travelTime: z.string().optional()
-  }),
-  expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
-  activityType: z.string().min(1, 'Activity type is required'),
-  autoMidpoint: z.boolean().default(false)
-});
-
-export const updateGroupSchema = z.object({
-  joinCode: z.string().min(6, 'Join code is required'),
-  expectedPeople: z.number().max(100).optional(),
-  groupMemberIds: z
-    .array(
-      z.object({
-        id: z.string().min(1, 'User ID is required'),
-        name: z.string().min(1, 'Name is required'),
-        email: z.string().min(1, 'Email is required'),
-        address: addressSchema.optional(),
-        transitType: transitTypeSchema.optional(),
-        travelTime: z.string().optional()
-      })
-    )
-    .optional(),
-  meetingTime: z.string().optional(),
-  midpoint: z.string().optional(),
-  autoMidpoint: z.boolean().optional(),
-  activityType: z.string().optional(),
-  selectedActivity: activityZodSchema.optional()
-});
 
 // Request types
 // ------------------------------------------------------------
@@ -201,4 +207,14 @@ export type GroupUser = {
   address?: Address;
   transitType?: TransitType;
   travelTime?: string;
+};
+
+export type UpdateGroupSettingsRequest = { //TODO add auto midpoint and other fields
+  joinCode: string;
+  address?: { formatted: string; lat?: number; lng?: number };
+  transitType?: string;
+  meetingTime?: string;
+  expectedPeople?: number;
+  autoMidpoint?: boolean;
+  activityType?: string;
 };

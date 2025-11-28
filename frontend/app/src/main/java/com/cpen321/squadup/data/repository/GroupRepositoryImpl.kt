@@ -17,9 +17,11 @@ import javax.inject.Singleton
 
 import com.cpen321.squadup.data.remote.api.SelectActivityRequest
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
 import com.google.android.gms.maps.model.LatLng
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.google.gson.JsonParseException
 import retrofit2.HttpException
 import java.io.IOException
@@ -128,13 +130,15 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun joinGroup(joinCode: String, expectedPeople: Number, updatedMembers: List<GroupUser>): Result<Unit> {
+    override suspend fun joinGroup(joinCode: String): Result<Unit> {
         return try {
             val authToken = tokenManager.getToken() ?: ""
             val request = UpdateGroupRequest(
-                joinCode = joinCode,
-                expectedPeople = expectedPeople,
-                groupMemberIds = updatedMembers
+                joinCode,
+                null,
+                null,
+                null,
+                null
             )
 
             val response = groupInterface.joinGroup(
@@ -154,11 +158,12 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateGroup(
+    override suspend fun updateGroupSettings(
         joinCode: String,
-        expectedPeople: Number?,
-        updatedMembers: List<GroupUser>?,
+        address: Address?,
+        transitType: TransitType?,
         meetingTime: String?,
+        expectedPeople: Int?,
         autoMidpoint: Boolean?,
         activityType: String?
     ): Result<Unit> {
@@ -166,9 +171,10 @@ class GroupRepositoryImpl @Inject constructor(
             val authToken = tokenManager.getToken() ?: ""
             val request = UpdateGroupRequest(
                 joinCode = joinCode,
-                expectedPeople = expectedPeople,
-                groupMemberIds = updatedMembers,
+                address = address,
+                transitType = transitType,
                 meetingTime = meetingTime,
+                expectedPeople = expectedPeople,
                 autoMidpoint = autoMidpoint,
                 activityType = activityType
             )
@@ -246,17 +252,17 @@ class GroupRepositoryImpl @Inject constructor(
 
     //activities
 
-    override suspend fun getActivities(joinCode: String): Result<List<Activity>> {
-        return try {
-            val response = activityInterface.getActivities("", joinCode)
-            val activities = response.body()?.data ?: emptyList()
-
-            Result.success(activities)
-        } catch (e: IOException) {
-            Log.e(TAG, "Error fetching activities", e)
-            Result.success(emptyList())
-        }
-    }
+//    override suspend fun getActivities(joinCode: String): Result<List<Activity>> {
+//        return try {
+//            val response = activityInterface.getActivities("", joinCode)
+//            val activities = response.body()?.data ?: emptyList()
+//
+//            Result.success(activities)
+//        } catch (e: IOException) {
+//            Log.e(TAG, "Error fetching activities", e)
+//            Result.success(emptyList())
+//        }
+//    }
 
 
     override suspend fun selectActivity(joinCode: String, activity: Activity): Result<Unit> {

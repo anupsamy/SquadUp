@@ -11,10 +11,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
 import com.cpen321.squadup.data.remote.dto.Activity
+import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.GeoLocation
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.asStateFlow
 import com.cpen321.squadup.data.remote.dto.SquadGoal
+import com.cpen321.squadup.data.remote.dto.TransitType
 
 data class GroupUiState(
     val isCreatingGroup: Boolean = false,
@@ -42,6 +44,10 @@ class GroupViewModel @Inject constructor(
     val isGroupLeft: StateFlow<Boolean> = _isGroupLeft
     private val _isCalculatingMidpoint = MutableStateFlow(false)
     val isCalculatingMidpoint: StateFlow<Boolean> = _isCalculatingMidpoint
+
+    private val _activities = MutableStateFlow<List<Activity>>(emptyList())
+    val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
+
 
     fun createGroup(groupName: String, meetingTime: String, groupLeaderId: GroupUser, expectedPeople: Number, activityType: String, autoMidpoint: Boolean) {
         viewModelScope.launch {
@@ -94,6 +100,7 @@ class GroupViewModel @Inject constructor(
             val result = groupRepository.getMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
                 _midpoint.value = result.getOrNull()?.midpoint
+                _activities.value = result.getOrNull()?.activities ?: emptyList()
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
                 Log.e(TAG, "Error fetching midpoint: $error")
@@ -109,6 +116,7 @@ class GroupViewModel @Inject constructor(
             val result = groupRepository.updateMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
                 _midpoint.value = result.getOrNull()?.midpoint
+                _activities.value = result.getOrNull()?.activities ?: emptyList()
                 Log.e(TAG, "Updated midpoint!")
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Failed to fetch midpoint"
@@ -134,8 +142,9 @@ class GroupViewModel @Inject constructor(
 
     fun updateMember(
         joinCode: String,
-        expectedPeople: Number,
-        updatedMembers: List<GroupUser>,
+        address: Address?,
+        transitType: TransitType?,
+        expectedPeople: Int,
         meetingTime: String,
         autoMidpoint: Boolean,
         activityType: String,
@@ -145,11 +154,12 @@ class GroupViewModel @Inject constructor(
         viewModelScope.launch {
             val fetchResult = groupRepository.getGroupByJoinCode(joinCode)
             if (fetchResult.isSuccess) {
-                    val joinResult = groupRepository.updateGroup(
+                    val joinResult = groupRepository.updateGroupSettings(
                         joinCode = joinCode,
-                        expectedPeople = expectedPeople,
-                        updatedMembers = updatedMembers,
+                        address = address,
+                        transitType = transitType,
                         meetingTime = meetingTime,
+                        expectedPeople = expectedPeople,
                         autoMidpoint = autoMidpoint,
                         activityType = activityType
                     )
@@ -159,6 +169,7 @@ class GroupViewModel @Inject constructor(
                         val error = joinResult.exceptionOrNull()?.message ?: "Failed to update"
                         onError(error)
                     }
+                    resetMidpoint()
             } else {
                 val error = fetchResult.exceptionOrNull()?.message ?: "Failed to update member settings"
                 onError(error)
@@ -176,6 +187,7 @@ class GroupViewModel @Inject constructor(
 
     fun resetMidpoint() {
         _midpoint.value = null
+        _activities.value = emptyList()
     }
 
     fun clearMessages() {

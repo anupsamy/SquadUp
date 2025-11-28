@@ -136,15 +136,12 @@ fun LeaderGroupView(
     modifier: Modifier = Modifier
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
-    val activities by activityPickerViewModel.activities.collectAsState()
+    val activities by groupViewModel.activities.collectAsState()
 
-    LaunchedEffect(Unit) {
-        activityPickerViewModel.loadActivities(group.joinCode)
-    }
 
-    val handleMidpointCalculation = {
-        groupViewModel.updateMidpoint(group.joinCode)
-        activityPickerViewModel.loadActivities(group.joinCode)
+    val handleMidpointCalculation = { //TODO Figure out how this fits with getting activites at the same time
+        groupViewModel.updateMidpoint(group.joinCode) //activites retrieved from here
+        //activityPickerViewModel.loadActivities(group.joinCode)
         onUpdate()
     }
 
@@ -166,6 +163,7 @@ fun LeaderGroupView(
         if (midpoint != null && !isCalculatingMidpoint) {
             ActivityPicker(
                 viewModel = activityPickerViewModel,
+                activities = activities,
                 joinCode = group.joinCode,
                 onSelectActivity = { onUpdate() },
                 modifier = Modifier

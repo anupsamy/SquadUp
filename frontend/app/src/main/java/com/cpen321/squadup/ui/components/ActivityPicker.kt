@@ -57,7 +57,7 @@ private fun EmptyActivitiesState(modifier: Modifier = Modifier) {
 private fun ActivitiesList(
     activities: List<Activity>,
     selectedActivityId: String?,
-    onActivityClick: (String) -> Unit,
+    onActivityClick: (Activity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -77,7 +77,7 @@ private fun ActivitiesList(
             ActivityCard(
                 activity = activityInfo,
                 isSelected = activity.placeId == selectedActivityId,
-                onClick = { onActivityClick(activity.placeId)},
+                onClick = { onActivityClick(activity)},
                 modifier = Modifier.testTag("activityCard")
             )
         }
@@ -107,11 +107,11 @@ private fun SelectActivityButton(
 @Composable
 fun ActivityPicker(
     viewModel: ActivityPickerViewModel,
+    activities: List<Activity>,
     joinCode: String,
     onSelectActivity: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val activities by viewModel.activities.collectAsState()
     val selectedActivityId by viewModel.selectedActivityId.collectAsState()
     val sortedActivities = activities.sortedWith(
         compareByDescending { it.placeId == selectedActivityId })

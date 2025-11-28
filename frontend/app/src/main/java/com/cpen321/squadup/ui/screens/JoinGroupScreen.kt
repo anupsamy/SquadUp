@@ -215,16 +215,8 @@ fun JoinGroupScreen(
                 // Join Group Button
                 Button(
                     onClick = {
-                        val currentUser = GroupUser(
-                            id = profileUiState.user!!._id,
-                            name = profileUiState.user!!.name,
-                            email = profileUiState.user!!.email,
-                            address = address!!,
-                            transitType = transitType
-                        )
                         mainViewModel.joinGroup(
                             joinCode = joinCode,
-                            currentUser = currentUser,
                             onSuccess = { message ->
                                 joinGroupMessage = message
                                 groupViewMode.updateMidpoint(joinCode)

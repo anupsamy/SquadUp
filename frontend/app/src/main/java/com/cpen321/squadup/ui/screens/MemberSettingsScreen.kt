@@ -339,17 +339,11 @@ fun SaveSettingsButton(
                     coroutineScope = coroutineScope
             )) return@Button
 
-            // build updated members list
-            val updatedMembers = state.group.groupMemberIds?.map { member ->
-                if (member.id == state.currentUserId) {
-                    member.copy(address = state.address, transitType = state.transitType)
-                } else member
-            } ?: emptyList()
-
             // perform update
             groupViewModel.updateMember(
                 joinCode = state.group.joinCode,
-                updatedMembers = updatedMembers,
+                address = state.address,
+                transitType = state.transitType,
                 meetingTime = state.meetingTime,
                 expectedPeople = state.expectedPeople.toInt(),
                 autoMidpoint = state.autoMidpoint,

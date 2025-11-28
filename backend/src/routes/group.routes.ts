@@ -6,18 +6,21 @@ import {
   createGroupSchema,
   UpdateGroupRequest,
   updateGroupSchema,
+  UpdateGroupSettingsRequest,
+  updateGroupSettingsSchema,
 } from '../types/group.types';
 
 const router = Router();
 const groupController = new GroupController();
 
 router.get('/info', (req, res, next) => {
-  groupController.getAllGroups(req, res, next).catch((error: unknown) => {
+  groupController.getAllGroups(req, res).catch((error: unknown) => {
     next(error);
   });
 });
 
-router.get('/activities', groupController.getActivities.bind(groupController));
+//TODO figure out if get activities still used and required (probably yes, need if activities change but midpoint not)
+// router.get('/activities', groupController.getActivities.bind(groupController));
 
 router.post(
   '/activities/select',
@@ -27,11 +30,9 @@ router.post(
 router.get(
   '/:joinCode', // Define the route parameter
   (req, res, next) => {
-    groupController
-      .getGroupByJoinCode(req, res, next)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.getGroupByJoinCode(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 // Route to create a group
@@ -40,7 +41,7 @@ router.post(
   '/create',
   validateBody<CreateGroupRequest>(createGroupSchema), // Validate the request body
   (req, res, next) => {
-    groupController.createGroup(req, res, next).catch((error: unknown) => {
+    groupController.createGroup(req, res).catch((error: unknown) => {
       next(error);
     });
   }
@@ -51,34 +52,29 @@ router.post(
   '/join',
   validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
   (req, res, next) => {
-    groupController
-      .joinGroupByJoinCode(req, res, next)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.joinGroupByJoinCode(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 
 router.post(
+  //used to update group settings like meeting time, transit type, address, expected people
   '/update',
-  validateBody<UpdateGroupRequest>(updateGroupSchema), // Validate the request body
+  validateBody<UpdateGroupSettingsRequest>(updateGroupSettingsSchema), // Validate the request body
   (req, res, next) => {
-    groupController
-      .updateGroupByJoinCode(req, res, next)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.updateGroupSettings(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 
 router.delete(
   '/delete/:joinCode', // Define the route parameter
   (req, res, next) => {
-    groupController
-      .deleteGroupByJoinCode(req, res, next)
-      .catch((error: unknown) => {
-        next(error);
-      });
+    groupController.deleteGroupByJoinCode(req, res).catch((error: unknown) => {
+      next(error);
+    });
   }
 );
 
@@ -95,7 +91,7 @@ router.post(
 router.post(
   '/leave/:joinCode', // Define the route parameter
   (req, res, next) => {
-    groupController.leaveGroup(req, res, next).catch((error: unknown) => {
+    groupController.leaveGroup(req, res).catch((error: unknown) => {
       next(error);
     });
   }

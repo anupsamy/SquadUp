@@ -92,7 +92,6 @@ fun GroupDetailsScreen(
         profileViewModel.loadProfile()
         activityPickerVM.setInitialSelectedActivity(group.selectedActivity)
         if ((group.groupMemberIds?.size ?: 0) == group.expectedPeople.toInt()) groupViewModel.getMidpoint(group.joinCode)
-        if (midpoint != null) activityPickerVM.loadActivities(group.joinCode)
     }
 
     LaunchedEffect(group.joinCode, currentUserId) { currentUserId?.let { WebSocketManager.subscribeToGroup(it, group.joinCode) } }

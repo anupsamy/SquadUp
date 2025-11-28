@@ -16,9 +16,6 @@ class ActivityPickerViewModel @Inject constructor(
     private val groupRepository: GroupRepository
 ) : ViewModel() {
 
-    private val _activities = MutableStateFlow<List<Activity>>(emptyList())
-    val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
-
     private val _selectedActivityId = MutableStateFlow<String?>(null)
     val selectedActivityId: StateFlow<String?> = _selectedActivityId.asStateFlow()
 
@@ -34,31 +31,32 @@ class ActivityPickerViewModel @Inject constructor(
         }
     }
 
-    fun loadActivities(joinCode: String) {
-        viewModelScope.launch {
-            val result = groupRepository.getActivities(joinCode)
-            result.onSuccess { fetched ->
-                _activities.value = fetched
-            }.onFailure {
-                _error.value = "Failed to load activities."
-                _activities.value = emptyList()
-            }
+//    fun loadActivities(joinCode: String) {
+//        viewModelScope.launch {
+//            val result = groupRepository.getActivities(joinCode)
+//            result.onSuccess { fetched ->
+//                _activities.value = fetched
+//            }.onFailure {
+//                _error.value = "Failed to load activities."
+//                _activities.value = emptyList()
+//            }
+//
+//        }
+//    }
 
-        }
-    }
-
-    fun selectActivity(placeId: String) {
-        _selectedActivityId.value = placeId
-        _selectedActivity.value = _activities.value.find { it.placeId == placeId }
+    fun selectActivity(activity: Activity) {
+        _selectedActivityId.value = activity.placeId
+        _selectedActivity.value = activity
     }
 
     fun confirmSelection(joinCode: String) {
-        val placeId = _selectedActivityId.value ?: return
-        val selectedActivity = _activities.value.find { it.placeId == placeId } ?: return
+        // We use the stored object directly
+        val currentActivity = _selectedActivity.value ?: return
+
         viewModelScope.launch {
-            groupRepository.selectActivity(joinCode, selectedActivity)
+            groupRepository.selectActivity(joinCode, currentActivity)
                 .onSuccess {
-                    // Handle success - maybe clear selection or show confirmation
+                    // Handle success
                 }
                 .onFailure { e ->
                     _error.value = e.message ?: "Failed to select activity"

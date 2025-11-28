@@ -13,12 +13,15 @@ export class LocationService {
     this.mapsClient = new Client({});
   }
 
-  private coordinatesAreIdentical(origin: GeoLocation, destination: GeoLocation): boolean {
-  return (
-    Math.abs(origin.lat - destination.lat) <= LocationService.COORD_EPSILON &&
-    Math.abs(origin.lng - destination.lng) <= LocationService.COORD_EPSILON
-  );
-}
+  private coordinatesAreIdentical(
+    origin: GeoLocation,
+    destination: GeoLocation
+  ): boolean {
+    return (
+      Math.abs(origin.lat - destination.lat) <= LocationService.COORD_EPSILON &&
+      Math.abs(origin.lng - destination.lng) <= LocationService.COORD_EPSILON
+    );
+  }
 
   async getTravelTime(
     origin: GeoLocation,

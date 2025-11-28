@@ -44,7 +44,6 @@ export class GroupService {
 
       logger.info('Creating group with groupInfo:', JSON.stringify(groupInfo));
 
-
       const newGroup = await groupModel.create(groupInfo);
       logger.info(
         `Group created: ${groupData.groupName} (joinCode: ${joinCode})`
@@ -128,10 +127,10 @@ export class GroupService {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
-      await this.invalidateMidpoint(joinCode);
+      const finalGroup = await this.invalidateMidpoint(joinCode);
 
       logger.info(`User ${userId} joined group ${joinCode}`);
-      return updatedGroup;
+      return finalGroup;
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Failed to join group:', error);
@@ -217,6 +216,11 @@ export class GroupService {
           updateData.groupMemberIds = updatedMembers;
         }
       }
+      const updatePayload = {
+        ...updateData,
+        joinCode,
+      };
+      logger.info('Update payload being sent to model:', JSON.stringify(updatePayload));
 
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         ...updateData,
@@ -227,9 +231,7 @@ export class GroupService {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
-      await this.invalidateMidpoint(joinCode);
-
-      const finalGroup = await groupModel.findByJoinCode(joinCode);
+      const finalGroup = await this.invalidateMidpoint(joinCode);
 
       if (!finalGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
@@ -312,17 +314,17 @@ export class GroupService {
 
       // Build location info from group members
       const locationInfo: LocationInfo[] = this.getLocationListFromGroup(group);
-      logger.error('Location info:', JSON.stringify(locationInfo));
+      logger.info('Location info:', JSON.stringify(locationInfo));
 
       const optimizedPoint = await this.getMidpointSafe(locationInfo);
-      logger.error('Midpoint Calculated:', JSON.stringify(optimizedPoint));
+      logger.info('Midpoint Calculated:', JSON.stringify(optimizedPoint));
 
       const activityList = await locationService.getActivityList(
         optimizedPoint,
         group.activityType
       );
 
-      logger.error('Activity List:', JSON.stringify(activityList));
+      logger.info('Activity List:', JSON.stringify(activityList));
 
       const lat = optimizedPoint.lat;
       const lng = optimizedPoint.lng;
@@ -336,6 +338,15 @@ export class GroupService {
       });
 
       if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      const finalGroup = await groupService.updateMemberTravelTime(
+        updatedGroup,
+        false
+      );
+
+      if (!finalGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
@@ -384,24 +395,31 @@ export class GroupService {
     }
   }
 
-  public async invalidateMidpoint(joinCode: string): Promise<void> {
+  public async invalidateMidpoint(joinCode: string): Promise<IGroup> {
     try {
       logger.info(`Starting invalidation for group ${joinCode}`);
 
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
         midpoint: null,
-        selectedActivity: undefined,
+        selectedActivity: null,
         activities: [],
       });
-
-      logger.info(`Invalidation result:`, JSON.stringify(updatedGroup));
 
       if (!updatedGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
-      logger.info(`Invalidated midpoint and activity for group ${joinCode}`);
+      const finalGroup = await groupService.updateMemberTravelTime(
+        updatedGroup,
+        false
+      );
+
+      if (!finalGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+      return finalGroup;
+
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Failed to invalidate midpoint:', error);
@@ -436,13 +454,20 @@ export class GroupService {
         joinCode,
         activity
       );
-
       if (!updatedGroup) {
         throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
       }
 
+      const finalGroup = await groupService.updateMemberTravelTime(
+        updatedGroup,
+        true
+      );
+      if (!finalGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
       logger.info(`User ${userId} selected activity for group ${joinCode}`);
-      return updatedGroup;
+      return finalGroup;
     } catch (error) {
       if (error instanceof AppError) throw error;
       logger.error('Failed to select activity:', error);
@@ -484,6 +509,108 @@ export class GroupService {
       logger.error('Failed to leave group:', error);
       throw AppErrorFactory.internalServerError(
         'Failed to leave group',
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  }
+  async updateMemberTravelTime(
+    group: IGroup,
+    hasActivitySelected: boolean = false
+  ): Promise<IGroup> {
+    try {
+      const unknownTravelTime = 'N/A';
+      const memberIds = group.groupMemberIds ?? [];
+      const joinCode = group.joinCode;
+
+      if (!memberIds.length) {
+        return group;
+      }
+
+      // If no activity selected, set all travel times to N/A
+      if (!group.selectedActivity || !hasActivitySelected) {
+        const updatedMembers: GroupUser[] = memberIds.map(user => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          address: user.address,
+          transitType: user.transitType,
+          travelTime: unknownTravelTime,
+        }));
+
+        const updatedGroup = await groupModel.updateGroupByJoinCode(
+          group.joinCode,
+          {
+            joinCode: group.joinCode,
+            groupMemberIds: updatedMembers,
+          }
+        );
+
+        if (!updatedGroup) {
+          throw AppErrorFactory.notFound(
+            'Group',
+            `joinCode '${group.joinCode}'`
+          );
+        }
+
+        logger.info(`Updated travel times to N/A for group ${group.joinCode}`);
+        return updatedGroup;
+      }
+
+      // Calculate travel times for each member
+      const location: GeoLocation = {
+        lat: group.selectedActivity.latitude,
+        lng: group.selectedActivity.longitude,
+      };
+
+      const updatedMembers: GroupUser[] = await Promise.all(
+        memberIds.map(async user => {
+          if (
+            user.address?.lat != null &&
+            user.address?.lng != null &&
+            user.transitType
+          ) {
+            try {
+              const travelTime = await locationService.getTravelTime(
+                {
+                  lat: user.address.lat,
+                  lng: user.address.lng,
+                  transitType: user.transitType,
+                },
+                location
+              );
+
+              return {
+                ...user,
+                travelTime: travelTime.toFixed(2).toString(),
+              };
+            } catch (error) {
+              logger.warn(
+                `Failed to get travel time for user ${user.id}:`,
+                error
+              );
+              return { ...user, travelTime: unknownTravelTime };
+            }
+          }
+          return { ...user, travelTime: unknownTravelTime };
+        })
+      );
+
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
+        joinCode,
+        groupMemberIds: updatedMembers,
+      });
+
+      if (!updatedGroup) {
+        throw AppErrorFactory.notFound('Group', `joinCode '${joinCode}'`);
+      }
+
+      logger.info(`Updated travel times for group ${joinCode}`);
+      return updatedGroup;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      logger.error('Failed to update member travel time:', error);
+      throw AppErrorFactory.internalServerError(
+        'Failed to update member travel time',
         error instanceof Error ? error.message : undefined
       );
     }

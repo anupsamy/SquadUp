@@ -44,7 +44,7 @@ export class GroupController {
       groupLeaderId,
       expectedPeople,
       activityType,
-      autoMidpoint
+      autoMidpoint,
     } = req.body;
 
     // Input validation
@@ -71,7 +71,6 @@ export class GroupController {
 
     const validateAutoMidpoint = autoMidpoint ?? false;
 
-
     // Call service to create group
     const newGroup = await groupService.createGroup({
       groupName,
@@ -80,7 +79,7 @@ export class GroupController {
       expectedPeople: expectedPeople || 0,
       groupMemberIds: [groupLeaderId],
       activityType,
-      autoMidpoint: validateAutoMidpoint
+      autoMidpoint: validateAutoMidpoint,
     });
 
     res.status(201).json({
@@ -182,8 +181,15 @@ export class GroupController {
     req: Request<unknown, unknown, UpdateGroupSettingsRequest>,
     res: Response<GetGroupResponse>
   ) {
-    const { joinCode, address, transitType, meetingTime, expectedPeople, autoMidpoint, activityType } =
-      req.body;
+    const {
+      joinCode,
+      address,
+      transitType,
+      meetingTime,
+      expectedPeople,
+      autoMidpoint,
+      activityType,
+    } = req.body;
     logger.error(
       'Request in groupSettings:',
       JSON.stringify(req.body, null, 2)
@@ -204,7 +210,7 @@ export class GroupController {
         meetingTime,
         expectedPeople,
         autoMidpoint,
-        activityType
+        activityType,
       }
     );
     res.status(200).json({

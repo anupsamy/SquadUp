@@ -9,20 +9,20 @@ import { GeoLocation } from './location.types';
 // Group model
 // ------------------------------------------------------------
 export interface IGroup extends Document {
-    _id: mongoose.Types.ObjectId;
-    groupName:string;
-    meetingTime: string;
-    joinCode: string;
-    groupLeaderId: GroupUser;
-    expectedPeople: number;
-    groupMemberIds: GroupUser[]; //Change to object of users later maybe,
-    midpoint?: string | null;
-    autoMidpoint: Boolean;
-    activityType: string,
-    selectedActivity?: Activity;
-    activities?: Activity[];
-    createdAt: Date;
-  }
+  _id: mongoose.Types.ObjectId;
+  groupName: string;
+  meetingTime: string;
+  joinCode: string;
+  groupLeaderId: GroupUser;
+  expectedPeople: number;
+  groupMemberIds: GroupUser[]; //Change to object of users later maybe,
+  midpoint?: string | null;
+  autoMidpoint: Boolean;
+  activityType: string;
+  selectedActivity?: Activity | null;
+  activities?: Activity[];
+  createdAt: Date;
+}
 
 // Zod schemas
 // ------------------------------------------------------------
@@ -52,6 +52,7 @@ export const basicGroupSchema = z.object({
         email: z.string().min(1, 'Email is required'),
         address: addressSchema.optional(),
         transitType: transitTypeSchema.optional(),
+        travelTime: z.string().optional(),
       })
     )
     .optional(),
@@ -69,6 +70,7 @@ export const createGroupSchema = z.object({
     email: z.string().min(1, 'Email is required'),
     address: addressSchema.optional(),
     transitType: transitTypeSchema.optional(),
+    travelTime: z.string().optional(),
   }),
   expectedPeople: z.number().int().min(1, 'Expected people must be at least 1'),
   activityType: z.string().min(1, 'Activity type is required'),
@@ -100,6 +102,7 @@ export const updateGroupSchema = z.object({
         email: z.string().min(1, 'Email is required'),
         address: addressSchema.optional(),
         transitType: transitTypeSchema.optional(),
+        travelTime: z.string().optional(),
       })
     )
     .optional(),
@@ -107,6 +110,7 @@ export const updateGroupSchema = z.object({
   midpoint: z.string().nullable().optional(),
   activityType: z.string().optional(),
   activities: z.array(activityZodSchema).optional(),
+  selectedActivity: activityZodSchema.optional(),
   autoMidpoint: z.boolean().optional(),
 });
 
@@ -151,9 +155,6 @@ export const activitySchema = new Schema(
   },
   { _id: false }
 ); // _id: false prevents creating an _id for subdocument
-
-
-
 
 // Request types
 // ------------------------------------------------------------
@@ -212,7 +213,8 @@ export type GroupUser = {
   travelTime?: string;
 };
 
-export type UpdateGroupSettingsRequest = { //TODO add auto midpoint and other fields
+export type UpdateGroupSettingsRequest = {
+  //TODO add auto midpoint and other fields
   joinCode: string;
   address?: { formatted: string; lat?: number; lng?: number };
   transitType?: string;

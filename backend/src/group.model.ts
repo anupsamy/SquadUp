@@ -243,21 +243,40 @@ export class GroupModel {
 
   async updateMemberTravelTime(
     group: IGroup | null,
-    locationService: LocationService
+    locationService: LocationService,
+    hasSelect: boolean = false
   ): Promise<IGroup | null> {
     try {
-      if (!group) return group;
-      if (!group.selectedActivity) return group;
+       if (!group) return group;
 
       const joinCode = group.joinCode;
       const selectedActivity = group.selectedActivity;
+      const unknownTravelTime = 'N/A'
+
+      const existingGroupMemberIds = group.groupMemberIds;
+      if (!existingGroupMemberIds) return group;
+
+      // assign "N/A" if no activity has been selected
+      if (!selectedActivity || !hasSelect) {
+        const updatedMembers: GroupUser[] = (group.groupMemberIds ?? []).map((user: GroupUser) => ({
+          id: user.id,
+          name: user.name,
+          address: user.address,
+          email: user.email,
+          transitType: user.transitType,
+          travelTime: unknownTravelTime
+        }));
+
+        return await groupModel.updateGroupByJoinCode(group.joinCode, {
+          joinCode: group.joinCode,
+          groupMemberIds: updatedMembers,
+        });
+      }
+
       const location: GeoLocation = {
         lat: selectedActivity.latitude,
         lng: selectedActivity.longitude,
       };
-
-      const existingGroupMemberIds = group.groupMemberIds;
-      if (!existingGroupMemberIds) return group;
 
       // Update travel time
       const updatedMembers: GroupUser[] = await Promise.all(

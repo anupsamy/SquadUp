@@ -357,8 +357,9 @@ export class GroupController {
       // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
-        midpoint,
+        midpoint
       });
+      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
 
       console.log('Activities List: ', activityList);
       res.status(200).json({
@@ -432,6 +433,8 @@ export class GroupController {
         joinCode,
         midpoint,
       });
+
+      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
 
       //console.log("Activities List: " , activityList);
       res.status(200).json({
@@ -602,7 +605,7 @@ export class GroupController {
         validatedActivity
       );
 
-      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
+      const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService, true);
 
       // Send notifications to group members
       //const wsService = getWebSocketService();

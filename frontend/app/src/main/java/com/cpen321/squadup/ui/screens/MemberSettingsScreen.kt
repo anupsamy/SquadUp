@@ -356,19 +356,21 @@ fun SaveSettingsButton(
                 expectedPeople = state.expectedPeople.toInt(),
                 autoMidpoint = state.autoMidpoint,
                 activityType = state.activityType,
-                onSuccess = { coroutineScope.launch { snackbarHostState.showSnackbar("Settings saved successfully!") } },
+                onSuccess = {
+                    coroutineScope.launch { snackbarHostState.showSnackbar("Settings saved successfully!") }
+
+                    // update midpoint if address/transit changed for the current user
+                    if (state.autoMidpoint) {
+                        val addressUpdate = (state.existingMemberInfo as? GroupUser)?.address != state.address
+                        val transitUpdate = (state.existingMemberInfo as? GroupUser)?.transitType != state.transitType
+                        val activityUpdate = state.group.activityType != state.activityType
+                        if (addressUpdate || transitUpdate || activityUpdate) {
+                            groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
+                        }
+                    }
+                },
                 onError = { coroutineScope.launch { snackbarHostState.showSnackbar("Error saving!") } }
             )
-
-            // update midpoint if address/transit changed for the current user
-            if (state.autoMidpoint) {
-                val addressUpdate = (state.existingMemberInfo as? GroupUser)?.address != state.address
-                val transitUpdate = (state.existingMemberInfo as? GroupUser)?.transitType != state.transitType
-                val activityUpdate = state.group.activityType != state.activityType
-                if (addressUpdate || transitUpdate || activityUpdate) {
-                    groupViewModel.updateMidpoint(joinCode = state.group.joinCode)
-                }
-            }
         },
         enabled = state.address != null && state.transitType != null
     ) {

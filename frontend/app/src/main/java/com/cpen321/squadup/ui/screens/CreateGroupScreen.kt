@@ -28,6 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.format.DateTimeParseException
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,7 +117,7 @@ fun CreateGroupScreen(
             DateTimePickerSection(context) { meetingDateTime = it }
             val parsed = try {
                 OffsetDateTime.parse(meetingDateTime).toLocalDateTime()
-            } catch (e: Exception) {
+            } catch (e: DateTimeParseException) {
                 null
             }
 

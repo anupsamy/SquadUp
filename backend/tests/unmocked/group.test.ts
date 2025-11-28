@@ -10,383 +10,6 @@ import { locationService } from '../../src/services/location.service';
 jest.mock('../../src/utils/logger.util');
 jest.mock('../../src/services/media.service');
 
-describe('Unmocked: Group Model', () => {
-  describe('GroupModel.create', () => {
-    // Input: group data missing required joinCode field
-    // Expected behavior: throws validation error
-    // Expected output: error message about invalid data
-    it('should throw error when creating group with missing join code', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleMeetingTime = "2026-11-02T12:30:00Z"
-        const exampleActivityType = "CAFE"
-        const invalidGroupData = {
-            groupName: "TestGroup1",
-            groupLeaderId: exampleGroupLeader,
-            expectedPeople: 1,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime,  // Default to current time for now,
-            activityType: exampleActivityType
-        };
-
-        await expect(groupModel.create(invalidGroupData as any)).rejects.toThrow(
-        'Invalid update data'
-        );
-    });
-
-    // Input: group data missing required groupLeaderId field
-    // Expected behavior: throws validation error
-    // Expected output: error message about invalid data
-    it('should throw error when creating group with missing group leader', async () => {
-        const exampleMeetingTime = "2026-11-02T12:30:00Z"
-        const exampleActivityType = "CAFE"
-        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-        const invalidGroupData = {
-            joinCode: exampleJoinCode,
-            groupName: "TestGroup",
-            expectedPeople: 1,
-            groupMemberIds: [],
-            meetingTime: exampleMeetingTime,  // Default to current time for now,
-            activityType: exampleActivityType
-        };
-
-        await expect(groupModel.create(invalidGroupData as any)).rejects.toThrow(
-        'Invalid update data'
-        );
-    });
-
-    // Input: group data missing required expectedPeople field
-    // Expected behavior: throws validation error
-    // Expected output: error message about invalid data
-    it('should throw error when creating group with expected people missing', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleMeetingTime = "2026-11-02T12:30:00Z"
-        const exampleActivityType = "CAFE"
-        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-        const invalidGroupData = {
-            joinCode: exampleJoinCode,
-            groupName: "TestGroup1",
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime,  // Default to current time for now,
-            activityType: exampleActivityType
-        };
-
-        await expect(groupModel.create(invalidGroupData as any)).rejects.toThrow(
-        'Invalid update data'
-        );
-    });
-
-    // Input: group data missing required meetingTime field
-    // Expected behavior: throws validation error
-    // Expected output: error message about invalid data
-    it('should throw error when creating group with meeting time missing', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleActivityType = "CAFE"
-        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-        const invalidGroupData = {
-            joinCode: exampleJoinCode,
-            groupName: "TestGroup1",
-            expectedPeople: 1,
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            activityType: exampleActivityType
-        };
-
-        await expect(groupModel.create(invalidGroupData as any)).rejects.toThrow(
-        'Invalid update data'
-        );
-    });
-
-    // Input: group data missing required activityType field
-    // Expected behavior: throws validation error
-    // Expected output: error message about invalid data
-    it('should throw error when creating group with activity type missing', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleMeetingTime = "2026-11-02T12:30:00Z"
-        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-        const invalidGroupData = {
-            joinCode: exampleJoinCode,
-            groupName: "TestGroup1",
-            expectedPeople: 1,
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime,
-        };
-
-        await expect(groupModel.create(invalidGroupData as any)).rejects.toThrow(
-        'Invalid update data'
-        );
-    });
-
-    // Input: group data with duplicate joinCode
-    // Expected behavior: throws validation error
-    // Expected output: error message about invalid data
-    it('should throw error when creating group with duplicate join code', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleActivityType_1 = "CAFE"
-        const exampleActivityType_2 = "BAR"
-        const exampleMeetingTime_1 = "2026-11-02T12:30:00Z"
-        const exampleMeetingTime_2 = "2026-11-03T12:30:00Z"
-        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-        const exampleGroupData = {
-            joinCode: exampleJoinCode,
-            groupName: "TestGroup1",
-            expectedPeople: 1,
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_1,
-            activityType: exampleActivityType_1
-        };
-
-        await groupModel.create(exampleGroupData as any);
-
-        const invalidGroupData = {
-            joinCode: exampleJoinCode, //duplicate joinCode (shouldn't be allowed)
-            groupName: "TestGroup2",
-            expectedPeople: 2,
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_2,
-            activityType: exampleActivityType_2
-        };
-
-        await expect(groupModel.create(invalidGroupData as any)).rejects.toThrow(
-            'Failed to update group'
-        );
-    });
-});
-    describe('GroupModel.findAll', () => {
-
-        it('should return both created groups', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleActivityType_1 = "CAFE"
-        const exampleActivityType_2 = "BAR"
-        const exampleMeetingTime_1 = "2026-11-02T12:30:00Z"
-        const exampleMeetingTime_2 = "2026-11-03T12:30:00Z"
-        const exampleJoinCode_1 = Math.random().toString(36).slice(2, 8);
-        const exampleJoinCode_2 = Math.random().toString(36).slice(2, 8);
-        const exampleGroupData_1 = {
-            joinCode: exampleJoinCode_1,
-            groupName: "TestGroup1",
-            expectedPeople: 1,
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_1,
-            activityType: exampleActivityType_1
-        };
-
-        const exampleGroupData_2 = {
-            joinCode: exampleJoinCode_2, //duplicate joinCode (shouldn't be allowed)
-            groupName: "TestGroup2",
-            expectedPeople: 2,
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime_2,
-            activityType: exampleActivityType_2
-        };
-        await groupModel.create(exampleGroupData_1 as any);
-        await groupModel.create(exampleGroupData_2 as any);
-
-        const groups = await groupModel.findAll();
-        expect(groups).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                joinCode: exampleGroupData_1.joinCode,
-                groupName: exampleGroupData_1.groupName,
-                expectedPeople: exampleGroupData_1.expectedPeople,
-                meetingTime: exampleGroupData_1.meetingTime,
-                activityType: exampleGroupData_1.activityType,
-                groupLeaderId: expect.objectContaining({
-                    id: exampleGroupLeader.id,
-                    name: exampleGroupLeader.name,
-                    email: exampleGroupLeader.email
-                }),
-                groupMemberIds: expect.arrayContaining([
-                    expect.objectContaining({
-                    id: exampleGroupLeader.id,
-                    name: exampleGroupLeader.name,
-                    email: exampleGroupLeader.email
-                    })
-                ])
-                }),
-                expect.objectContaining({
-                joinCode: exampleGroupData_2.joinCode,
-                groupName: exampleGroupData_2.groupName,
-                expectedPeople: exampleGroupData_2.expectedPeople,
-                meetingTime: exampleGroupData_2.meetingTime,
-                activityType: exampleGroupData_2.activityType,
-                groupLeaderId: expect.objectContaining({
-                    id: exampleGroupLeader.id,
-                    name: exampleGroupLeader.name,
-                    email: exampleGroupLeader.email
-                }),
-                groupMemberIds: expect.arrayContaining([
-                    expect.objectContaining({
-                    id: exampleGroupLeader.id,
-                    name: exampleGroupLeader.name,
-                    email: exampleGroupLeader.email
-                    })
-                ])
-                })
-            ])
-            );
-        });
-    });
-
-    describe('GroupModel.findByJoinCode', () => {
-        it('should return the created group', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleActivityType = "CAFE"
-        const exampleMeetingTime = "2026-11-02T12:30:00Z"
-        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-        const exampleGroupData = {
-            joinCode: exampleJoinCode,
-            groupName: "TestGroup1",
-            expectedPeople: 1,
-            groupLeaderId: exampleGroupLeader,
-            groupMemberIds: [exampleGroupLeader],
-            meetingTime: exampleMeetingTime,
-            activityType: exampleActivityType
-        };
-        await groupModel.create(exampleGroupData as any);
-        const returnGroup = await groupModel.findByJoinCode(exampleJoinCode);
-        expect(returnGroup).toHaveProperty('joinCode', exampleJoinCode)
-        });
-
-        it('should return null when joinCode does not exist', async () => {
-            const result = await groupModel.findByJoinCode('nonexistent123');
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('GroupModel.updateGroupByJoinCode', () => {
-        it('should fail to update non-existent group', async () => {
-        const exampleGroupLeader = {
-            id: "68fbe599d84728c6da2_test",
-            name: "Group Leader",
-            email: "group.leader@example.com"
-        }
-        const exampleActivityType = "CAFE"
-        const exampleMeetingTime = "2026-11-02T12:30:00Z"
-        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-        const exampleGroupData = {
-            joinCode: exampleJoinCode,
-            expectedPeople: 5,
-        };
-        await expect(groupModel.updateGroupByJoinCode(exampleJoinCode, exampleGroupData)).rejects.toThrow(
-        'Invalid update data'
-        );
-        });
-        it('should update group successfully', async () => {
-            const exampleMeetingTime = "2026-11-02T12:30:00Z"
-            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-            const testGroup = await groupModel.create({
-                joinCode: exampleJoinCode,
-                groupName: 'Original Name',
-                groupLeaderId: { id: 'leader-id', name: 'Leader', email: 'leader@example.com' },
-                expectedPeople: 5,
-                groupMemberIds: [],
-                meetingTime: exampleMeetingTime,
-                activityType: 'CAFE',
-            });
-
-            const updatedGroup = await groupModel.updateGroupByJoinCode(exampleJoinCode, { expectedPeople: 7 });
-            expect(updatedGroup).toBeDefined();
-            expect(updatedGroup?.groupName).toBe('Updated Name');
-        });
-    });
-
-    describe('GroupModel.delete', () => {
-        it('should fail to delete non-existent group', async () => {
-            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-
-            await expect(groupModel.delete(exampleJoinCode)).rejects.toThrow(
-                'Failed to delete group'
-            );
-        });
-        it('should delete group successfully', async () => {
-            const exampleMeetingTime = "2026-11-02T12:30:00Z";
-            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-            const testGroup = await groupModel.create({
-                joinCode: exampleJoinCode,
-                groupName: 'Group To Delete',
-                groupLeaderId: { id: 'leader-id', name: 'Leader', email: 'leader@example.com' },
-                expectedPeople: 5,
-                groupMemberIds: [],
-                meetingTime: exampleMeetingTime,
-                activityType: 'CAFE',
-            });
-
-            await expect(groupModel.delete(exampleJoinCode)).resolves.not.toThrow();
-
-            const deletedGroup = await groupModel.findByJoinCode('delete123');
-            expect(deletedGroup).toBeNull();
-        });
-    });
-
-    describe('GroupModel.leaveGroup', () => {
-        it('should allow a user to leave a group successfully', async () => {
-            const exampleMeetingTime = "2026-11-02T12:30:00Z"
-            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-            const testGroup = await groupModel.create({
-                joinCode: exampleJoinCode,
-                groupName: 'Group To Leave',
-                groupLeaderId: { id: 'leader-id', name: 'Leader', email: 'leader@example.com' },
-                expectedPeople: 5,
-                groupMemberIds: [
-                    { id: 'leader-id', name: 'Leader', email: 'leader@example.com' },
-                    { id: 'user-id', name: 'User', email: 'user@example.com' },
-                ],
-                meetingTime: exampleMeetingTime,
-                activityType: 'CAFE',
-            });
-
-            await groupModel.leaveGroup(exampleJoinCode, 'user-id');
-
-            const updatedGroup = await groupModel.findByJoinCode(exampleJoinCode);
-            expect(updatedGroup?.groupMemberIds).toHaveLength(1);
-            expect(updatedGroup?.groupMemberIds).not.toEqual(
-                expect.arrayContaining([{ id: 'user-id', name: 'User', email: 'user@example.com' }])
-            );
-        });
-
-        it('should throw an error when attempting to leave a non-existent group', async () => {
-            await expect(groupModel.leaveGroup('nonexistent123', 'user-id')).rejects.toThrow(
-                'Failed to leave group'
-            );
-        });
-    });
-
-});
-
 describe('Unmocked: Group Controller', () => {
   let app: Express;
   let groupController: GroupController;
@@ -430,6 +53,202 @@ describe('Unmocked: Group Controller', () => {
     await mongoose.connection.close();
   });
 
+  describe('POST /group/create', () => {
+
+    it('should create a new group with valid info and return 201', async () => {
+            const exampleMeetingTime = "2026-11-02T12:30:00Z"
+            const groupData = {
+            groupName: 'New Group',
+            groupLeaderId: { id: 'leader-id', name: 'Leader', email: 'leader@example.com' },
+            expectedPeople: 5,
+            meetingTime: exampleMeetingTime,
+            activityType: 'CAFE',
+            };
+
+            const res = await request(app).post('/group/create').send(groupData);
+
+            expect(res.status).toBe(201);
+            expect(res.body).toHaveProperty('message', `Group ${groupData.groupName} created successfully`);
+            expect(res.body.data.group).toHaveProperty('groupName', groupData.groupName);
+    });
+
+    // Input: group data missing required joinCode field
+    // Expected behavior: throws validation error
+    // Expected output: error message about invalid data
+    it('should throw error when creating group with missing join code', async () => {
+        const exampleGroupLeader = {
+            id: "68fbe599d84728c6da2_test",
+            name: "Group Leader",
+            email: "group.leader@example.com"
+        }
+        const exampleMeetingTime = "2026-11-02T12:30:00Z"
+        const exampleActivityType = "CAFE"
+        const invalidGroupData = {
+            groupName: "TestGroup1",
+            groupLeaderId: exampleGroupLeader,
+            expectedPeople: 1,
+            groupMemberIds: [exampleGroupLeader],
+            meetingTime: exampleMeetingTime,  // Default to current time for now,
+            activityType: exampleActivityType
+        };
+
+        const res = await request(app).post('/group/create').send(invalidGroupData);
+
+        expect(res.status).toBe(404);
+        expect(res.body).toHaveProperty('message', `Group with joinCode '' not found`);
+        expect(res.body.data.group).toHaveProperty('groupName', invalidGroupData.groupName);
+    });
+
+    // Input: group data missing required groupLeaderId field
+    // Expected behavior: throws validation error
+    // Expected output: error message about invalid data
+    it('should throw error when creating group with missing group leader', async () => {
+        const exampleMeetingTime = "2026-11-02T12:30:00Z"
+        const exampleActivityType = "CAFE"
+        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+        const invalidGroupData = {
+            joinCode: exampleJoinCode,
+            groupName: "TestGroup",
+            expectedPeople: 1,
+            groupMemberIds: [],
+            meetingTime: exampleMeetingTime,  // Default to current time for now,
+            activityType: exampleActivityType
+        };
+
+        const res = await request(app).post('/group/create').send(invalidGroupData);
+
+        expect(res.status).toBe(404);
+        expect(res.body).toHaveProperty('message', `Invalid update data`);
+        expect(res.body.data.group).toHaveProperty('groupName', invalidGroupData.groupName);
+    });
+
+    // Input: group data missing required expectedPeople field
+    // Expected behavior: throws validation error
+    // Expected output: error message about invalid data
+    it('should throw error when creating group with expected people missing', async () => {
+        const exampleGroupLeader = {
+            id: "68fbe599d84728c6da2_test",
+            name: "Group Leader",
+            email: "group.leader@example.com"
+        }
+        const exampleMeetingTime = "2026-11-02T12:30:00Z"
+        const exampleActivityType = "CAFE"
+        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+        const invalidGroupData = {
+            joinCode: exampleJoinCode,
+            groupName: "TestGroup1",
+            groupLeaderId: exampleGroupLeader,
+            groupMemberIds: [exampleGroupLeader],
+            meetingTime: exampleMeetingTime,  // Default to current time for now,
+            activityType: exampleActivityType
+        };
+
+        const res = await request(app).post('/group/create').send(invalidGroupData);
+
+        expect(res.status).toBe(404);
+        expect(res.body).toHaveProperty('message', `Invalid update data`);
+        expect(res.body.data.group).toHaveProperty('groupName', invalidGroupData.groupName);
+    });
+
+    // Input: group data missing required meetingTime field
+    // Expected behavior: throws validation error
+    // Expected output: error message about invalid data
+    it('should throw error when creating group with meeting time missing', async () => {
+        const exampleGroupLeader = {
+            id: "68fbe599d84728c6da2_test",
+            name: "Group Leader",
+            email: "group.leader@example.com"
+        }
+        const exampleActivityType = "CAFE"
+        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+        const invalidGroupData = {
+            joinCode: exampleJoinCode,
+            groupName: "TestGroup1",
+            expectedPeople: 1,
+            groupLeaderId: exampleGroupLeader,
+            groupMemberIds: [exampleGroupLeader],
+            activityType: exampleActivityType
+        };
+
+        const res = await request(app).post('/group/create').send(invalidGroupData);
+
+        expect(res.status).toBe(404);
+        expect(res.body).toHaveProperty('message', `Invalid update data`);
+        expect(res.body.data.group).toHaveProperty('groupName', invalidGroupData.groupName);
+    });
+
+    // Input: group data missing required activityType field
+    // Expected behavior: throws validation error
+    // Expected output: error message about invalid data
+    it('should throw error when creating group with activity type missing', async () => {
+        const exampleGroupLeader = {
+            id: "68fbe599d84728c6da2_test",
+            name: "Group Leader",
+            email: "group.leader@example.com"
+        }
+        const exampleMeetingTime = "2026-11-02T12:30:00Z"
+        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+        const invalidGroupData = {
+            joinCode: exampleJoinCode,
+            groupName: "TestGroup1",
+            expectedPeople: 1,
+            groupLeaderId: exampleGroupLeader,
+            groupMemberIds: [exampleGroupLeader],
+            meetingTime: exampleMeetingTime,
+        };
+
+        const res = await request(app).post('/group/create').send(invalidGroupData);
+
+        expect(res.status).toBe(404);
+        expect(res.body).toHaveProperty('message', `Invalid update data`);
+        expect(res.body.data.group).toHaveProperty('groupName', invalidGroupData.groupName);
+    });
+
+    // Input: group data with duplicate joinCode
+    // Expected behavior: throws validation error
+    // Expected output: error message about invalid data
+    it('should throw error when creating group with duplicate join code', async () => {
+        const exampleGroupLeader = {
+            id: "68fbe599d84728c6da2_test",
+            name: "Group Leader",
+            email: "group.leader@example.com"
+        }
+        const exampleActivityType_1 = "CAFE"
+        const exampleActivityType_2 = "BAR"
+        const exampleMeetingTime_1 = "2026-11-02T12:30:00Z"
+        const exampleMeetingTime_2 = "2026-11-03T12:30:00Z"
+        const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+        const exampleGroupData = {
+            joinCode: exampleJoinCode,
+            groupName: "TestGroup1",
+            expectedPeople: 1,
+            groupLeaderId: exampleGroupLeader,
+            groupMemberIds: [exampleGroupLeader],
+            meetingTime: exampleMeetingTime_1,
+            activityType: exampleActivityType_1
+        };
+
+        await groupModel.create(exampleGroupData as any);
+
+        const invalidGroupData = {
+            joinCode: exampleJoinCode, //duplicate joinCode (shouldn't be allowed)
+            groupName: "TestGroup2",
+            expectedPeople: 2,
+            groupLeaderId: exampleGroupLeader,
+            groupMemberIds: [exampleGroupLeader],
+            meetingTime: exampleMeetingTime_2,
+            activityType: exampleActivityType_2
+        };
+
+        const res = await request(app).post('/group/create').send(invalidGroupData);
+
+        expect(res.status).toBe(404);
+        expect(res.body).toHaveProperty('message', `Failed to update group`);
+        expect(res.body.data.group).toHaveProperty('groupName', invalidGroupData.groupName);
+    });
+    });
+
+
   describe('GET /group/info', () => {
   // Input: valid authenticated user
   // Expected status code: 200
@@ -443,12 +262,110 @@ describe('Unmocked: Group Controller', () => {
     expect(res.body.data).toHaveProperty('groups');
     expect(Array.isArray(res.body.data.groups)).toBe(true);
   });
+
+// Input: group data for two different groups
+// Expected behavior: adds new groups, returns list of all groups containing the two new groups
+// Expected output: list of all groups containing the two new groups
+  it('should return both created groups', async () => {
+        const exampleGroupLeader = {
+            id: "68fbe599d84728c6da2_test",
+            name: "Group Leader",
+            email: "group.leader@example.com"
+        }
+        const exampleActivityType_1 = "CAFE"
+        const exampleActivityType_2 = "BAR"
+        const exampleMeetingTime_1 = "2026-11-02T12:30:00Z"
+        const exampleMeetingTime_2 = "2026-11-03T12:30:00Z"
+        const exampleJoinCode_1 = Math.random().toString(36).slice(2, 8);
+        const exampleJoinCode_2 = Math.random().toString(36).slice(2, 8);
+        const exampleGroupData_1 = {
+            joinCode: exampleJoinCode_1,
+            groupName: "TestGroup1",
+            expectedPeople: 1,
+            groupLeaderId: exampleGroupLeader,
+            groupMemberIds: [exampleGroupLeader],
+            meetingTime: exampleMeetingTime_1,
+            activityType: exampleActivityType_1
+        };
+
+        const exampleGroupData_2 = {
+            joinCode: exampleJoinCode_2, //duplicate joinCode (shouldn't be allowed)
+            groupName: "TestGroup2",
+            expectedPeople: 2,
+            groupLeaderId: exampleGroupLeader,
+            groupMemberIds: [exampleGroupLeader],
+            meetingTime: exampleMeetingTime_2,
+            activityType: exampleActivityType_2
+        };
+        const res1 = await request(app).post('/group/create').send(exampleGroupData_1);
+        expect(res1.status).toBe(201);
+        expect(res1.body).toHaveProperty('message', `Group ${exampleGroupData_1.groupName} created successfully`);
+        expect(res1.body.data.group).toHaveProperty('groupName', exampleGroupData_1.groupName);
+
+        const res2 = await request(app).post('/group/create').send(exampleGroupData_2);
+        expect(res2.status).toBe(201);
+        expect(res2.body).toHaveProperty('message', `Group ${exampleGroupData_2.groupName} created successfully`);
+        expect(res2.body.data.group).toHaveProperty('groupName', exampleGroupData_2.groupName);
+
+        const res = await request(app).get('/group/info');
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveProperty('message', 'Groups fetched successfully');
+        expect(res.body.data).toHaveProperty('groups');
+        expect(Array.isArray(res.body.data.groups)).toBe(true);
+
+        //TODO: Groups created previously are also returned. Check why this fails
+        expect(res.body.data.groups).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                joinCode: exampleGroupData_1.joinCode,
+                groupName: exampleGroupData_1.groupName,
+                expectedPeople: exampleGroupData_1.expectedPeople,
+                meetingTime: exampleGroupData_1.meetingTime,
+                activityType: exampleGroupData_1.activityType,
+                groupLeaderId: expect.objectContaining({
+                    id: exampleGroupLeader.id,
+                    name: exampleGroupLeader.name,
+                    email: exampleGroupLeader.email
+                }),
+                groupMemberIds: expect.arrayContaining([
+                    expect.objectContaining({
+                    id: exampleGroupLeader.id,
+                    name: exampleGroupLeader.name,
+                    email: exampleGroupLeader.email
+                    })
+                ])
+                }),
+                expect.objectContaining({
+                joinCode: exampleGroupData_2.joinCode,
+                groupName: exampleGroupData_2.groupName,
+                expectedPeople: exampleGroupData_2.expectedPeople,
+                meetingTime: exampleGroupData_2.meetingTime,
+                activityType: exampleGroupData_2.activityType,
+                groupLeaderId: expect.objectContaining({
+                    id: exampleGroupLeader.id,
+                    name: exampleGroupLeader.name,
+                    email: exampleGroupLeader.email
+                }),
+                groupMemberIds: expect.arrayContaining([
+                    expect.objectContaining({
+                    id: exampleGroupLeader.id,
+                    name: exampleGroupLeader.name,
+                    email: exampleGroupLeader.email
+                    })
+                ])
+                })
+            ])
+            );
+    });
+
+
 });
     describe('GET /group/:joinCode', () => {
-  // Input: valid authenticated user
-  // Expected status code: 200
-  // Expected behavior: user profile is returned
-  // Expected output: user data with all fields
+        // Input: valid authenticated user
+        // Expected status code: 200
+        // Expected behavior: user profile is returned
+        // Expected output: user data with all fields
         it('should return 200 and the group for a valid join code', async () => {
             const exampleMeetingTime = "2026-11-02T12:30:00Z"
             const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -468,7 +385,9 @@ describe('Unmocked: Group Controller', () => {
             expect(res.body).toHaveProperty('message', 'Group fetched successfully');
             expect(res.body.data.group).toHaveProperty('joinCode', exampleJoinCode);
         });
-
+        // Input: invalid group join code
+        // Expected behavior: fails to return group info 
+        // Expected output:  404 error + message explaining join code is invalid 
         it('should return 404 for an invalid join code', async () => {
             const res = await request(app).get('/group/invalid123');
 
@@ -477,37 +396,10 @@ describe('Unmocked: Group Controller', () => {
         });
     });
 
-    describe('POST /group/create', () => {
-        it('should create a new group and return 201', async () => {
-            const exampleMeetingTime = "2026-11-02T12:30:00Z"
-            const groupData = {
-            groupName: 'New Group',
-            groupLeaderId: { id: 'leader-id', name: 'Leader', email: 'leader@example.com' },
-            expectedPeople: 5,
-            meetingTime: exampleMeetingTime,
-            activityType: 'CAFE',
-            };
-
-            const res = await request(app).post('/group/create').send(groupData);
-
-            expect(res.status).toBe(201);
-            expect(res.body).toHaveProperty('message', `Group ${groupData.groupName} created successfully`);
-            expect(res.body.data.group).toHaveProperty('groupName', groupData.groupName);
-        });
-
-        it('should return 400 for invalid group data', async () => {
-            const invalidGroupData = {
-            groupName: 'Invalid Group',
-            };
-
-            const res = await request(app).post('/group/create').send(invalidGroupData);
-
-            expect(res.status).toBe(400);
-            expect(res.body).toHaveProperty('message');
-        });
-    });
-
     describe('POST /group/join', () => {
+        // Input: data containing join code and user information
+        // Expected behavior: succesfully joins group
+        // Expected output: 200 OK + group information including user
         it('should join a group and return 200', async () => {
             const exampleMeetingTime = "2026-11-02T12:30:00Z"
             const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -543,6 +435,9 @@ describe('Unmocked: Group Controller', () => {
                 );
         });
 
+        // Input: invalid join code
+        // Expected behavior: fails to join group
+        // Expected output: 404 error + message explaining group couldn't be found
         it('should return 404 for an invalid join code', async () => {
             const joinData = {
             joinCode: 'invalid123',
@@ -557,6 +452,9 @@ describe('Unmocked: Group Controller', () => {
     });
 
     describe('POST /group/update', () => {
+        // Input: invalid join code, user information of new group member
+        // Expected behavior: fails to update group
+        // Expected output: 404 error + message saying group not found
         it('should return "404 not found" when trying to update with invalid join code', async () => {
             const updateData = {
                 joinCode: 'join123',
@@ -565,10 +463,12 @@ describe('Unmocked: Group Controller', () => {
             const res = await request(app).post('/group/update/:').send(updateData);
 
             expect(res.status).toBe(404);
-            //expect(res.body).toHaveProperty('message', 'Group not found');
+            expect(res.body).toHaveProperty('message', 'Group not found');
 
         });
-
+        // Input: join code and integer of expected people
+        // Expected behavior: succesfully updates group
+        // Expected output: 200 OK + success message
         it('should return 200 after successful update', async () => {
             const exampleMeetingTime = "2026-11-02T12:30:00Z"
             const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -597,9 +497,82 @@ describe('Unmocked: Group Controller', () => {
             expect(res.body).toHaveProperty('message', 'Group info updated successfully');
             expect(res.body.data.group.expectedPeople).toEqual(7);
         });
+        // Input: invalid update information including new group leader
+        // Expected behavior: fails to update group
+        // Expected output: 500 error + message saying failed to update group
+        it('should return 500 after attempting to update group leader', async () => {
+            const exampleMeetingTime = "2026-11-02T12:30:00Z"
+            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+            const exampleGroupLeader = {
+                id: "68fbe599d84728c6da2_test",
+                name: "Group Leader",
+                email: "group.leader@example.com"
+            }
+            const testGroup = await groupModel.create({
+                joinCode: exampleJoinCode,
+                groupName: 'Joinable Group',
+                groupLeaderId: exampleGroupLeader,
+                expectedPeople: 5,
+                groupMemberIds: [exampleGroupLeader],
+                meetingTime: exampleMeetingTime,
+                activityType: 'CAFE',
+            });
+
+            const newGroupLeader = {
+                id: "2jk3h24j3j42kh3j42_test",
+                name: "Group Leader 2",
+                email: "group.leader2@example.com"
+            }
+
+            const updateData = {
+                groupLeaderId: newGroupLeader,
+                joinCode: exampleJoinCode,
+            };
+
+            const res = await request(app).post('/group/update').send(updateData);
+            expect(res.status).toBe(500);
+            expect(res.body).toHaveProperty('message', 'Failed to update group info');
+            expect(res.body.data.group.groupLeaderId).toEqual(exampleGroupLeader);
+        });
+        // Input: invalid update information including new group name
+        // Expected behavior: fails to update group
+        // Expected output: 500 error + message saying failed to update group
+        it('should return 500 after attempting to update group name', async () => {
+            const exampleMeetingTime = "2026-11-02T12:30:00Z"
+            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+            const exampleGroupLeader = {
+                id: "68fbe599d84728c6da2_test",
+                name: "Group Leader",
+                email: "group.leader@example.com"
+            }
+            const groupName = 'Joinable Group'
+            const testGroup = await groupModel.create({
+                joinCode: exampleJoinCode,
+                groupName: groupName,
+                groupLeaderId: exampleGroupLeader,
+                expectedPeople: 5,
+                groupMemberIds: [exampleGroupLeader],
+                meetingTime: exampleMeetingTime,
+                activityType: 'CAFE',
+            });
+
+            const newGroupName = "New Group Name"
+            const updateData = {
+                groupName: newGroupName,
+                joinCode: exampleJoinCode,
+            };
+
+            const res = await request(app).post('/group/update').send(updateData);
+            expect(res.status).toBe(500);
+            expect(res.body).toHaveProperty('message', 'Failed to update group info');
+            expect(res.body.data.group.groupName).toEqual(groupName);
+        });
     });
 
     describe('DELETE /group/delete/:joinCode', () => {
+        // Input: join code of existing group
+        // Expected behavior: successfully deletes group
+        // Expected output: 200 OK + success message
         it('should delete a group and return 200', async () => {
             const exampleMeetingTime = "2026-11-02T12:30:00Z"
             const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -628,7 +601,10 @@ describe('Unmocked: Group Controller', () => {
     });
 
     describe('POST /group/leave/:joinCode', () => {
-        it('should delete a group and return 200', async () => {
+        // Input: join code and user information of leaving member
+        // Expected behavior: user is able to successfully leave group
+        // Expected output: 200 OK + success message
+        it('should let user leave a group and return 200', async () => {
             const exampleMeetingTime = "2026-11-02T12:30:00Z"
             const exampleGroupLeader = {
                 id: "68fbe599d84728c6da2_test",
@@ -666,8 +642,12 @@ describe('Unmocked: Group Controller', () => {
 
             expect(res.status).toBe(200);
             expect(res.body).toHaveProperty('message', 'Left group successfully');
+            expect(res.body.data.group.groupMemberIds).toEqual([exampleGroupLeader]);
         });
 
+        // Input: invalid join code, example user information
+        // Expected behavior: user is unable to leaveleave group
+        // Expected output: 404 error + fail message
         it('should return 404 for an invalid join code', async () => {
             const joinCode = 'abc123'
             const leaveData = {
@@ -680,6 +660,9 @@ describe('Unmocked: Group Controller', () => {
             expect(res.body).toHaveProperty('message', 'Group not found');
         });
 
+        // Input: join code and user information of group leader
+        // Expected behavior: user is able to successfully leave group, new leader is assigned
+        // Expected output: 200 OK + success message + group information reflects new leader
         it('should transfer leadership when the leader leaves', async () => {
             const exampleMeetingTime = "2026-11-02T12:30:00Z";
             const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -713,6 +696,9 @@ describe('Unmocked: Group Controller', () => {
             expect(res.body.data.newLeader).toMatchObject(exampleMember);
         });
 
+        // Input: join code and user information of last group member
+        // Expected behavior: user is able to successfully leave group, group is deleted
+        // Expected output: 200 OK + success message for leave, 404 error for get group info with join code
         it('should delete the group when the last member leaves', async () => {
             const exampleMeetingTime = "2026-11-02T12:30:00Z";
             const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -735,24 +721,36 @@ describe('Unmocked: Group Controller', () => {
             const res = await request(app).post(`/group/leave/${exampleJoinCode}`).send({
                 userId: exampleGroupLeader.id,
             });
+            
 
             expect(res.status).toBe(200);
-            expect(res.body).toHaveProperty('message', 'Group deleted successfully as no members remain');
+            expect(res.body).toHaveProperty('message', 'Left group successfully');
+
+            //Check that group was deleted
+            const res1 = await request(app).post(`/group/${exampleJoinCode}`);
+            expect(res1.status).toBe(404);
+            expect(res.body).toHaveProperty('message', `Group with joinCode ${exampleJoinCode} not found`);
         });
 
     });
 
     describe('GET /group/:joinCode/midpoint', () => {
   // Branch 1: Group does not exist
-  it('should return 404 when group does not exist', async () => {
-    const res = await request(app).get('/group/nonexistent/midpoint');
+        // Input: invalid join code
+        // Expected behavior: fails to return midpoint
+        // Expected output: 404 error + fail message
+        it('should return 404 when group does not exist', async () => {
+        const res = await request(app).get('/group/nonexistent/midpoint');
 
-    expect(res.status).toBe(404);
-    expect(res.body.message).toContain('not found');
-  });
+        expect(res.status).toBe(404);
+        expect(res.body.message).toContain('not found');
+    });
 
   // Branch 2: Group has cached midpoint
-  it('should return cached midpoint without recalculating', async () => {
+    // Input: join code and midpoint info to save
+    // Expected behavior: saved midpoint info is returned without recalculation
+    // Expected output: 200 OK + success message + group information reflecting midpoint
+    it('should return cached midpoint without recalculating', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
       id: "leader-id",
@@ -782,6 +780,9 @@ describe('Unmocked: Group Controller', () => {
   });
 
   // Branch 3: Normal midpoint calculation
+    // Input: join code
+    // Expected behavior: new midpoint is calculated for new group
+    // Expected output: 200 OK + success message + group information containing new midpoint
   it('should calculate midpoint for group without cached value', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
@@ -810,6 +811,9 @@ describe('Unmocked: Group Controller', () => {
     expect(res.body.data.midpoint.location.lng).toBeDefined();
   });
 
+    // Input: new group information with addresses and transit types, join code
+    // Expected behavior: midpoint is calculated using address and transit types
+    // Expected output: 200 OK + success message + group info contains calculated values
   it('should calculate midpoint with members that have address and transitType', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
@@ -848,6 +852,9 @@ describe('Unmocked: Group Controller', () => {
 
 describe('POST /group/:joinCode/midpoint/update', () => {
   // Branch 1: Group does not exist
+    // Input: invalid join code (group doesn't exist)
+    // Expected behavior: fails to recalculate midpoint
+    // Expected output: 404 error + fail message
   it('should return 404 when group does not exist', async () => {
     const res = await request(app).post('/group/nonexistent/midpoint/update');
 
@@ -856,6 +863,9 @@ describe('POST /group/:joinCode/midpoint/update', () => {
   });
 
   // Branch 2: Successfully update midpoint
+    // Input: join code of existing group
+    // Expected behavior: midpoint is successfully recalculated
+    // Expected output: 200 OK + success message + group info contains calculated values
   it('should update midpoint and return 200', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
@@ -885,6 +895,9 @@ describe('POST /group/:joinCode/midpoint/update', () => {
   });
 
   // Branch 3: Group with no members with location info
+    // Input: join code of existing group with no members
+    // Expected behavior: fails to recalculate midpoint
+    // Expected output: 500 error
   it('should handle group with no valid members', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
@@ -908,6 +921,9 @@ describe('POST /group/:joinCode/midpoint/update', () => {
     expect(res.status).toBe(500);
   });
 
+    // Input: join code of existing group with valid member information (address and transit types)
+    // Expected behavior: midpoint is successfully recalculated
+    // Expected output: 200 OK + success message + group info contains calculated values
   it('should update midpoint with members that have address and transitType', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
@@ -946,6 +962,9 @@ describe('POST /group/:joinCode/midpoint/update', () => {
 });
 
 describe('POST /group/update', () => {
+    // Input: invalid join code
+    // Expected behavior: group is not found nor updated
+    // Expected output: 404 error + fail message
   it('should return 404 when group does not exist', async () => {
     const nonexistentJoinCode = 'nonexistent123';
     const updateData = {

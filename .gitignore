@@ -6,3 +6,11 @@
 node_modules/
 frontend/cpen321keystore.jks
 backend/temp/
+.DS_Store
+frontend/.DS_Store
+frontend/m5keystore.jks
+frontend/app/.DS_Store
+frontend/app/staging/.DS_Store
+frontend/app/staging/release/output-metadata.json
+frontend/app/staging/release/baselineProfiles/0/app-staging-release.dm
+frontend/app/staging/release/baselineProfiles/1/app-staging-release.dm

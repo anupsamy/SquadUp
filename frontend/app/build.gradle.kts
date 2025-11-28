@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.cpen321.squadup"
-        minSdk = 31
+        minSdk = 27
         //noinspection OldTargetApi
         targetSdk = 33
         versionCode = 1
@@ -38,7 +38,7 @@ android {
             isMinifyEnabled = false
         }
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

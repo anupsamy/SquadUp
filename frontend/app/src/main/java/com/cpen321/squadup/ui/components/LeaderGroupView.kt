@@ -130,14 +130,12 @@ fun LeaderGroupView(
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
     activityPickerViewModel: ActivityPickerViewModel,
-    selectedActivity: Activity?,
+    activities: List<Activity>,
     midpoint: SquadGoal?,
     onUpdate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
-    val activities by groupViewModel.activities.collectAsState()
-
 
     val handleMidpointCalculation = { //TODO Figure out how this fits with getting activites at the same time
         groupViewModel.updateMidpoint(group.joinCode) //activites retrieved from here

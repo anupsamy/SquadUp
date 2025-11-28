@@ -96,7 +96,6 @@ class GroupViewModel @Inject constructor(
     fun getMidpoint(joinCode: String) {
         viewModelScope.launch {
             _isCalculatingMidpoint.value = true
-            resetMidpoint()
             val result = groupRepository.getMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
                 _midpoint.value = result.getOrNull()?.midpoint
@@ -112,7 +111,6 @@ class GroupViewModel @Inject constructor(
     fun updateMidpoint(joinCode: String) {
         viewModelScope.launch {
             _isCalculatingMidpoint.value = true
-            resetMidpoint()
             val result = groupRepository.updateMidpointByJoinCode(joinCode)
             if (result.isSuccess) {
                 _midpoint.value = result.getOrNull()?.midpoint

@@ -83,15 +83,22 @@ fun GroupDetailsScreen(
     val isLeader = group.groupLeaderId?.id == currentUserId
     var isUpdated by remember { mutableStateOf(false) }
 
+    val activities = groupViewModel.activities.collectAsState().value.let { vmActivities ->
+        vmActivities.ifEmpty { group.activities ?: emptyList() }
+    }
+
     fun refresh() {
         navController.navigate(NavRoutes.MAIN) { popUpTo(NavRoutes.MAIN) { inclusive = false } }
         navController.navigate("${NavRoutes.GROUP_DETAILS}/${group.joinCode}")
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(group.joinCode) {
+        groupViewModel.resetMidpoint()
         profileViewModel.loadProfile()
         activityPickerVM.setInitialSelectedActivity(group.selectedActivity)
-        if ((group.groupMemberIds?.size ?: 0) == group.expectedPeople.toInt()) groupViewModel.getMidpoint(group.joinCode)
+        if ((group.groupMemberIds?.size ?: 0) == group.expectedPeople.toInt()) {
+            groupViewModel.getMidpoint(group.joinCode)
+        }
     }
 
     LaunchedEffect(group.joinCode, currentUserId) { currentUserId?.let { WebSocketManager.subscribeToGroup(it, group.joinCode) } }
@@ -115,7 +122,7 @@ fun GroupDetailsScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, selectedActivity = selectedActivity, onUpdate = { isUpdated = true }, modifier = Modifier.weight(1f))
+            if (isLeader) LeaderGroupView(group, groupViewModel, midpoint = midpoint, activityPickerViewModel = activityPickerVM, activities = activities, onUpdate = { isUpdated = true }, modifier = Modifier.weight(1f))
             else MemberGroupView(profileUiState.user, group, groupViewModel, midpoint, selectedActivity, Modifier.weight(1f))
 
             TravelTimeSection(travelTime)

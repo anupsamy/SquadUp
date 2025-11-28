@@ -40,7 +40,8 @@ data class GroupDataDetailed(
     val midpoint: String? = null,
     val selectedActivity: Activity? = null,
     val activityType: String,
-    val autoMidpoint: Boolean
+    val autoMidpoint: Boolean,
+    val activities: List<Activity>? = null
 )
 
 data class GroupUser(

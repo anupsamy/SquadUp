@@ -59,6 +59,7 @@ import com.cpen321.squadup.ui.components.MessageSnackbarState
 import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.MainUiState
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
@@ -76,6 +77,13 @@ fun MainScreen(
     val uiState by mainViewModel.uiState.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
+
+    val groupViewModel: GroupViewModel = hiltViewModel() // Get reference
+
+    // Reset group state when returning to main screen
+    LaunchedEffect(Unit) {
+        groupViewModel.resetMidpoint()
+    }
 
     val currentUserId = profileUiState.user?._id
     val filteredGroups = uiState.groups

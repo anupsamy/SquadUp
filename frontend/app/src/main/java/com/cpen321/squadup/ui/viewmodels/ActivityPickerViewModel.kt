@@ -1,5 +1,7 @@
 package com.cpen321.squadup.ui.viewmodels
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.squadup.data.remote.dto.Activity
@@ -27,11 +29,18 @@ class ActivityPickerViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _selectionSuccess = MutableStateFlow(false)
+    val selectionSuccess: StateFlow<Boolean> = _selectionSuccess.asStateFlow()
+
     fun setInitialSelectedActivity(activity: Activity?) {
         if (_selectedActivity.value == null && activity != null) {
             _selectedActivity.value = activity
             _selectedActivityId.value = activity.placeId
         }
+    }
+
+    fun resetSelectionSuccess() {
+        _selectionSuccess.value = false
     }
 
     fun loadActivities(joinCode: String) {
@@ -55,14 +64,11 @@ class ActivityPickerViewModel @Inject constructor(
     fun confirmSelection(joinCode: String) {
         val placeId = _selectedActivityId.value ?: return
         val selectedActivity = _activities.value.find { it.placeId == placeId } ?: return
+
         viewModelScope.launch {
             groupRepository.selectActivity(joinCode, selectedActivity)
-                .onSuccess {
-                    // Handle success - maybe clear selection or show confirmation
-                }
-                .onFailure { e ->
-                    _error.value = e.message ?: "Failed to select activity"
-                }
+                .onSuccess { _selectionSuccess.value = true }
+                .onFailure { e -> _error.value = e.message ?: "Failed to select activity" }
         }
     }
 

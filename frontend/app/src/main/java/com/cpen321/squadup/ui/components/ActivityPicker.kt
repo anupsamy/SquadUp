@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -112,6 +113,7 @@ fun ActivityPicker(
     modifier: Modifier = Modifier
 ) {
     val activities by viewModel.activities.collectAsState()
+    val selectionSuccess by viewModel.selectionSuccess.collectAsState()
     val selectedActivityId by viewModel.selectedActivityId.collectAsState()
     val sortedActivities = activities.sortedWith(
         compareByDescending { it.placeId == selectedActivityId })
@@ -128,7 +130,13 @@ fun ActivityPicker(
                 duration = SnackbarDuration.Short
             )
         }
-        onSelectActivity()
+    }
+
+    LaunchedEffect(selectionSuccess) {
+        if (selectionSuccess) {
+            onSelectActivity()
+        }
+        viewModel.resetSelectionSuccess()
     }
 
     // WRAP EVERYTHING IN A BOX

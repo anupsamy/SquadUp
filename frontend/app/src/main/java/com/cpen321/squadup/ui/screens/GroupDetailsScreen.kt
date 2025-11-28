@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
@@ -49,6 +50,7 @@ import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.utils.WebSocketManager
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.flow.filter
 
 
 fun unsubscribeFromGroupTopic(joinCode: String) {
@@ -73,6 +75,8 @@ fun GroupDetailsScreen(
 ) {
     val isDeleted by groupViewModel.isGroupDeleted.collectAsState()
     val isLeft by groupViewModel.isGroupLeft.collectAsState()
+    val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
+    var prevCalculatingMidpoint by remember { mutableStateOf(isCalculatingMidpoint) }
     val profileUiState by profileViewModel.uiState.collectAsState()
     val activityPickerVM: ActivityPickerViewModel = hiltViewModel()
     
@@ -106,6 +110,13 @@ fun GroupDetailsScreen(
             isUpdated = false
         }
     }
+    LaunchedEffect(isCalculatingMidpoint) {
+        if (prevCalculatingMidpoint && !isCalculatingMidpoint) {
+            refresh()
+        }
+        prevCalculatingMidpoint = isCalculatingMidpoint
+    }
+
     Scaffold(
         topBar = { GroupDetailsTopBar(navController, group.joinCode, group.groupName, group.meetingTime, ::refresh) }
     ) { padding ->

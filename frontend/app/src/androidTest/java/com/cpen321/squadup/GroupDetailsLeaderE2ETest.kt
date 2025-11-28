@@ -45,11 +45,13 @@ class GroupDetailsLeaderE2ETest {
     private fun navigateToFirstGroup() {
         // Click the first group (by "Leader:" label)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText("Leader:", substring = true).fetchSemanticsNodes().isNotEmpty()
+            composeTestRule.onAllNodesWithTag("groupButton")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
-
-        composeTestRule.onAllNodesWithText("Leader:", substring = true)
+        composeTestRule.onAllNodesWithTag("groupButton")
             .onFirst()
+            .assertIsDisplayed()
             .performClick()
 
         composeTestRule.waitForIdle()

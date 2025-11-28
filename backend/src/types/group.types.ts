@@ -57,6 +57,7 @@ export const basicGroupSchema = z.object({
     .optional(),
   midpoint: z.string().default('').optional(),
   activityType: z.string().min(1, 'Activity type is required'),
+  autoMidpoint: z.boolean(),
 });
 
 export const createGroupSchema = z.object({
@@ -106,6 +107,7 @@ export const updateGroupSchema = z.object({
   midpoint: z.string().nullable().optional(),
   activityType: z.string().optional(),
   activities: z.array(activityZodSchema).optional(),
+  autoMidpoint: z.boolean().optional(),
 });
 
 export const updateGroupSettingsSchema = z.object({
@@ -114,6 +116,7 @@ export const updateGroupSettingsSchema = z.object({
   transitType: z.string().optional(),
   meetingTime: z.string().optional(),
   expectedPeople: z.number().optional(),
+  autoMidpoint: z.boolean().optional(),
 });
 
 //Activity model

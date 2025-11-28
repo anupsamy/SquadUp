@@ -36,10 +36,14 @@ export class GroupService {
     try {
       const joinCode = this.generateJoinCode();
 
+      logger.info('Creating group with data:', JSON.stringify(groupData));
       const groupInfo: BasicGroupInfo = {
         joinCode,
         ...groupData,
       };
+
+      logger.info('Creating group with groupInfo:', JSON.stringify(groupInfo));
+
 
       const newGroup = await groupModel.create(groupInfo);
       logger.info(

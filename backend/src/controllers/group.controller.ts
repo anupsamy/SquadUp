@@ -69,11 +69,8 @@ export class GroupController {
       );
     }
 
-    if (!autoMidpoint || typeof autoMidpoint !== 'boolean') {
-      throw AppErrorFactory.badRequest(
-        'autoMidpoint is required and must be a boolean'
-      );
-    }
+    const validateAutoMidpoint = autoMidpoint ?? false;
+
 
     // Call service to create group
     const newGroup = await groupService.createGroup({
@@ -83,7 +80,7 @@ export class GroupController {
       expectedPeople: expectedPeople || 0,
       groupMemberIds: [groupLeaderId],
       activityType,
-      autoMidpoint
+      autoMidpoint: validateAutoMidpoint
     });
 
     res.status(201).json({

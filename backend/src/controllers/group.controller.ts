@@ -166,12 +166,26 @@ export class GroupController {
           message: 'Group not found',
         });
       }
+  
+      const newMemberIds = (groupMemberIds || []).map(member => member.id);
+      const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
+      const leaderId = currentGroup.groupLeaderId.id;
 
-      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
-        joinCode,
-        expectedPeople,
-        groupMemberIds: groupMemberIds || [],
+      if (newMemberIds.some(id => id === leaderId)) {
+        return res.status(400).json({
+          message: 'You are the leader of this group',
+        });
+      }
+      
+      if (newMemberIds.some(id => currentMemberIds.includes(id))) {
+      return res.status(400).json({
+        message: 'You are already a member of this group',
       });
+    }
+      
+      const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
+        {joinCode, expectedPeople,
+        groupMemberIds: groupMemberIds || []});
 
       if (!updatedGroup) {
         return res.status(404).json({

@@ -434,7 +434,7 @@ Nielsen, J. (1993, January 1). Response Time Limits: Article by Jakob Nielsen. N
 
 ### **4.5. Dependencies Diagram**
 
-![Dependency Diagram](images/M3-Dependency-Diagram.png)
+![Dependency Diagram](images/Dependencies_new_M5.png)
 
 
 ### **4.6. Use Case Sequence Diagram (5 Most Major Use Cases)**

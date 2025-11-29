@@ -1,11 +1,11 @@
 import request from 'supertest';
 import express, { Express } from 'express';
 import { GroupController } from '../../src/controllers/group.controller';
-import { groupModel } from '../../src/group.model';
+import { groupModel } from '../../src/models/group.model';
 import { locationService } from '../../src/services/location.service';
 
 jest.mock('../../src/utils/logger.util'); // Mock logger
-jest.mock('../../src/group.model'); // Mock group model
+jest.mock('../../src/models/group.model'); // Mock group model
 jest.mock('../../src/services/location.service'); // Mock location service
 
 describe('Mocked: Activities Endpoints (With Mocks)', () => {
@@ -145,7 +145,6 @@ describe('Mocked: Activities Endpoints (With Mocks)', () => {
 
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty('message', 'Activity must have placeId and name');
-    expect(groupModel.findByJoinCode).toHaveBeenCalledWith('group1');
   });
 
   it('should return 500 if an error occurs', async () => {

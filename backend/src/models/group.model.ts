@@ -311,69 +311,6 @@ export class GroupModel {
     }
   }
 
-
-  //TODO REMOVE
-  async getActivities(joinCode: string): Promise<Activity[]> {
-    try {
-      // Verify the group exists (optional but good practice)
-      const group = await this.group.findOne({ joinCode });
-      if (!group) {
-        throw new Error(`Group with joinCode '${joinCode}' not found`);
-      }
-
-      // Return hardcoded dummy data
-      return this.getDefaultActivities();
-    } catch (error) {
-      //logger.error('Error getting activities:', error);
-      throw new Error('Failed to get activities');
-    }
-  }
-
-  //TODO REMOVE
-  private getDefaultActivities(): Activity[] {
-    return [
-      {
-        name: 'Sushi Palace one',
-        placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY58',
-        address: '5678 Oak St, Vancouver',
-        rating: 4.7,
-        userRatingsTotal: 512,
-        priceLevel: 3,
-        type: 'restaurant',
-        latitude: 49.2627,
-        longitude: -123.1407,
-        businessStatus: 'OPERATIONAL',
-        isOpenNow: true,
-      },
-      {
-        name: 'Pizza Garden two',
-        placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY47',
-        address: '1234 Main St, Vancouver',
-        rating: 4.3,
-        userRatingsTotal: 256,
-        priceLevel: 2,
-        type: 'restaurant',
-        latitude: 49.2827,
-        longitude: -123.1207,
-        businessStatus: 'OPERATIONAL',
-        isOpenNow: true,
-      },
-      {
-        name: 'Brew Bros Coffee three',
-        placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY59',
-        address: '9010 Broadway, Vancouver',
-        rating: 4.5,
-        userRatingsTotal: 318,
-        priceLevel: 1,
-        type: 'cafe',
-        latitude: 49.275,
-        longitude: -123.13,
-        businessStatus: 'OPERATIONAL',
-        isOpenNow: true,
-      },
-    ];
-  }
-
   async leaveGroup(
     joinCode: string,
     userId: string
@@ -408,6 +345,10 @@ export class GroupModel {
           { new: true }
         );
 
+        if(!updatedGroup){
+          throw new Error(`Failed to leave group`);
+        }
+
         return {
           success: true,
           deleted: false,
@@ -416,7 +357,12 @@ export class GroupModel {
       }
       // If the user is the leader and there are no other members, delete the group
       else if (isLeader && updatedMembers.length === 0) {
-        await this.group.findOneAndDelete({ joinCode });
+        const updatedGroup = await this.group.findOneAndDelete({ joinCode });
+
+        if(!updatedGroup){
+          throw new Error(`Failed to leave group`);
+        }
+
         return {
           success: true,
           deleted: true,
@@ -429,6 +375,10 @@ export class GroupModel {
           { groupMemberIds: updatedMembers },
           { new: true }
         );
+
+        if(!updatedGroup){
+          throw new Error(`Failed to leave group`);
+        }
 
         return {
           success: true,

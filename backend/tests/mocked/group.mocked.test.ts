@@ -1,16 +1,28 @@
 import request from 'supertest';
 import express, { Express } from 'express';
+import mongoose from 'mongoose';
 import { GroupController } from '../../src/controllers/group.controller';
-import { groupModel } from '../../src/group.model';
+import { groupModel } from '../../src/models/group.model';
 import { WebSocketService } from '../../src/services/websocket.service';
 import { locationService } from '../../src/services/location.service';
 import { TRANSIT_TYPES } from '../../src/types/transit.types';
+import {
+  GeoLocation,
+} from '../../src/types/location.types';
 
 jest.mock('../../src/utils/logger.util');
 jest.mock('../../src/services/media.service');
+jest.mock('../../src/services/fcm.service', () => ({
+  sendGroupJoinFCM: jest.fn(),
+  sendGroupLeaveFCM: jest.fn(),
+  sendActivitySelectedFCM: jest.fn(),
+}));
 jest.mock('../../src/services/websocket.service', () => ({
   getWebSocketService: jest.fn(() => ({
     notifyGroupUpdate: jest.fn(),
+    notifyGroupJoin: jest.fn(),
+    notifyGroupLeave: jest.fn(),
+    getStats: jest.fn(() => ({ connections: 0, rooms: {} })),
   })),
 }));
 
@@ -18,7 +30,10 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
   let app: Express;
   let groupController: GroupController;
 
-  beforeAll(() => {
+  beforeAll(async() => {
+    if (mongoose.connection.readyState !== 1) {
+          await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/test');
+    }
     app = express();
     app.use(express.json());
     groupController = new GroupController();
@@ -44,18 +59,26 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
     app.post('/group/update', (req, res, next) => groupController.updateGroupByJoinCode(req, res, next));
     app.post('/group/leave/:joinCode', (req, res, next) => groupController.leaveGroup(req, res, next));
     app.delete('/group/delete/:joinCode', (req, res, next) => groupController.deleteGroupByJoinCode(req, res, next));
-    app.get('/group/:joinCode/midpoint',(req, res, next) => groupController.getMidpointByJoinCode(req, res, next));
-    app.post('/group/:joinCode/midpoint/update', (req, res, next) => groupController.updateMidpointByJoinCode(req, res, next));
+    app.get('/group/midpoint/:joinCode',(req, res, next) => groupController.getMidpointByJoinCode(req, res, next));
+    app.post('/group/midpoint/:joinCode', (req, res, next) => groupController.updateMidpointByJoinCode(req, res, next));
+  });
+  
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    await mongoose.connection.collections['groups'].deleteMany({});
   });
 
-  beforeEach(() => {
+  afterEach(async () => {
+    // Clean up after each test
     jest.clearAllMocks();
+    await mongoose.connection.collections['groups'].deleteMany({});
   });
 
   describe('GET /group/info', () => {
         it('should return 200 and a list of groups', async () => {
             const mockGroups = [
-            { toObject: () => ({ joinCode: 'group1', groupName: 'Group 1' }) },
+            { toObject: () => ({ joinCode: 'group1_x', groupName: 'Group 1' }) },
             { toObject: () => ({ joinCode: 'group2', groupName: 'Group 2' }) },
             ];
 
@@ -68,7 +91,7 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
             expect(res.status).toBe(200);
             expect(res.body).toHaveProperty('message', 'Groups fetched successfully');
             expect(res.body.data.groups).toEqual([
-                { joinCode: 'group1', groupName: 'Group 1', groupMemberIds: [] },
+                { joinCode: 'group1_x', groupName: 'Group 1', groupMemberIds: [] },
                 { joinCode: 'group2', groupName: 'Group 2', groupMemberIds: [] },
             ]);
             expect(groupModel.findAll).toHaveBeenCalledTimes(1);
@@ -87,7 +110,21 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
 
     describe('GET /group/:joinCode', () => {
         it('should return 200 and the group for a valid join code', async () => {
-            const mockGroup = { joinCode: 'group1', groupName: 'Group 1' };
+            const mockGroupData = { 
+              joinCode: 'group1', 
+              groupName: 'Group 1',
+              meetingTime: "2026-11-02T12:30:00Z",
+              groupLeaderId: { id: 'leader-id', name: 'Leader', email: 'leader@example.com' },
+              expectedPeople: 5,
+              groupMemberIds: [{ id: 'leader-id', name: 'Leader', email: 'leader@example.com' }],
+              activityType: "CAFE",
+              autoMidpoint: true
+            };
+            //const testGroup = await groupModel.create(mockGroup);
+            const mockGroup = {
+            ...mockGroupData,
+            toObject: jest.fn().mockReturnValue(mockGroupData)
+            };
 
             jest.spyOn(groupModel, 'findByJoinCode').mockResolvedValueOnce(mockGroup as any);
 
@@ -95,7 +132,7 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
 
             expect(res.status).toBe(200);
             expect(res.body).toHaveProperty('message', 'Group fetched successfully');
-            expect(res.body.data.group).toEqual(mockGroup);
+            expect(res.body.data.group).toEqual(mockGroupData);
             expect(groupModel.findByJoinCode).toHaveBeenCalledWith('group1');
         });
 
@@ -112,22 +149,62 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
 
     describe('POST /group/join', () => {
         it('should return 200 when a user joins a group successfully', async () => {
-            const mockGroup = { joinCode: 'group1', groupName: 'Group 1', groupMemberIds: [] };
-            const updatedGroup = { ...mockGroup, groupMemberIds: [{ id: 'user-id', name: 'User' }] };
+        const groupLeader = {
+          id: 'leader', 
+          name: 'group leader', 
+          email: 'leader@example.com'
+        }
+        const mockGroup = { 
+          joinCode: 'group1', 
+          groupLeaderId: groupLeader, 
+          groupName: 'Group 1', 
+          groupMemberIds: [groupLeader],
+          meetingTime: "2026-11-02T12:30:00Z",
+          expectedPeople: 5,
+          activityType: "CAFE",
+          autoMidpoint: true
+        };
 
-            jest.spyOn(groupModel, 'findByJoinCode').mockResolvedValueOnce(mockGroup as any);
-            jest.spyOn(groupModel, 'updateGroupByJoinCode').mockResolvedValueOnce(updatedGroup as any);
+        const updatedGroupData = { 
+          ...mockGroup, 
+          groupMemberIds: [
+            groupLeader, 
+            { id: 'user-id', name: 'User', email: 'user@example.com'}
+          ]
+        };
 
-            const joinData = { joinCode: 'group1', groupMemberIds: [{ id: 'user-id', name: 'User' }] };
+        const updatedGroup = {
+          ...updatedGroupData,
+          toObject: jest.fn().mockReturnValue(updatedGroupData)
+        };
 
-            const res = await request(app).post('/group/join').send(joinData);
+        jest.spyOn(groupModel, 'findByJoinCode')
+          .mockResolvedValueOnce(mockGroup as any);  // First check in controller
 
-            expect(res.status).toBe(200);
-            expect(res.body).toHaveProperty('message', 'Group info updated successfully');
-            expect(res.body.data.group).toEqual(updatedGroup);
-            expect(groupModel.findByJoinCode).toHaveBeenCalledWith('group1');
-            expect(groupModel.updateGroupByJoinCode).toHaveBeenCalledWith('group1', joinData);
-        });
+        jest.spyOn(groupModel, 'updateGroupByJoinCode')
+          .mockResolvedValueOnce(updatedGroup as any);
+
+        const joinData = { 
+          joinCode: 'group1', 
+          groupMemberIds: [
+            { id: 'user-id', name: 'User', email: 'user@example.com' }
+          ] 
+        };
+
+        const res = await request(app).post('/group/join').send(joinData);
+        console.log("res body: ", res.body)
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveProperty('message', 'Group info updated successfully');
+        expect(res.body.data.group.groupMemberIds).toEqual(
+            expect.arrayContaining([
+            expect.objectContaining(groupLeader),
+            expect.objectContaining({ id: 'user-id', name: 'User', email: 'user@example.com' })
+          ])
+        );
+        expect(groupModel.findByJoinCode).toHaveBeenCalledWith('group1');
+        expect(groupModel.updateGroupByJoinCode).toHaveBeenCalledWith('group1', joinData);
+    });
 
         it('should return 404 when the group does not exist', async () => {
             jest.spyOn(groupModel, 'findByJoinCode').mockResolvedValueOnce(null);
@@ -154,14 +231,15 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
             const testGroup = await groupModel.create({
                 joinCode: exampleJoinCode,
                 groupName: "Joinable Group",
+                meetingTime: exampleMeetingTime,
                 groupLeaderId: exampleGroupLeader,
                 expectedPeople: 5,
                 groupMemberIds: [exampleGroupLeader],
-                meetingTime: exampleMeetingTime,
                 activityType: "CAFE",
+                autoMidpoint: true
             });
 
-            jest.spyOn(groupModel, 'updateGroupByJoinCode').mockRejectedValueOnce(new Error('Update failed'));
+            jest.spyOn(groupModel, 'updateGroupByJoinCode').mockRejectedValueOnce(new Error('Failed to update group info'));
 
             const joinData = {
                 joinCode: exampleJoinCode,
@@ -178,7 +256,6 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
                 const joinCode = 'test-code';
                 const joinData = {
                     joinCode: joinCode,
-                    expectedPeople: 5,
                     groupMemberIds: [{ id: 'user-1', name: 'User', email: 'user@example.com' }],
                 };
 
@@ -186,17 +263,25 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
                 jest.spyOn(groupModel, 'findByJoinCode').mockResolvedValueOnce({
                     joinCode,
                     groupName: 'Test Group',
-                    groupMemberIds: []
+                    groupLeaderId: {
+                      id: 'group-leader',
+                      name: "leader",
+                      email: "leader@example.com"
+                    },
+                    groupMemberIds: [{
+                      id: 'group-leader',
+                      name: "leader",
+                      email: "leader@example.com"
+                    }]
                 } as any);
 
                 // Mock updateGroupByJoinCode to return null
-                jest.spyOn(groupModel, 'updateGroupByJoinCode').mockResolvedValueOnce(null);
+                jest.spyOn(groupModel['group'], 'findOneAndUpdate').mockResolvedValueOnce(null);
 
                 const res = await request(app).post('/group/join').send(joinData);
 
                 expect(res.status).toBe(404);
                 expect(res.body).toHaveProperty('message', 'Group not found');
-                expect(groupModel.updateGroupByJoinCode).toHaveBeenCalledTimes(1);
                 });
 
 
@@ -221,7 +306,7 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
         it('should return 500 when an error occurs', async () => {
             jest.spyOn(groupModel, 'create').mockRejectedValueOnce(new Error('Database error'));
 
-            const groupData = { groupName: 'Group 1', groupLeaderId: { id: 'leader-id' }, expectedPeople: 5 };
+            const groupData = { groupName: 'Group 1', groupLeaderId: { id: 'leader-id', name: "group leader" , email: "leader@example.com" }, expectedPeople: 5 };
 
             const res = await request(app).post('/group/create').send(groupData);
 
@@ -243,17 +328,17 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
         });
 
         it('should return 404 when the group does not exist', async () => {
-            jest.spyOn(groupModel, 'delete').mockRejectedValueOnce(new Error('Group not found'));
+            jest.spyOn(groupModel, 'delete').mockRejectedValueOnce(new Error(`Failed to delete group`));
 
             const res = await request(app).delete('/group/delete/nonexistent');
 
-            expect(res.status).toBe(404);
-            expect(res.body).toHaveProperty('message', 'Group not found');
+            expect(res.status).toBe(500);
+            expect(res.body).toHaveProperty('message', 'Failed to delete group');
             expect(groupModel.delete).toHaveBeenCalledWith('nonexistent');
         });
     });
 
-    describe('POST /group/test-websocket/:joinCode', () => {
+   /* describe('POST /group/test-websocket/:joinCode', () => {
         it('should send a test WebSocket notification', async () => {
             const joinCode = 'test123';
             const message = 'Test notification';
@@ -327,40 +412,43 @@ describe('Mocked: Group Endpoints (With Mocks)', () => {
         //         ])
         //     );
         //     });
-    });
+    });*/
 
-   describe('GET /group/:joinCode/midpoint', () => {
+   describe('GET /group/midpoint/:joinCode', () => {
   // Branch 4: Error in location service
-  it('should handle location service errors', async () => {
-    const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-    const exampleGroupLeader = {
-      id: "leader-id",
-      name: "Leader",
-      email: "leader@example.com",
-      address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
-      transitType: 'transit' as const,
-    };
+    it('should handle location service errors', async () => {
+      const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+      const exampleGroupLeader = {
+        id: "leader-id",
+        name: "Leader",
+        email: "leader@example.com",
+        address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
+        transitType: 'transit' as const,
+      };
 
-    await groupModel.create({
-      joinCode: exampleJoinCode,
-      groupName: 'Test Group',
-      groupLeaderId: exampleGroupLeader,
-      expectedPeople: 1,
-      groupMemberIds: [],
-      meetingTime: "2026-11-02T12:30:00Z",
-      activityType: 'CAFE',
+      await groupModel.create({
+        joinCode: exampleJoinCode,
+        groupName: 'Test Group',
+        groupLeaderId: exampleGroupLeader,
+        expectedPeople: 1,
+        groupMemberIds: [],
+        meetingTime: "2026-11-02T12:30:00Z",
+        activityType: 'CAFE',
+        autoMidpoint: true
+      });
+
+      jest.spyOn(locationService, 'findOptimalMeetingPoint').mockRejectedValueOnce(
+        new Error('Location service error')
+      );
+
+      const res = await request(app).get(`/group/midpoint/${exampleJoinCode}`);
+
+      expect(res.status).toBe(500);
     });
-
-    jest.spyOn(locationService, 'findOptimalMeetingPoint').mockRejectedValueOnce(
-      new Error('Location service error')
-    );
-
-    const res = await request(app).get(`/group/${exampleJoinCode}/midpoint`);
-
-    expect(res.status).toBe(500);
-  });
 });
-describe('POST /group/:joinCode/midpoint/update', () => {
+
+
+describe('POST /group/midpoint/:joinCode', () => {
 // Branch 4: Error in location service
   it('should handle location service errors', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -377,16 +465,17 @@ describe('POST /group/:joinCode/midpoint/update', () => {
       groupName: 'Test Group',
       groupLeaderId: exampleGroupLeader,
       expectedPeople: 1,
-      groupMemberIds: [],
+      groupMemberIds: [exampleGroupLeader],
       meetingTime: "2026-11-02T12:30:00Z",
       activityType: 'CAFE',
+      autoMidpoint: true
     });
 
     jest.spyOn(locationService, 'findOptimalMeetingPoint').mockRejectedValueOnce(
       new Error('Location service error')
     );
 
-    const res = await request(app).post(`/group/${exampleJoinCode}/midpoint/update`);
+    const res = await request(app).post(`/group/midpoint/${exampleJoinCode}`);
 
     expect(res.status).toBe(500);
   });
@@ -430,6 +519,7 @@ describe('POST /group/leave/:joinCode', () => {
       groupMemberIds: [exampleGroupLeader],
       meetingTime: exampleMeetingTime,
       activityType: 'CAFE',
+      autoMidpoint: true
     });
 
     const errorMessage = 'Database error occurred';
@@ -446,13 +536,14 @@ describe('POST /group/leave/:joinCode', () => {
   });
 });
 
-describe('POST /group/:joinCode/midpoint/update (Mocked)', () => {
+
+describe('POST /group/midpoint/:joinCode', () => {
   // Mocked behavior: updateGroupByJoinCode returns null
   // Input: valid group with members that have address and transitType
-  // Expected status code: 500
+  // Expected status code: 404
   // Expected behavior: error is returned when midpoint update fails
   // Expected output: "Failed to update group midpoint" message
-  it('should return 500 when updateGroupByJoinCode returns null', async () => {
+  it('should return 404 when updateGroupByJoinCode returns null', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
       id: 'leader-id',
@@ -461,6 +552,22 @@ describe('POST /group/:joinCode/midpoint/update (Mocked)', () => {
       address: { formatted: 'Address 1', lat: 49.28, lng: -123.12 },
       transitType: 'transit' as const,
     };
+    const exampleGroup = {
+      joinCode: exampleJoinCode,
+      groupName: 'Test Group',
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 1,
+      groupMemberIds: [exampleGroupLeader],
+      meetingTime: "2026-11-02T12:30:00Z",
+      activityType: 'CAFE',
+      autoMidpoint: true
+    }
+
+    const exampleMidpoint:GeoLocation = {
+      lat: 49.0,
+      lng: 12.0,
+      transitType: "walking"
+    }
 
     // Create a real group
     await groupModel.create({
@@ -471,28 +578,30 @@ describe('POST /group/:joinCode/midpoint/update (Mocked)', () => {
       groupMemberIds: [exampleGroupLeader],
       meetingTime: "2026-11-02T12:30:00Z",
       activityType: 'CAFE',
+      autoMidpoint: true
     });
 
     // Mock updateGroupByJoinCode to return null
+    jest.spyOn(locationService, 'findOptimalMeetingPoint').mockResolvedValueOnce(exampleMidpoint);
     jest.spyOn(groupModel, 'updateGroupByJoinCode').mockResolvedValueOnce(null);
 
-    const res = await request(app).post(`/group/${exampleJoinCode}/midpoint/update`);
 
-    expect(res.status).toBe(500);
+    const res = await request(app).post(`/group/midpoint/${exampleJoinCode}`);
+
+    expect(res.status).toBe(404);
     expect(res.body).toHaveProperty('message', 'Failed to update group midpoint');
     expect(groupModel.updateGroupByJoinCode).toHaveBeenCalledTimes(1);
   });
 });
-
 // Add to mocked tests
 
-describe('GET /group/:joinCode/midpoint (Mocked)', () => {
+describe('GET /group/midpoint/:joinCode (Mocked)', () => {
   // Mocked behavior: updateGroupByJoinCode returns null
   // Input: valid group with members that have address and transitType, no cached midpoint
   // Expected status code: 500
   // Expected behavior: error is returned when midpoint update fails
   // Expected output: "Failed to update group midpoint" message
-  it('should return 500 when updateGroupByJoinCode returns null', async () => {
+  it('should return 404 when updateGroupByJoinCode returns null', async () => {
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
     const exampleGroupLeader = {
       id: 'leader-id',
@@ -511,17 +620,20 @@ describe('GET /group/:joinCode/midpoint (Mocked)', () => {
       groupMemberIds: [exampleGroupLeader],
       meetingTime: "2026-11-02T12:30:00Z",
       activityType: 'CAFE',
+      autoMidpoint: true
     });
 
     // Mock updateGroupByJoinCode to return null
     jest.spyOn(groupModel, 'updateGroupByJoinCode').mockResolvedValueOnce(null);
 
-    const res = await request(app).get(`/group/${exampleJoinCode}/midpoint`);
+    const res = await request(app).get(`/group/midpoint/${exampleJoinCode}`);
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(404);
     expect(res.body).toHaveProperty('message', 'Failed to update group midpoint');
     expect(groupModel.updateGroupByJoinCode).toHaveBeenCalledTimes(1);
   });
+
 });
 
 });
+

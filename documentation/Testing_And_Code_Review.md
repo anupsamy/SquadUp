@@ -125,7 +125,9 @@ These tests measure the API response time for fetching group information to ensu
 
   - **Verification:** The location optimization service consistently calculates optimal meeting points for groups of 2, 5, and 10 users within the 5-second requirement. Tests verify that midpoint calculations and activity list retrieval (combined operations) complete within acceptable timeframes across all tested group sizes, demonstrating that the algorithm scales efficiently without performance degradation.
   - **Log Output**
-    ![Location Service Logs](images/location-nfr.png)
+    
+    <img width="740" height="291" alt="image" src="https://github.com/user-attachments/assets/0a95a397-af8d-4551-aba9-886897c85c02" />
+
 
 - **Group View Load Time**
   - **Verification:** Group view endpoints meet the 2-second response time requirement for fetching group details regardless of member count (2, 5, or 10 members). The `getAllGroups` endpoint also completes within 2 seconds when fetching multiple groups, and the midpoint calculation endpoint stays within the 5-second threshold, confirming that database queries and data serialization do not cause performance bottlenecks.

@@ -2,65 +2,81 @@
 
 ## 1. Change History
 
-| **Change Date**   | **Modified Sections** | **Rationale** |
-| ----------------- | --------------------- | ------------- |
-| _Nothing to show_ |
+| Change Date       | Modified Sections | Rationale |
+|------------|-----------------|-----------|
+| 2025-11-03 | 4.1             | MemberSettingsScreen: Added error handling for invalid inputs. Midpoint is also only triggered to update if the address or transit type of the member changed or differs from their existing settings. |
+| 2025-11-03 | 4.1.3           | Notification Service: WebSocket functionality has been suspended due to complications with having the service run alongside the tests. |
 
 ---
 
-## 2. Back-end Test Specification: APIs
+# Backend Test Specification: APIs
 
-### 2.1. Locations of Back-end Tests and Instructions to Run Them
+## 2.1 Location of backend tests and instructions to run them
 
-| **Interface**                      | **Describe Group Location, No Mocks**     | **Describe Group Location, With Mocks**            | **Mocked Components**     |
-| ---------------------------------- | ----------------------------------------- | -------------------------------------------------- | ------------------------- |
-| **POST /auth/signup**              | N/A                                       | `tests/mocked/auth.controller.mocked.test.ts#L31`  | Authentication Service    |
-| **POST /auth/signin**              | N/A                                       | `tests/mocked/auth.controller.mocked.test.ts#L146` | Authentication Service    |
-| **GET /user/profile**              | `tests/unmocked/user.tests.ts#L276`       | N/A                                                | Authentication Service    |
-| **POST /user/profile**             | `tests/unmocked/user.tests.ts#L100`       | `tests/mocked/user.mocked.test.ts#L54`             | MongoDB, Media Service    |
-| **DELETE /user/profile**           | `tests/unmocked/user.tests.ts#L134`       | `tests/mocked/user.mocked.test.ts#L145`            | MongoDB, Media Service    |
-| **POST /group/create**             | `tests/unmocked/group.tests.ts#L476`      | `tests/mocked/group.mocked.test.ts#L169`           | MongoDB                   |
-| **GET /group/info**                | `tests/unmocked/group.tests.ts#L429`      | `tests/unmocked/group.tests.ts#L49`                | MongoDB                   |
-| **GET /group/:joinCode**           | `tests/unmocked/group.tests.ts#L443`      | `tests/unmocked/group.tests.ts#L77`                | MongoDB                   |
-| **POST /group/update**             | `tests/unmocked/group.tests.ts#L555`      | N/A                                                | MongoDB                   |
-| **DELETE /group/delete/:joinCode** | `tests/unmocked/group.tests.ts#L598`      | `tests/unmocked/group.tests.ts#L198`               | MongoDB                   |
-| **POST /group/join**               | `tests/unmocked/group.tests.ts#L443`      | `tests/unmocked/group.tests.ts#L77`                | MongoDB                   |
-| **POST /group/leave/:joinCode**    | `tests/unmocked/group.tests.ts#L506`      | `tests/unmocked/group.tests.ts#L102`               | MongoDB                   |
-| **GET /group/activities**          | `tests/unmocked/activities.tests.ts#L144` | `tests/mocked/activities.mocked.test.ts#L29`       | MongoDB, Location Service |
-| **POST /group/activities/select**  | `tests/unmocked/activities.tests.ts#L224` | `tests/mocked/activities.mocked.test.ts#L92`       | MongoDB, Location Service |
+**Location:** `SquadUp/backend/tests`  
+
+**Running tests:**  
+1. Clone the repo, e.g., in your home directory. Ensure the following libraries are installed:
+
+```bash
+npm install --save-dev jest
+npm install --save-dev ts-jest
+npm install --save-dev @types/jest
+```
+
+2. Navigate to the `backend/` directory:
+
+```bash
+cd backend
+```
+
+3. Run tests:
+
+```bash
+npx jest
+# or sequentially
+npm test -- --runInBand
+# for coverage report
+npx jest --coverage
+```
+
+---
+
+## 2.1.1 API Table
+
+| Interface               | No Mocks location                                                                                  | Mocks location                                                                                               | Mocked components           |
+|-------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|----------------------------|
+| [POST] auth/signup      | N/A                                                                                               | [Link](https://github.com/anupsamy/SquadUp/blob/4f9bc65eb47d6f050826870fb4f9551fffc9cdb0/backend/tests/mocked/auth.controller.mocked.test.ts#L31) | Authentication Service      |
+| [POST] auth/signin      | N/A                                                                                               | [Link](https://github.com/anupsamy/SquadUp/blob/4f9bc65eb47d6f050826870fb4f9551fffc9cdb0/backend/tests/mocked/auth.controller.mocked.test.ts#L146) | Authentication Service      |
+| [GET] user/profile      | [Link](https://github.com/anupsamy/SquadUp/blob/1c45bc40361a70d0c4d3b6bd0b1ac063a3303802/backend/tests/unmocked/user.tests.ts#L276) | N/A                                                                                                        | Authentication Service      |
+| [POST] user/profile     | [Link](https://github.com/anupsamy/SquadUp/blob/1c45bc40361a70d0c4d3b6bd0b1ac063a3303802/backend/tests/unmocked/user.tests.ts#L100) | [Link](https://github.com/anupsamy/SquadUp/blob/1c45bc40361a70d0c4d3b6bd0b1ac063a3303802/backend/tests/mocked/user.mocked.test.ts#L54) | MongoDB, Media Service      |
+| [DELETE] user/profile   | [Link](https://github.com/anupsamy/SquadUp/blob/1c45bc40361a70d0c4d3b6bd0b1ac063a3303802/backend/tests/unmocked/user.tests.ts#L134) | [Link](https://github.com/anupsamy/SquadUp/blob/1c45bc40361a70d0c4d3b6bd0b1ac063a3303802/backend/tests/mocked/user.mocked.test.ts#L145) | MongoDB, Media Service      |
+| [POST] group/create     | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L476) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/mocked/group.mocked.test.ts#L169) | MongoDB                    |
+| [GET] group/info        | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L429) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L49) | MongoDB                    |
+| [GET] group/:joinCode   | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L443) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L77) | MongoDB                    |
+| [POST] group/update     | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L555) | N/A                                                                                                        | MongoDB                    |
+| [DELETE] group/delete/:joinCode | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L598) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L198) | MongoDB                    |
+| [POST] group/join       | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L443) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L77) | MongoDB                    |
+| [POST] group/leave/:joinCode | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L506) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/group.tests.ts#L102) | MongoDB                    |
+| [GET] group/activities  | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/activities.tests.ts#L144) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/mocked/activities.mocked.test.ts#L29) | MongoDB, Location Service  |
+| [POST] group/activities/select | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/unmocked/activities.tests.ts#L224) | [Link](https://github.com/anupsamy/SquadUp/blob/e6d3d4516d72396af59668403e419e35a41fcfbb/backend/tests/mocked/activities.mocked.test.ts#L92) | MongoDB, Location Service  |
 
 
-#### 2.1.2. Commit Hash Where Tests Run
 
-`[Insert Commit SHA here]`
+## 2.1.2 Commit Hash
 
-#### 2.1.3. Explanation on How to Run the Tests
+**Branch:** `main`  
+**Hash:** `f230fd9ec76710010fe2aca97db5227220e3c9ed`
 
-1. **Clone the Repository**:
+---
 
-2. **Install Required Libraries**:
+## 2.2 GitHub Actions Configuration Location
 
-   - Ensure the following libraries are installed:
+**Location:** `SquadUp/.github/workflows`
 
-   ```npm install --save-dev jest``` \
-   ```npm install --save-dev ts-jest``` \
-   ```npm install --save-dev @types/jest```
+- `deploy.yml` – deploy workflow to EC2 instance  
+- `test.yml` – backend test workflow
 
-3. **Navigate to the Back-end Directory**:
-
-   ```cd backend```
-
-4. **Run the Tests**:
-
-   ```npx jest```
-
-5. **Run the Tests with Coverage Report**:
-
-   ```npx jest --coverage```
-
-### 2.2. GitHub Actions Configuration Location
-
-`~/.github/workflows/backend-tests.yml`
 
 ### 2.3. Jest Coverage Report Screenshots for Tests Without Mocking
 
@@ -74,24 +90,31 @@
 
 ![Coverage Report With All Tests](images/test-all.png)
 
+## 2.6 Uncovered Testing Justification
+
+The low coverage for `fcm.service.ts` and `websocket.service.ts` is expected at this stage of development. These services were only recently made fully functional, and prior to that, their behavior was either stubbed out or not integrated enough to support meaningful testing.  
+
+Given tight timelines and the priority of stabilizing core application features, we focused our test efforts on components already in active use. If we were to further develop the app, we would add tests for these services using mocking.
+
 ---
 
 ## 3. Back-end Test Specification: Tests of Non-Functional Requirements
 
 ### 3.1. Test Locations in Git
 
-| **Non-Functional Requirement**  | **Location in Git**                              |
-| ------------------------------- | ------------------------------------------------ |
-| **Location Service**            | tests/nonfunctional.test.ts#18                  |
-| **Group View Load Time**        | tests/nonfunctional.test.ts#297                 |
+`SquadUp/backend/tests`
 
 ### 3.2. Explanation of Non-Functional Requirement Tests
 
-**Location Service**:
+### Non-Functional Requirement (NFR) Tests
 
-These tests measure the performance of the location optimization algorithm to ensure it meets the non-functional requirement of returning results within 2-5 seconds. The tests calculate midpoints for groups of varying sizes (2, 5, and 10 users) and also measure the combined response time when fetching both the optimal meeting point AND retrieving nearby activities/venues. By testing with different group sizes, the tests verify that the algorithm scales reasonably and doesn't degrade significantly as more users are added to the calculation.
+**Location Service NFR Tests**  
+*File:* `tests/nonfunctional.test.ts#18`  
 
-**Group View Load Time**:
+These tests measure the performance of the location optimization algorithm to ensure it meets the non-functional requirement of returning results within 2–5 seconds. The tests calculate midpoints for groups of varying sizes (2, 5, and 10 users) and also measure the combined response time when fetching both the optimal meeting point **and** retrieving nearby activities/venues. By testing with different group sizes, the tests verify that the algorithm scales reasonably and doesn't degrade significantly as more users are added to the calculation.  
+
+**Group View Load Time NFR Tests**  
+*File:* `tests/nonfunctional.test.ts#297`  
 
 These tests measure the API response time for fetching group information to ensure it meets the requirement of loading group details within 2 seconds. The tests simulate various scenarios including fetching a single group by join code (with different member counts), fetching all groups at once, and calculating midpoints. By testing with different group member counts, these tests verify that the database queries and data serialization don't cause performance degradation, ensuring the UI can display group information to users quickly regardless of group size.
 
@@ -111,22 +134,40 @@ These tests measure the API response time for fetching group information to ensu
     ![Group View Time Logs](images/group-view-nfr.png)
 ---
 
-## 4. Front-end Test Specification
+# Frontend Test Specification
 
-### 4.1. Location in Git of Front-end Test Suite:
+## 4.1 Location in Git
 
-`frontend/app/src/androidTest/java/com/cpen321/squadup`
-
-### 4.2. Tests
-
-> When we say "User," it refers to a registered user, including both Squad Leader and Squad Member.  
-> **Prerequisites:** User is authenticated, groups exist, at least one group has midpoint calculated and an activity selected.
+`frontend\app\src\androidTest\java\com\cpen321\squadup`
 
 ---
+
+## 4.2 Use Cases, Expected Behaviours, and Execution Logs
+
+### Test Logs
+
+**Note:**  
+When we say *User*, it refers to a Registered User, which includes both Squad Leader and Squad Member.
+
+**Prerequisites:**
+
+1. Run the app and ensure the user is authenticated.  
+2. Ensure there are groups already created by the user, and at least one group has a midpoint calculated and an activity selected.  
+3. Any test run with a Squad Leader role (with *Leader* in its file name) should have the first listed group in the main screen app as their own group (user-created).  
+4. When running the test `GroupDetailsLeaderE2ETest.kt`, ensure there exist groups that already have a midpoint calculated and an activity selected.  
+5. For `GroupDetailsLeaderE2ETest.kt` and `GroupDetailsE2ETest.kt`, it is recommended to create a minimum of 4 groups prior to running the test, since these tests include leaving and deleting groups.  
+6. When running the test `viewMidpoint_beforeCalculation_showsWaitingMessage` (inside `GroupViewE2ETest.kt`), make sure to only have groups that do **not** yet have a midpoint calculated.
+
+---
+### Non-Functional Requirement (NFR): Group View Load Time
+
+**Location:** `GroupViewLoadTimeNFRTest.kt`
 
 ### Feature: Group Management
 
 #### Use Case: Create Group
+
+**Location:** `GroupManagementE2ETest.kt`
 
 **Expected Behaviours:**
 
@@ -142,13 +183,11 @@ These tests measure the API response time for fetching group information to ensu
 | 1a. Input fields are invalid | Click "Create Group" button without filling required fields. Check that a dialog prompts user to confirm date and time. |
 | 1a1. User re-enters correct information | Verify error message is displayed. Re-enter valid information. |
 
-**Test Logs:**
-
-![Create Group Logs](images/m4-logs/GM-create-group-logs.png)
-
 ---
 
 #### Use Case: Join Group
+
+**Location:** `GroupManagementE2ETest.kt`
 
 **Expected Behaviours:**
 
@@ -169,6 +208,7 @@ These tests measure the API response time for fetching group information to ensu
 ![Join Group Logs](images/m4-logs/GM-join-group-logs.png)
 
 #### Use Case: View All Groups
+**Location:** `GroupManagementE2ETest.kt`
 
 | **Scenario Steps** | **Test Case Steps** |
 | ----------------- | ------------------ |
@@ -183,6 +223,8 @@ These tests measure the API response time for fetching group information to ensu
 ---
 
 #### Use Case: View Specific Group
+
+**Location:** `GroupDetailsE2ETest.kt`
 
 | **Scenario Steps** | **Test Case Steps** |
 | ----------------- | ------------------ |
@@ -202,6 +244,8 @@ These tests measure the API response time for fetching group information to ensu
 
 #### Use Case: Leave Group
 
+**Location:** `GroupDetailsE2ETest.kt`
+
 | **Scenario Steps** | **Test Case Steps** |
 | ----------------- | ------------------ |
 | 1. Navigate to a group. | Wait for main screen to load. Click on group button. |
@@ -217,6 +261,8 @@ These tests measure the API response time for fetching group information to ensu
 ---
 
 #### Use Case: Delete Group
+
+**Location:** `GroupDetailsE2ETest.kt`
 
 | **Scenario Steps** | **Test Case Steps** |
 | ----------------- | ------------------ |
@@ -263,6 +309,8 @@ These tests measure the API response time for fetching group information to ensu
 
 ### Use Case: View Attendees
 
+**Location:** `GroupDetailsMemberE2ETest.kt`
+
 | **Scenario Steps** | **Test Case Steps** |
 | ----------------- | ------------------ |
 | User opens a group on the main screen. | Open group. Check "See Details" button is present. Click button. |
@@ -275,6 +323,8 @@ These tests measure the API response time for fetching group information to ensu
 
 ### Use Case: View Selected Activity
 
+**Location:** `GroupDetailsMemberE2ETest.kt`
+
 | **Scenario Steps** | **Test Case Steps** |
 | ----------------- | ------------------ |
 | Squad Member opens a group. | Open a group they are a member of. |
@@ -286,6 +336,8 @@ These tests measure the API response time for fetching group information to ensu
 ---
 
 ### Use Case: View Recommended Locations
+
+**Location:** `GroupDetailsLeaderE2ETest.kt`
 
 | **Scenario Steps** | **Test Case Steps** |
 | ----------------- | ------------------ |
@@ -300,6 +352,8 @@ These tests measure the API response time for fetching group information to ensu
 
 
 ### Use Case: Update Expected People
+
+**Location:** `MemberSettingsLeaderE2ETest.kt`
 
 **Expected Behaviours:**
 
@@ -319,6 +373,7 @@ These tests measure the API response time for fetching group information to ensu
 ---
 
 ### Use Case: Update Event Time
+**Location:** `MemberSettingsLeaderE2ETest.kt`
 
 **Expected Behaviours:**
 
@@ -338,7 +393,29 @@ These tests measure the API response time for fetching group information to ensu
 
 ---
 
+## Use Case: Update Midpoint Automatically
+
+**Location:** `MemberSettingsLeaderE2ETest.kt`
+
+### Expected Behaviours
+
+| Scenario Steps | Test Case Steps |
+|----------------|----------------|
+| Squad Leader clicks and opens their group on the main screen. | Open their group on the main screen. |
+| The app shows Group Details Screen which has a “Group details” button. The button is enabled and the Squad Leader clicks the button. | Check that the button is present on screen. Click the button “Group details”. |
+| The app shows the screen with a navigation bar at the bottom of the screen with two items. The Squad Leader clicks the “Settings” option. | Check that the navigation bar item is present on screen. Click the option. |
+| Squad Leader clicks “Automatic Midpoint Update” checkbox | Check that the checkbox is present on screen. Click the checkbox. |
+| The app confirms action success | Check that a dialog is opened with the message “Settings saved successfully!”. |
+
+### Test Logs
+
+![Update Midpoint Automatically Logs](images/m4-logs/UG-midpoint-automatic.png)
+
+
 ### Use Case: Update Member Address
+
+**Location:** `MemberSettingsLeaderE2ETest.kt`
+**Location:** `MemberSettingsMemberE2ETest.kt`
 
 **Expected Behaviours:**
 
@@ -358,6 +435,9 @@ These tests measure the API response time for fetching group information to ensu
 
 ### Use Case: Update Member Transit
 
+**Location:** `MemberSettingsLeaderE2ETest.kt`
+**Location:** `MemberSettingsMemberE2ETest.kt`
+
 **Expected Behaviours:**
 
 | **Scenario Steps** | **Test Case Steps** |
@@ -375,6 +455,8 @@ These tests measure the API response time for fetching group information to ensu
 
 ### Use Case: Find Midpoint
 
+**Location:** `GroupDetailsLeaderE2ETest.kt`
+
 **Expected Behaviours:**
 
 | **Scenario Steps** | **Test Case Steps** |
@@ -390,6 +472,8 @@ These tests measure the API response time for fetching group information to ensu
 ---
 
 ### Use Case: Select Activity
+
+**Location:** `GroupDetailsLeaderE2ETest.kt`
 
 **Expected Behaviours:**
 
@@ -411,130 +495,5 @@ These tests measure the API response time for fetching group information to ensu
 
 ### 5.1. Commit Hash Where Codacy Ran
 
-`6daeda88bd9b2733c550cd46dc4994a0d006448c`
+`2e0fdf4365b7ab126a4a9c5f4e8583f44953bce9`
 
-### 5.2. Unfixed Issues per Codacy Category
-
-![Codacy Categories](images/m4-codacy/codacy-cat.png)
-
-### 5.3. Unfixed Issues per Codacy Code Pattern
-#### Detect CRLF Injection in Logs:
-![Codacy Issues](images/m4-codacy/codacy-crlf.png)
-#### Avoid Catching Too Generic Exceptions
-![Codacy Issues](images/m4-codacy/codacy-generic.png)
-#### Avoid long Methods
-![Codacy Issues](images/m4-codacy/codacy-long.png)
-#### Detect Non-Literal Filename in fs Calls:
-![Codacy Issues](images/m4-codacy/codacy-non-literal.png)
-#### Detect Object Injection:
-![Codacy Issues](images/m4-codacy/codacy-ob-inject.png)
-#### Others
-![Codacy Issues](images/m4-codacy/codacy-other.png)
-
-### 5.4. Justifications for Unfixed Issues
-
-- **Code Pattern: Avoid Long Methods**
-
-  1. **Issue**
-     
-     - UI composables have different structure (ActivityPicker, GroupListScreen, MemberActivityMapView, handleNavigationEvent).
-     - Splitting must respect state hoisting, recomposition boundaries, and preview support.
-     - Over-fragmenting can reduce readability and add unnecessary indirection.
-
-  2. **Justification**
-     
-     - **Functional correctness prioritized:** Focused on runtime issues (crashes, WebSocket, Google Sign-In). These are code quality warnings, not blocking bugs.
-     - **Refactoring requires careful testing:** Splitting composables can change recomposition behavior. UI tests and manual verification needed. Risk of regressions outweighs immediate benefits.
-     - **Natural cohesion:** Some screens (e.g., GroupListScreen at 132 lines) encapsulate related UI and state. Breaking them up may not improve clarity.
-     - **Technical debt acknowledgment:** Tracked for future refactoring sprints. Low priority relative to functionality and stability.
-
----
-
-- **Code Pattern: Detect Non-Literal Filename in fs Calls**
-
-  1. **Issue**
-     
-     - Dynamic paths are required for user uploads, temporary files, and media processing.
-     - Hardcoding paths would break these features.
-
-  2. **Justification**
-     
-     - **Validation appears in place:** Variables use validatedExistsPath, validatedUnlinkPath, validatedMkdirPathFinal.
-     - **Common, acceptable pattern when mitigated:** Many backend apps use dynamic paths; risk mitigated by robust validation.
-
----
-
-- **Code Pattern: Avoid Catching Too Generic Exceptions**
-
-  1. **Issue**
-     
-     - MainActivity.kt (Line 81): Generic catch at top-level prevents app crashes.
-     - GroupRepositoryImpl.kt (Line 184): Repositories abstract multiple data sources which may throw various exceptions.
-
-  2. **Justification**
-     
-     - **Top-level safety and app stability:** Prevents hard crashes and preserves responsiveness.
-     - **Repository abstraction layer:** Generic catch encapsulates all data access errors, returns consistent error states (Result.Error or null), prevents exceptions from leaking into ViewModels/UI, and enables proper UI error messages.
-
----
-
-- **Code Pattern: Detect Object Injection**
-
-  1. **Issue**
-     
-     - Backend array/object accesses use validatedIndex (e.g., travelTimes[validatedIndex], geoLocation[validatedIndex]).
-     - Dynamic access is required for functionality.
-
-  2. **Justification**
-     
-     - **Use of validatedIndex indicates prior validation:** Ensures indices are in bounds and string keys are safe (no __proto__, constructor, prototype injection).
-     - **Dynamic access is necessary:** Common pattern in backend services; mitigated by validation.
-
----
-
-- **Code Pattern: Detect CRLF Injection in Logs**
-
-  1. **Issue**
-     
-     - Dynamic logging required (backend/src/utils/logger.util.ts: console.log(finalMessage, ...sanitizedArgs)).
-     - Restricting to literals would break debugging, monitoring, and auditing.
-
-  2. **Justification**
-     
-     - **Sanitization appears to be in place:** sanitizeInput.util.ts exists for CRLF removal. finalMessage and sanitizedArgs are pre-sanitized.
-     - **Input sanitization is correct defense:** Restricting logging is unnecessary if inputs are sanitized properly.
-
----
-
-- **Code Pattern: Code Complexity — ActivityCard has too many parameters (MEDIUM)**
-
-  1. **Issue**
-     
-     - Flags functions with many parameters, reducing readability, testability, and maintainability.
-     - ActivityCard parameters: name, address, rating, userRatingsTotal, priceLevel, type, isSelected, onClick, modifier.
-
-  2. **Justification**
-     
-     - **Jetpack Compose composable pattern:** Multiple parameters define data, state, behavior, styling.
-     - **Recomposition optimization:** Separate parameters allow Compose to recompose only when specific values change.
-     - **API clarity:** Explicit parameters improve contract visibility and type safety.
-     - **Refactoring trade-offs:** Creating a data class would add indirection and reduce cohesion; current structure aligns with Compose best practices.
-
----
-
-- **Code Pattern: Security / Unexpected Behaviour — Detect inappropriate function body content (CRITICAL)**
-
-  1. **Issue**
-     
-     - False positive flagged line: `mongoose.connection.on('error', (error: Error): void => {`
-     - Static analyzer interpreted error callback as problematic.
-
-  2. **Justification**
-     
-     - **False positive:** Standard, essential error handling for Mongoose connections.
-     - **Standard practice:** Listening for connection errors ensures application resilience, error logging, monitoring, and graceful degradation.
-     - **Critical functionality:** Removing handler reduces reliability; code is necessary and secure.
-     - **Tool limitation:** Static analyzer misinterpreted safe code. No security vulnerability exists.
-
-
-- ...

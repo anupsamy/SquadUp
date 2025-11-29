@@ -17,23 +17,29 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-private fun isValidCoordinate(latitude: Double, longitude: Double): Boolean {
-    return latitude != 0.0 && longitude != 0.0 &&
-            !latitude.isNaN() && !longitude.isNaN() &&
-            latitude.isFinite() && longitude.isFinite()
-}
+private fun isValidCoordinate(
+    latitude: Double,
+    longitude: Double,
+): Boolean =
+    latitude != 0.0 &&
+        longitude != 0.0 &&
+        !latitude.isNaN() &&
+        !longitude.isNaN() &&
+        latitude.isFinite() &&
+        longitude.isFinite()
 
 @Composable
 fun LeaderActivityMapView(
     locations: List<LatLng>,
     activities: List<Activity>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val cameraPositionState = rememberCameraPositionState()
 
-    val allPoints = remember(locations, activities) {
-        buildAllPoints(locations, activities)
-    }
+    val allPoints =
+        remember(locations, activities) {
+            buildAllPoints(locations, activities)
+        }
 
     // Move camera to fit all markers once map is ready
     LaunchedEffect(allPoints) {
@@ -49,14 +55,14 @@ fun LeaderActivityMapView(
             if (allPoints.isNotEmpty()) {
                 onMapLoadedMoveCamera(cameraPositionState, allPoints)
             }
-        }
+        },
     ) {
         // Location markers (red)
         locations.forEach { location ->
             Marker(
                 state = MarkerState(position = location),
                 title = "Group Midpoint",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
             )
         }
 
@@ -66,17 +72,23 @@ fun LeaderActivityMapView(
                 state = MarkerState(position = LatLng(activity.latitude, activity.longitude)),
                 title = activity.name,
                 snippet = activity.address,
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE),
             )
         }
     }
 }
 
-private fun buildAllPoints(locations: List<LatLng>, activities: List<Activity>): List<LatLng> =
+private fun buildAllPoints(
+    locations: List<LatLng>,
+    activities: List<Activity>,
+): List<LatLng> =
     (locations + activities.map { LatLng(it.latitude, it.longitude) })
         .filter { isValidCoordinate(it.latitude, it.longitude) }
 
-private suspend fun animateCameraToFit(cameraState: CameraPositionState, points: List<LatLng>) {
+private suspend fun animateCameraToFit(
+    cameraState: CameraPositionState,
+    points: List<LatLng>,
+) {
     try {
         val boundsBuilder = LatLngBounds.builder()
         points.forEach { boundsBuilder.include(it) }
@@ -84,7 +96,7 @@ private suspend fun animateCameraToFit(cameraState: CameraPositionState, points:
         val padding = 150
         cameraState.animate(
             update = CameraUpdateFactory.newLatLngBounds(bounds, padding),
-            durationMs = 1000
+            durationMs = 1000,
         )
     } catch (e: IllegalStateException) {
         // Fallback: center on first point
@@ -92,13 +104,16 @@ private suspend fun animateCameraToFit(cameraState: CameraPositionState, points:
             val firstPoint = points.first()
             cameraState.animate(
                 update = CameraUpdateFactory.newLatLngZoom(firstPoint, 14f),
-                durationMs = 1000
+                durationMs = 1000,
             )
         }
     }
 }
 
-private fun onMapLoadedMoveCamera(cameraState: CameraPositionState, allPoints: List<LatLng>) {
+private fun onMapLoadedMoveCamera(
+    cameraState: CameraPositionState,
+    allPoints: List<LatLng>,
+) {
     if (allPoints.size == 1) {
         val singlePoint = allPoints.first()
         cameraState.move(CameraUpdateFactory.newLatLngZoom(singlePoint, 14f))
@@ -121,18 +136,20 @@ fun MemberActivityMapView(
     midpoint: LatLng?,
     userLocation: LatLng?,
     selectedActivity: Activity?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val cameraPositionState = rememberCameraPositionState()
 
-    val allPoints = remember(midpoint, userLocation, selectedActivity) {
-        buildList {
-            midpoint?.takeIf { isValidCoordinate(it.latitude, it.longitude) }?.let(::add)
-            userLocation?.takeIf { isValidCoordinate(it.latitude, it.longitude) }?.let(::add)
-            selectedActivity?.takeIf { isValidCoordinate(it.latitude, it.longitude) }
-                ?.let { add(LatLng(it.latitude, it.longitude)) }
+    val allPoints =
+        remember(midpoint, userLocation, selectedActivity) {
+            buildList {
+                midpoint?.takeIf { isValidCoordinate(it.latitude, it.longitude) }?.let(::add)
+                userLocation?.takeIf { isValidCoordinate(it.latitude, it.longitude) }?.let(::add)
+                selectedActivity
+                    ?.takeIf { isValidCoordinate(it.latitude, it.longitude) }
+                    ?.let { add(LatLng(it.latitude, it.longitude)) }
+            }
         }
-    }
 
     LaunchedEffect(allPoints) {
         if (allPoints.isNotEmpty()) animateTo(allPoints, cameraPositionState)
@@ -141,7 +158,7 @@ fun MemberActivityMapView(
     GoogleMap(
         modifier = modifier.fillMaxSize().testTag("MidpointMap"),
         cameraPositionState = cameraPositionState,
-        onMapLoaded = { if (allPoints.isNotEmpty()) moveTo(allPoints, cameraPositionState) }
+        onMapLoaded = { if (allPoints.isNotEmpty()) moveTo(allPoints, cameraPositionState) },
     ) {
         midpoint?.let { placeMarkerIfValid(it.latitude, it.longitude, "Group Midpoint", BitmapDescriptorFactory.HUE_RED) }
         userLocation?.let { placeMarkerIfValid(it.latitude, it.longitude, "Your Location", BitmapDescriptorFactory.HUE_GREEN) }
@@ -151,7 +168,10 @@ fun MemberActivityMapView(
     }
 }
 
-private suspend fun animateTo(points: List<LatLng>, camera: CameraPositionState) {
+private suspend fun animateTo(
+    points: List<LatLng>,
+    camera: CameraPositionState,
+) {
     if (points.isEmpty()) return
     if (points.size == 1) {
         val p = points.first()
@@ -169,7 +189,10 @@ private suspend fun animateTo(points: List<LatLng>, camera: CameraPositionState)
     }
 }
 
-private fun moveTo(points: List<LatLng>, camera: CameraPositionState) {
+private fun moveTo(
+    points: List<LatLng>,
+    camera: CameraPositionState,
+) {
     if (points.isEmpty()) return
     if (points.size == 1) {
         camera.move(CameraUpdateFactory.newLatLngZoom(points.first(), 14f))
@@ -185,12 +208,18 @@ private fun moveTo(points: List<LatLng>, camera: CameraPositionState) {
 }
 
 @Composable
-private fun placeMarkerIfValid(lat: Double, lng: Double, title: String, hue: Float, snippet: String? = null) {
+private fun placeMarkerIfValid(
+    lat: Double,
+    lng: Double,
+    title: String,
+    hue: Float,
+    snippet: String? = null,
+) {
     if (lat == 0.0 && lng == 0.0) return
     Marker(
         state = MarkerState(position = LatLng(lat, lng)),
         title = title,
         snippet = snippet,
-        icon = BitmapDescriptorFactory.defaultMarker(hue)
+        icon = BitmapDescriptorFactory.defaultMarker(hue),
     )
 }

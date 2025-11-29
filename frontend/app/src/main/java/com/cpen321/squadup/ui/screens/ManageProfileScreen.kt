@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,7 +43,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,10 +57,10 @@ import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.components.ImagePicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
-import com.cpen321.squadup.ui.viewmodels.ProfileUiState
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
+import com.cpen321.squadup.ui.viewmodels.ProfileUiState
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 
 private data class ProfileFormState(
     val name: String = "",
@@ -71,13 +69,12 @@ private data class ProfileFormState(
     val transitType: TransitType? = null,
     val originalTransitType: TransitType? = null,
     val address: Address? = null,
-    val originalAddress: Address? = null
+    val originalAddress: Address? = null,
 ) {
-    fun hasChanges(): Boolean {
-        return (name.isNotBlank() && name != originalName) ||
-                (transitType != originalTransitType) ||
-                (address != originalAddress)
-    }
+    fun hasChanges(): Boolean =
+        (name.isNotBlank() && name != originalName) ||
+            (transitType != originalTransitType) ||
+            (address != originalAddress)
 }
 
 private data class ManageProfileScreenActions(
@@ -91,7 +88,7 @@ private data class ManageProfileScreenActions(
     val onImageSelected: (Uri) -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit,
     val onSuccessMessageShown: () -> Unit,
-    val onErrorMessageShown: () -> Unit
+    val onErrorMessageShown: () -> Unit,
 )
 
 private data class ProfileFormData(
@@ -104,7 +101,7 @@ private data class ProfileFormData(
     val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
-    val onLoadingPhotoChange: (Boolean) -> Unit
+    val onLoadingPhotoChange: (Boolean) -> Unit,
 )
 
 private data class ProfileBodyData(
@@ -115,7 +112,7 @@ private data class ProfileBodyData(
     val onAddressChange: (Address?) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
-    val onLoadingPhotoChange: (Boolean) -> Unit
+    val onLoadingPhotoChange: (Boolean) -> Unit,
 )
 
 private data class ProfileFieldsData(
@@ -125,13 +122,13 @@ private data class ProfileFieldsData(
     val transitType: TransitType?,
     val address: Address?,
     val onTransitChange: (TransitType?) -> Unit,
-    val onAddressChange: (Address?) -> Unit
+    val onAddressChange: (Address?) -> Unit,
 )
 
 @Composable
 private fun initializeProfileFormState(
     user: User?,
-    onFormStateChange: (ProfileFormState) -> Unit
+    onFormStateChange: (ProfileFormState) -> Unit,
 ) {
     LaunchedEffect(user) {
         user?.let {
@@ -143,8 +140,8 @@ private fun initializeProfileFormState(
                     address = it.address,
                     originalAddress = it.address,
                     transitType = it.transitType,
-                    originalTransitType = it.transitType
-                )
+                    originalTransitType = it.transitType,
+                ),
             )
         }
     }
@@ -153,7 +150,7 @@ private fun initializeProfileFormState(
 @Composable
 private fun setupProfileScreenEffects(
     uiState: ProfileUiState,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
 ) {
     LaunchedEffect(Unit) {
         profileViewModel.clearSuccessMessage()
@@ -177,9 +174,9 @@ private fun createManageProfileActions(
     showImagePickerDialog: Boolean,
     onBackClick: () -> Unit,
     onFormStateChange: (ProfileFormState) -> Unit,
-    onShowImagePickerChange: (Boolean) -> Unit
-): ManageProfileScreenActions {
-    return ManageProfileScreenActions(
+    onShowImagePickerChange: (Boolean) -> Unit,
+): ManageProfileScreenActions =
+    ManageProfileScreenActions(
         onBackClick = onBackClick,
         onNameChange = { onFormStateChange(formState.copy(name = it)) },
         onAddressChange = { newAddress ->
@@ -199,14 +196,13 @@ private fun createManageProfileActions(
         },
         onLoadingPhotoChange = profileViewModel::setLoadingPhoto,
         onSuccessMessageShown = profileViewModel::clearSuccessMessage,
-        onErrorMessageShown = profileViewModel::clearError
+        onErrorMessageShown = profileViewModel::clearError,
     )
-}
 
 @Composable
 fun ManageProfileScreen(
     profileViewModel: ProfileViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -216,21 +212,22 @@ fun ManageProfileScreen(
     setupProfileScreenEffects(uiState, profileViewModel)
     initializeProfileFormState(uiState.user) { formState = it }
 
-    val actions = createManageProfileActions(
-        profileViewModel = profileViewModel,
-        formState = formState,
-        showImagePickerDialog = showImagePickerDialog,
-        onBackClick = onBackClick,
-        onFormStateChange = { formState = it },
-        onShowImagePickerChange = { showImagePickerDialog = it }
-    )
+    val actions =
+        createManageProfileActions(
+            profileViewModel = profileViewModel,
+            formState = formState,
+            showImagePickerDialog = showImagePickerDialog,
+            onBackClick = onBackClick,
+            onFormStateChange = { formState = it },
+            onShowImagePickerChange = { showImagePickerDialog = it },
+        )
 
     ManageProfileContent(
         uiState = uiState,
         formState = formState,
         snackBarHostState = snackBarHostState,
         showImagePickerDialog = showImagePickerDialog,
-        actions = actions
+        actions = actions,
     )
 }
 
@@ -242,7 +239,7 @@ private fun ManageProfileContent(
     snackBarHostState: SnackbarHostState,
     showImagePickerDialog: Boolean,
     actions: ManageProfileScreenActions,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
@@ -252,34 +249,36 @@ private fun ManageProfileContent(
         snackbarHost = {
             MessageSnackbar(
                 hostState = snackBarHostState,
-                messageState = MessageSnackbarState(
-                    successMessage = uiState.successMessage,
-                    errorMessage = uiState.errorMessage,
-                    onSuccessMessageShown = actions.onSuccessMessageShown,
-                    onErrorMessageShown = actions.onErrorMessageShown
-                )
+                messageState =
+                    MessageSnackbarState(
+                        successMessage = uiState.successMessage,
+                        errorMessage = uiState.errorMessage,
+                        onSuccessMessageShown = actions.onSuccessMessageShown,
+                        onErrorMessageShown = actions.onErrorMessageShown,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         ProfileBody(
             paddingValues = paddingValues,
-            data = ProfileBodyData(
-                uiState = uiState,
-                formState = formState,
-                onNameChange = actions.onNameChange,
-                onAddressChange = actions.onAddressChange,
-                onTransitChange = actions.onTransitChange,
-                onEditPictureClick = actions.onEditPictureClick,
-                onSaveClick = actions.onSaveClick,
-                onLoadingPhotoChange = actions.onLoadingPhotoChange
-            )
+            data =
+                ProfileBodyData(
+                    uiState = uiState,
+                    formState = formState,
+                    onNameChange = actions.onNameChange,
+                    onAddressChange = actions.onAddressChange,
+                    onTransitChange = actions.onTransitChange,
+                    onEditPictureClick = actions.onEditPictureClick,
+                    onSaveClick = actions.onSaveClick,
+                    onLoadingPhotoChange = actions.onLoadingPhotoChange,
+                ),
         )
     }
 
     if (showImagePickerDialog) {
         ImagePicker(
             onDismiss = actions.onImagePickerDismiss,
-            onImageSelected = actions.onImageSelected
+            onImageSelected = actions.onImageSelected,
         )
     }
 }
@@ -288,7 +287,7 @@ private fun ManageProfileContent(
 @Composable
 private fun ProfileTopBar(
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     TopAppBar(
         modifier = modifier,
@@ -296,7 +295,7 @@ private fun ProfileTopBar(
             Text(
                 text = stringResource(R.string.manage_profile),
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
         },
         navigationIcon = {
@@ -304,10 +303,11 @@ private fun ProfileTopBar(
                 Icon(name = R.drawable.ic_arrow_back)
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+        colors =
+            TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+            ),
     )
 }
 
@@ -315,34 +315,36 @@ private fun ProfileTopBar(
 private fun ProfileBody(
     paddingValues: PaddingValues,
     data: ProfileBodyData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(paddingValues),
     ) {
         when {
             data.uiState.isLoadingProfile -> {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
                 )
             }
 
             data.uiState.user != null -> {
                 ProfileForm(
-                    data = ProfileFormData(
-                        user = data.uiState.user,
-                        formState = data.formState,
-                        isLoadingPhoto = data.uiState.isLoadingPhoto,
-                        isSavingProfile = data.uiState.isSavingProfile,
-                        onNameChange = data.onNameChange,
-                        onAddressChange = data.onAddressChange,
-                        onTransitChange = data.onTransitChange,
-                        onEditPictureClick = data.onEditPictureClick,
-                        onSaveClick = data.onSaveClick,
-                        onLoadingPhotoChange = data.onLoadingPhotoChange
-                    )
+                    data =
+                        ProfileFormData(
+                            user = data.uiState.user,
+                            formState = data.formState,
+                            isLoadingPhoto = data.uiState.isLoadingPhoto,
+                            isSavingProfile = data.uiState.isSavingProfile,
+                            onNameChange = data.onNameChange,
+                            onAddressChange = data.onAddressChange,
+                            onTransitChange = data.onTransitChange,
+                            onEditPictureClick = data.onEditPictureClick,
+                            onSaveClick = data.onSaveClick,
+                            onLoadingPhotoChange = data.onLoadingPhotoChange,
+                        ),
                 )
             }
         }
@@ -352,42 +354,44 @@ private fun ProfileBody(
 @Composable
 private fun ProfileForm(
     data: ProfileFormData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
     val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(spacing.large)
-            .verticalScroll(scrollState),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(spacing.large)
+                .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(spacing.large)
+        verticalArrangement = Arrangement.spacedBy(spacing.large),
     ) {
         ProfilePictureCard(
             profilePicture = data.user.profilePicture,
             isLoadingPhoto = data.isLoadingPhoto,
             onEditClick = data.onEditPictureClick,
-            onLoadingChange = data.onLoadingPhotoChange
+            onLoadingChange = data.onLoadingPhotoChange,
         )
 
         ProfileFields(
-            data = ProfileFieldsData(
-                name = data.formState.name,
-                email = data.user.email,
-                address = data.formState.address,
-                transitType = data.formState.transitType,
-                onNameChange = data.onNameChange,
-                onAddressChange = data.onAddressChange,
-                onTransitChange = data.onTransitChange
-            )
+            data =
+                ProfileFieldsData(
+                    name = data.formState.name,
+                    email = data.user.email,
+                    address = data.formState.address,
+                    transitType = data.formState.transitType,
+                    onNameChange = data.onNameChange,
+                    onAddressChange = data.onAddressChange,
+                    onTransitChange = data.onTransitChange,
+                ),
         )
 
         SaveButton(
             isSaving = data.isSavingProfile,
             isEnabled = data.formState.hasChanges(),
-            onClick = data.onSaveClick
+            onClick = data.onSaveClick,
         )
     }
 }
@@ -398,27 +402,29 @@ private fun ProfilePictureCard(
     isLoadingPhoto: Boolean,
     onEditClick: () -> Unit,
     onLoadingChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.extraLarge),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(spacing.extraLarge),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             ProfilePictureWithEdit(
                 profilePicture = profilePicture,
                 isLoadingPhoto = isLoadingPhoto,
                 onEditClick = onEditClick,
-                onLoadingChange = onLoadingChange
+                onLoadingChange = onLoadingChange,
             )
         }
     }
@@ -430,12 +436,12 @@ private fun ProfilePictureWithEdit(
     isLoadingPhoto: Boolean,
     onEditClick: () -> Unit,
     onLoadingChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     Box(
-        modifier = modifier.size(spacing.extraLarge5)
+        modifier = modifier.size(spacing.extraLarge5),
     ) {
         AsyncImage(
             model = RetrofitClient.getPictureUri(profilePicture),
@@ -443,40 +449,43 @@ private fun ProfilePictureWithEdit(
             onSuccess = { onLoadingChange(false) },
             onError = { onLoadingChange(false) },
             contentDescription = stringResource(R.string.profile_picture),
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
         )
 
         if (isLoadingPhoto) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(spacing.large),
                     color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             }
         }
 
         IconButton(
             onClick = onEditClick,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(spacing.extraLarge)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                )
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(spacing.extraLarge)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape,
+                    ),
         ) {
             Icon(
                 name = R.drawable.ic_edit,
-                type = "light"
+                type = "light",
             )
         }
     }
@@ -485,18 +494,18 @@ private fun ProfilePictureWithEdit(
 @Composable
 private fun ProfileFields(
     data: ProfileFieldsData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         OutlinedTextField(
             value = data.name,
             onValueChange = data.onNameChange,
             label = { Text(stringResource(R.string.name)) },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
         )
 
         OutlinedTextField(
@@ -505,31 +514,32 @@ private fun ProfileFields(
             label = { Text(stringResource(R.string.email)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            enabled = false
+            enabled = false,
         )
-        //address field
+        // address field
         val addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
         AddressPicker(
             viewModel = addressPickerViewModel,
             initialValue = data.address,
             onAddressSelected = { selected ->
                 data.onAddressChange(selected)
-            }
+            },
         )
 
-        //transitType field
+        // transitType field
 
         TransitTypeDropdown(
             selectedType = data.transitType,
-            onTypeSelected = data.onTransitChange
+            onTypeSelected = data.onTransitChange,
         )
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransitTypeDropdown(
     selectedType: TransitType?,
-    onTypeSelected: (TransitType) -> Unit
+    onTypeSelected: (TransitType) -> Unit,
 ) {
     val transitOptions = TransitType.entries.toList()
     var expanded by remember { mutableStateOf(false) }
@@ -540,7 +550,7 @@ fun TransitTypeDropdown(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        onExpandedChange = { expanded = !expanded },
     ) {
         OutlinedTextField(
             value = selectedType?.name?.replaceFirstChar { it.uppercase() } ?: "",
@@ -550,14 +560,15 @@ fun TransitTypeDropdown(
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
         ) {
             transitOptions.forEach { option ->
                 DropdownMenuItem(
@@ -565,14 +576,12 @@ fun TransitTypeDropdown(
                     onClick = {
                         onTypeSelected(option)
                         expanded = false
-                    }
+                    },
                 )
             }
         }
     }
 }
-
-
 
 @Composable
 private fun SaveButton(
@@ -590,14 +599,14 @@ private fun SaveButton(
             CircularProgressIndicator(
                 modifier = Modifier.size(spacing.medium),
                 color = MaterialTheme.colorScheme.onPrimary,
-                strokeWidth = 2.dp
+                strokeWidth = 2.dp,
             )
             Spacer(modifier = Modifier.height(spacing.small))
         }
         Text(
             text = stringResource(if (isSaving) R.string.saving else R.string.save),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
     }
 }

@@ -15,55 +15,56 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddressPickerViewModel @Inject constructor(
-    private val placesRepository: PlacesRepository
-) : ViewModel() {
+class AddressPickerViewModel
+    @Inject
+    constructor(
+        private val placesRepository: PlacesRepository,
+    ) : ViewModel() {
+        // User input in the TextField
+        var query by mutableStateOf("")
 
-    // User input in the TextField
-    var query by mutableStateOf("")
+        // Autocomplete predictions from Google Places
+        var predictions by mutableStateOf<List<AutocompletePrediction>>(emptyList())
+            private set
 
-    // Autocomplete predictions from Google Places
-    var predictions by mutableStateOf<List<AutocompletePrediction>>(emptyList())
-        private set
+        // Selected address
+        var selectedAddress by mutableStateOf<Address?>(null)
 
-    // Selected address
-    var selectedAddress by mutableStateOf<Address?>(null)
+        // Job for debouncing input
+        private var searchJob: Job? = null
 
-    // Job for debouncing input
-    private var searchJob: Job? = null
+        /**
+         * Called when the user types in the TextField
+         */
+        fun onQueryChanged(newQuery: String) {
+            query = newQuery
+            selectedAddress = null // reset selection if user changes text
 
-    /**
-     * Called when the user types in the TextField
-     */
-    fun onQueryChanged(newQuery: String) {
-        query = newQuery
-        selectedAddress = null // reset selection if user changes text
+            // Debounce the API call
+            searchJob?.cancel()
+            searchJob =
+                viewModelScope.launch {
+                    delay(300) // 300ms debounce
+                    predictions =
+                        if (newQuery.isNotBlank()) {
+                            placesRepository.getPredictions(newQuery)
+                        } else {
+                            emptyList()
+                        }
+                }
+        }
 
-        // Debounce the API call
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            delay(300) // 300ms debounce
-            predictions = if (newQuery.isNotBlank()) {
-                placesRepository.getPredictions(newQuery)
-            } else {
-                emptyList()
-            }
+        /**
+         * Called when the user selects a prediction
+         */
+        suspend fun fetchPlace(placeId: String): Address? = placesRepository.fetchPlace(placeId)
+
+        /**
+         * Optional: clear the current selection and query
+         */
+        fun clear() {
+            query = ""
+            selectedAddress = null
+            predictions = emptyList()
         }
     }
-
-    /**
-     * Called when the user selects a prediction
-     */
-    suspend fun fetchPlace(placeId: String): Address? {
-        return placesRepository.fetchPlace(placeId)
-    }
-
-    /**
-     * Optional: clear the current selection and query
-     */
-    fun clear() {
-        query = ""
-        selectedAddress = null
-        predictions = emptyList()
-    }
-}

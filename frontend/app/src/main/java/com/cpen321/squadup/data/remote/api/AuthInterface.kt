@@ -9,8 +9,12 @@ import retrofit2.http.POST
 
 interface AuthInterface {
     @POST("auth/signin")
-    suspend fun googleSignIn(@Body request: GoogleLoginRequest): Response<ApiResponse<AuthData>>
+    suspend fun googleSignIn(
+        @Body request: GoogleLoginRequest,
+    ): Response<ApiResponse<AuthData>>
 
     @POST("auth/signup")
-    suspend fun googleSignUp(@Body request: GoogleLoginRequest): Response<ApiResponse<AuthData>>
+    suspend fun googleSignUp(
+        @Body request: GoogleLoginRequest,
+    ): Response<ApiResponse<AuthData>>
 }

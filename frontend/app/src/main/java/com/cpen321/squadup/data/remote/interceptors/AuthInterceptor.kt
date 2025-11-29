@@ -3,7 +3,9 @@ package com.cpen321.squadup.data.remote.interceptors
 import okhttp3.Interceptor
 import okhttp3.Response
 
-class AuthInterceptor(private val tokenProvider: () -> String?) : Interceptor {
+class AuthInterceptor(
+    private val tokenProvider: () -> String?,
+) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
@@ -12,17 +14,21 @@ class AuthInterceptor(private val tokenProvider: () -> String?) : Interceptor {
             return chain.proceed(originalRequest)
         }
 
-        val newRequest = originalRequest.newBuilder()
-            .addHeader("Authorization", "Bearer $token")
-            .build()
+        val newRequest =
+            originalRequest
+                .newBuilder()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
 
         var response = chain.proceed(newRequest)
 
         // Retry if error
         if (response.code != 200) {
-            val retryRequest = originalRequest.newBuilder()
-                .header("Authorization", "Bearer $token")
-                .build()
+            val retryRequest =
+                originalRequest
+                    .newBuilder()
+                    .header("Authorization", "Bearer $token")
+                    .build()
             response = chain.proceed(retryRequest)
         }
 

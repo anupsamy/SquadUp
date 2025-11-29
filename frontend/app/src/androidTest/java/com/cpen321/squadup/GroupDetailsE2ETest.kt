@@ -3,30 +3,28 @@ package com.cpen321.squadup
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.uiautomator.UiDevice
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.cpen321.squadup.TestUtilities.waitForNodeWithText
 
 /**
  * End-to-End Tests for Group Details Features
- * 
+ *
  * This test suite covers the following use cases from the Requirements_and_Design.md:
  * 1. View Specific Group - All success and failure scenarios
  * 2. Leave Group - Success scenarios
  * 3. Delete Group - Success scenarios
- * 
+ *
  * Test Case Specification follows the formal use case specifications:
  * - Use Case 3: View Specific Group (lines 167-183 in Requirements_and_Design.md)
  */
 @RunWith(AndroidJUnit4::class)
 class GroupDetailsE2ETest {
-
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
@@ -37,20 +35,21 @@ class GroupDetailsE2ETest {
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         device.wait(Until.hasObject(By.pkg(TestData.APP_PACKAGE_NAME)), TestData.TEST_TIMEOUT_LONG)
         composeTestRule.waitForIdle()
-        
+
         composeTestRule.waitUntil(timeoutMillis = 30000) {
             try {
-                composeTestRule.onNodeWithContentDescription("Create Group")
+                composeTestRule
+                    .onNodeWithContentDescription("Create Group")
                     .fetchSemanticsNode()
                 true
             } catch (e: Exception) {
                 false
             }
         }
-        
+
         Thread.sleep(3000)
         composeTestRule.waitForIdle()
-        
+
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithText("Group Update", substring = true).fetchSemanticsNodes().isEmpty()
         }
@@ -58,7 +57,7 @@ class GroupDetailsE2ETest {
 
     /**
      * Test Case 3: View Specific Group - Main Success Scenario
-     * 
+     *
      * Based on Use Case 3 (Requirements_and_Design.md lines 173-178):
      * 1. User selects a Group from SquadUp home page
      * 2. User views Group name, event date and time, current midpoint, join code,
@@ -72,13 +71,14 @@ class GroupDetailsE2ETest {
         // Wait for main screen and groups to load
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
-        
+
         // Step 1: Select a group from the home page
         // Note: This assumes at least one group exists
         // In a real test, you would create a test group first
 
         // Navigate to a group where user is leader (using testTag)
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -90,19 +90,23 @@ class GroupDetailsE2ETest {
         // Should see: group name (in top bar), meeting time, join code, host info
 
         // Verify Join Code section is present
-        composeTestRule.onNodeWithText("Join Code")
+        composeTestRule
+            .onNodeWithText("Join Code")
             .assertIsDisplayed()
 
         // Verify Host section is present
-        composeTestRule.onNodeWithText("Host")
+        composeTestRule
+            .onNodeWithText("Host")
             .assertIsDisplayed()
 
         // Verify Members section is present
-        composeTestRule.onNodeWithText("Members")
+        composeTestRule
+            .onNodeWithText("Members")
             .assertIsDisplayed()
 
         // Step 3: Click "Group details" button
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .assertIsDisplayed()
             .performClick()
 
@@ -110,18 +114,22 @@ class GroupDetailsE2ETest {
         Thread.sleep(1000)
 
         // Step 4: Verify full member list and navigation are displayed
-        composeTestRule.onNodeWithText("Members") // Top bar title
+        composeTestRule
+            .onNodeWithText("Members") // Top bar title
             .assertIsDisplayed()
 
         // Verify "Leave Squad" button is present
-        composeTestRule.onNodeWithText("Leave Squad")
+        composeTestRule
+            .onNodeWithText("Leave Squad")
             .assertIsDisplayed()
 
         // Verify bottom navigation bar
-        composeTestRule.onNodeWithText("Squads")
+        composeTestRule
+            .onNodeWithText("Squads")
             .assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("Settings")
+        composeTestRule
+            .onNodeWithText("Settings")
             .assertIsDisplayed()
 
         // Note: As a regular member, "Delete Squad" button should NOT be visible
@@ -143,11 +151,13 @@ class GroupDetailsE2ETest {
 
         // Click on a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -156,18 +166,21 @@ class GroupDetailsE2ETest {
         Thread.sleep(1500)
 
         // Navigate to Group details
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
         // As the leader, verify "Delete Squad" button IS visible
-        composeTestRule.onNodeWithText("Delete Squad")
+        composeTestRule
+            .onNodeWithText("Delete Squad")
             .assertIsDisplayed()
 
         // Also verify "Leave Squad" is still present
-        composeTestRule.onNodeWithText("Leave Squad")
+        composeTestRule
+            .onNodeWithText("Leave Squad")
             .assertIsDisplayed()
     }
 
@@ -193,7 +206,8 @@ class GroupDetailsE2ETest {
         Thread.sleep(2000)
 
         // Verify main screen is displayed
-        composeTestRule.onNodeWithContentDescription("Create Group")
+        composeTestRule
+            .onNodeWithContentDescription("Create Group")
             .assertIsDisplayed()
 
         // The group should not appear in the list after deletion
@@ -214,22 +228,25 @@ class GroupDetailsE2ETest {
 
         // Part 1: Test Leave Group (if user is a member of a group they don't lead)
         // First, check if there are any groups where user is not the leader
-        val hasNonLeaderGroups = try {
-            composeTestRule.waitUntil(timeoutMillis = 5000) {
-                composeTestRule.onAllNodesWithTag("groupButton")
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
+        val hasNonLeaderGroups =
+            try {
+                composeTestRule.waitUntil(timeoutMillis = 5000) {
+                    composeTestRule
+                        .onAllNodesWithTag("groupButton")
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                }
+                // Try to find a group where user is not leader
+                // For now, we'll test with the first available group
+                true
+            } catch (e: Exception) {
+                false
             }
-            // Try to find a group where user is not leader
-            // For now, we'll test with the first available group
-            true
-        } catch (e: Exception) {
-            false
-        }
 
         if (hasNonLeaderGroups) {
             // Navigate to a group (could be leader or member)
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .onFirst()
                 .assertIsDisplayed()
                 .performClick()
@@ -238,7 +255,8 @@ class GroupDetailsE2ETest {
             Thread.sleep(1500)
 
             // Click "Group details"
-            composeTestRule.onNodeWithText("Group details")
+            composeTestRule
+                .onNodeWithText("Group details")
                 .assertIsDisplayed()
                 .performClick()
 
@@ -246,21 +264,25 @@ class GroupDetailsE2ETest {
             Thread.sleep(1000)
 
             // Verify we're on the Members screen
-            composeTestRule.onNodeWithText("Members")
+            composeTestRule
+                .onNodeWithText("Members")
                 .assertIsDisplayed()
 
             // Check if "Leave Squad" button is available
-            val canLeave = try {
-                composeTestRule.onNodeWithText("Leave Squad")
-                    .assertExists()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
+            val canLeave =
+                try {
+                    composeTestRule
+                        .onNodeWithText("Leave Squad")
+                        .assertExists()
+                    true
+                } catch (e: AssertionError) {
+                    false
+                }
 
             if (canLeave) {
                 // Click "Leave Squad" button
-                composeTestRule.onNodeWithText("Leave Squad")
+                composeTestRule
+                    .onNodeWithText("Leave Squad")
                     .assertIsDisplayed()
                     .performClick()
 
@@ -270,14 +292,16 @@ class GroupDetailsE2ETest {
                 // Verify navigation back to main screen
                 composeTestRule.waitUntil(timeoutMillis = 5000) {
                     try {
-                        composeTestRule.onNodeWithContentDescription("Create Group")
+                        composeTestRule
+                            .onNodeWithContentDescription("Create Group")
                             .fetchSemanticsNode()
                         true
                     } catch (e: Exception) {
                         false
                     }
                 }
-                composeTestRule.onNodeWithContentDescription("Create Group")
+                composeTestRule
+                    .onNodeWithContentDescription("Create Group")
                     .assertIsDisplayed()
 
                 // Wait a bit for the UI to update
@@ -298,19 +322,22 @@ class GroupDetailsE2ETest {
         Thread.sleep(2000)
 
         // Check if there are groups available
-        val hasGroups = try {
-            composeTestRule.waitUntil(timeoutMillis = 5000) {
-                composeTestRule.onAllNodesWithTag("groupButton")
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
+        val hasGroups =
+            try {
+                composeTestRule.waitUntil(timeoutMillis = 5000) {
+                    composeTestRule
+                        .onAllNodesWithTag("groupButton")
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                }
+                true
+            } catch (e: Exception) {
+                false
             }
-            true
-        } catch (e: Exception) {
-            false
-        }
 
         if (hasGroups) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .onFirst()
                 .assertIsDisplayed()
                 .performClick()
@@ -319,7 +346,8 @@ class GroupDetailsE2ETest {
             Thread.sleep(1500)
 
             // Click "Group details"
-            composeTestRule.onNodeWithText("Group details")
+            composeTestRule
+                .onNodeWithText("Group details")
                 .assertIsDisplayed()
                 .performClick()
 
@@ -327,11 +355,13 @@ class GroupDetailsE2ETest {
             Thread.sleep(1000)
 
             // Verify we're on the Members screen and "Delete Squad" is visible
-            composeTestRule.onNodeWithText("Delete Squad")
+            composeTestRule
+                .onNodeWithText("Delete Squad")
                 .assertIsDisplayed()
 
             // Click "Delete Squad" button
-            composeTestRule.onNodeWithText("Delete Squad")
+            composeTestRule
+                .onNodeWithText("Delete Squad")
                 .assertIsDisplayed()
                 .performClick()
 
@@ -341,20 +371,23 @@ class GroupDetailsE2ETest {
             // Verify navigation back to main screen
             composeTestRule.waitUntil(timeoutMillis = 5000) {
                 try {
-                    composeTestRule.onNodeWithContentDescription("Create Group")
+                    composeTestRule
+                        .onNodeWithContentDescription("Create Group")
                         .fetchSemanticsNode()
                     true
                 } catch (e: Exception) {
                     false
                 }
             }
-            composeTestRule.onNodeWithContentDescription("Create Group")
+            composeTestRule
+                .onNodeWithContentDescription("Create Group")
                 .assertIsDisplayed()
 
             // The deleted group should no longer appear in the list
         } else {
             // If no leader groups, just verify main screen is accessible
-            composeTestRule.onNodeWithContentDescription("Create Group")
+            composeTestRule
+                .onNodeWithContentDescription("Create Group")
                 .assertIsDisplayed()
         }
     }
@@ -370,11 +403,13 @@ class GroupDetailsE2ETest {
         Thread.sleep(2000)
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -383,18 +418,21 @@ class GroupDetailsE2ETest {
         Thread.sleep(1500)
 
         // Click "Group details"
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
         // Verify search field is present
-        composeTestRule.onNodeWithText("Search ...")
+        composeTestRule
+            .onNodeWithText("Search ...")
             .assertIsDisplayed()
 
         // Test search functionality
-        composeTestRule.onNodeWithText("Search ...")
+        composeTestRule
+            .onNodeWithText("Search ...")
             .performClick()
             .performTextInput("Test")
 
@@ -415,11 +453,13 @@ class GroupDetailsE2ETest {
 
         // Step 1: From main screen, click on a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -435,7 +475,8 @@ class GroupDetailsE2ETest {
         composeTestRule.onNodeWithText("Copy").assertIsDisplayed() // Copy join code button
 
         // Step 4: Navigate to member list
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .performClick()
 
         composeTestRule.waitForIdle()
@@ -446,7 +487,8 @@ class GroupDetailsE2ETest {
         composeTestRule.onNodeWithText("Leave Squad").assertIsDisplayed()
 
         // Step 6: Test bottom navigation
-        composeTestRule.onNodeWithText("Settings")
+        composeTestRule
+            .onNodeWithText("Settings")
             .performClick()
 
         composeTestRule.waitForIdle()
@@ -454,7 +496,8 @@ class GroupDetailsE2ETest {
 
         // Should navigate to member settings screen
         // Step 7: Navigate back
-        composeTestRule.onNodeWithText("Squads")
+        composeTestRule
+            .onNodeWithText("Squads")
             .performClick()
 
         composeTestRule.waitForIdle()
@@ -466,17 +509,19 @@ class GroupDetailsE2ETest {
         // Note: Since clicking "Squads" from Settings uses navigate() which adds to back stack,
         // we need to use the back button in the top bar instead of device.pressBack()
         // to ensure we go back to group details screen
-        composeTestRule.onNodeWithContentDescription("Back")
+        composeTestRule
+            .onNodeWithContentDescription("Back")
             .assertIsDisplayed()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
         // Should be back on group details screen
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             try {
-                composeTestRule.onNodeWithText("Group details")
+                composeTestRule
+                    .onNodeWithText("Group details")
                     .fetchSemanticsNode()
                 true
             } catch (e: Exception) {
@@ -486,23 +531,26 @@ class GroupDetailsE2ETest {
         composeTestRule.onNodeWithText("Group details").assertIsDisplayed()
 
         // Step 9: Navigate back to main screen
-        composeTestRule.onNodeWithContentDescription("Back")
+        composeTestRule
+            .onNodeWithContentDescription("Back")
             .assertIsDisplayed()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
         Thread.sleep(2000) // Wait for navigation to complete
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             try {
-                composeTestRule.onNodeWithContentDescription("Create Group")
+                composeTestRule
+                    .onNodeWithContentDescription("Create Group")
                     .fetchSemanticsNode()
                 true
             } catch (e: Exception) {
                 false
             }
         }
-        composeTestRule.onNodeWithContentDescription("Create Group")
+        composeTestRule
+            .onNodeWithContentDescription("Create Group")
             .assertIsDisplayed()
     }
 
@@ -516,11 +564,13 @@ class GroupDetailsE2ETest {
         Thread.sleep(2000)
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -529,7 +579,8 @@ class GroupDetailsE2ETest {
         Thread.sleep(1500)
 
         // Look for refresh button (icon button in top bar)
-        composeTestRule.onNodeWithContentDescription("Refresh")
+        composeTestRule
+            .onNodeWithContentDescription("Refresh")
             .assertIsDisplayed()
             .performClick()
 
@@ -537,7 +588,8 @@ class GroupDetailsE2ETest {
         Thread.sleep(2000)
 
         // Verify the screen is still displaying correctly after refresh
-        composeTestRule.onNodeWithText("Join Code")
+        composeTestRule
+            .onNodeWithText("Join Code")
             .assertIsDisplayed()
     }
 
@@ -552,11 +604,13 @@ class GroupDetailsE2ETest {
 
         // Navigate to group details (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -565,7 +619,8 @@ class GroupDetailsE2ETest {
         Thread.sleep(1500)
 
         // Test back button on group details
-        composeTestRule.onNodeWithContentDescription("Back")
+        composeTestRule
+            .onNodeWithContentDescription("Back")
             .assertIsDisplayed()
             .performClick()
 
@@ -575,7 +630,8 @@ class GroupDetailsE2ETest {
         // Verify we're back on main screen - check for app title and icon buttons
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             try {
-                composeTestRule.onNodeWithText("SquadUp")
+                composeTestRule
+                    .onNodeWithText("SquadUp")
                     .fetchSemanticsNode()
                 true
             } catch (e: Exception) {
@@ -583,11 +639,12 @@ class GroupDetailsE2ETest {
             }
         }
         composeTestRule.onNodeWithText("SquadUp").assertIsDisplayed()
-        
+
         // Verify Create Group and Join Group icon buttons (by contentDescription, not text)
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             try {
-                composeTestRule.onNodeWithContentDescription("Create Group")
+                composeTestRule
+                    .onNodeWithContentDescription("Create Group")
                     .fetchSemanticsNode()
                 true
             } catch (e: Exception) {
@@ -599,11 +656,13 @@ class GroupDetailsE2ETest {
 
         // Navigate to group details again (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -612,22 +671,24 @@ class GroupDetailsE2ETest {
         Thread.sleep(1500)
 
         // Navigate to member list
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
         // Test back button on member list
-        composeTestRule.onNodeWithContentDescription("Back")
+        composeTestRule
+            .onNodeWithContentDescription("Back")
             .assertIsDisplayed()
             .performClick()
 
         composeTestRule.waitForIdle()
 
         // Should be back on group details
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .assertIsDisplayed()
     }
 }
-

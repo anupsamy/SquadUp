@@ -3,7 +3,10 @@ package com.cpen321.squadup.utils
 import org.json.JSONObject
 
 object JsonUtils {
-    fun parseErrorMessage(errorBodyString: String?, fallback: String): String {
+    fun parseErrorMessage(
+        errorBodyString: String?,
+        fallback: String,
+    ): String {
         if (errorBodyString.isNullOrEmpty()) return fallback
         return try {
             val json = JSONObject(errorBodyString)
@@ -16,5 +19,4 @@ object JsonUtils {
             fallback
         }
     }
-
 }

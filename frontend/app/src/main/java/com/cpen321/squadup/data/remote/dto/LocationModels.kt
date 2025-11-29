@@ -3,13 +3,12 @@ package com.cpen321.squadup.data.remote.dto
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
-
 data class Address(
     val formatted: String,
     val placeId: String? = null,
     val lat: Double? = null,
     val lng: Double? = null,
-    val components: AddressComponents? = null
+    val components: AddressComponents? = null,
 )
 
 data class GeoLocation(
@@ -18,12 +17,12 @@ data class GeoLocation(
 )
 
 data class SquadGoal(
-    val location: GeoLocation
+    val location: GeoLocation,
 )
 
-data class MidpointActivitiesResponse (
+data class MidpointActivitiesResponse(
     val midpoint: SquadGoal,
-    val activities: List<Activity>
+    val activities: List<Activity>,
 )
 
 fun parseMidpointString(midpointStr: String?): SquadGoal? {
@@ -37,9 +36,10 @@ fun parseMidpointString(midpointStr: String?): SquadGoal? {
 
     return if (lat != null && lng != null) {
         SquadGoal(GeoLocation(lat, lng))
-    } else null
+    } else {
+        null
+    }
 }
-
 
 data class AddressComponents(
     val streetNumber: String? = null,
@@ -47,15 +47,22 @@ data class AddressComponents(
     val city: String? = null,
     val province: String? = null,
     val country: String? = null,
-    val postalCode: String? = null
+    val postalCode: String? = null,
 )
 
 @Serializable
 enum class TransitType {
-    @SerializedName("driving") DRIVING,
-    @SerializedName("walking") WALKING,
-    @SerializedName("bicycling") BICYCLING,
-    @SerializedName("transit") TRANSIT
+    @SerializedName("driving")
+    DRIVING,
+
+    @SerializedName("walking")
+    WALKING,
+
+    @SerializedName("bicycling")
+    BICYCLING,
+
+    @SerializedName("transit")
+    TRANSIT,
 }
 
 data class Activity(
@@ -69,10 +76,13 @@ data class Activity(
     val latitude: Double,
     val longitude: Double,
     val businessStatus: String,
-    val isOpenNow: Boolean
+    val isOpenNow: Boolean,
 )
 
-enum class ActivityType(val storedValue: String, val displayName: String) {
+enum class ActivityType(
+    val storedValue: String,
+    val displayName: String,
+) {
     RESTAURANT("restaurant", "RESTAURANT"),
     CAFE("cafe", "CAFE"),
     BAR("bar", "BAR"),
@@ -82,12 +92,10 @@ enum class ActivityType(val storedValue: String, val displayName: String) {
     MOVIE_THEATER("movie_theater", "MOVIE THEATER"),
     NIGHT_CLUB("night_club", "NIGHT CLUB"),
     AMUSEMENT_PARK("amusement_park", "AMUSEMENT PARK"),
-    MUSEUM("museum", "MUSEUM");
+    MUSEUM("museum", "MUSEUM"),
+    ;
 
     companion object {
-        fun getActivity(value: String): ActivityType? {
-            return entries.find { it.storedValue == value }
-        }
+        fun getActivity(value: String): ActivityType? = entries.find { it.storedValue == value }
     }
 }
-

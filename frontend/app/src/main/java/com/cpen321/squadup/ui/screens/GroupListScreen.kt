@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.GroupUser
-import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.navigation.NavRoutes
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,16 +74,17 @@ fun GroupListScreen(
         bottomBar = { GroupListBottomBar(navController, group) },
         content = { padding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(16.dp),
             ) {
                 SearchBar(searchQuery) { searchQuery = it }
                 Spacer(modifier = Modifier.height(16.dp))
                 MemberList(group.groupMemberIds ?: emptyList(), searchQuery)
             }
-        }
+        },
     )
 }
 
@@ -92,7 +93,7 @@ private fun HandleGroupNavigation(
     isGroupDeleted: Boolean,
     isGroupLeft: Boolean,
     navController: NavController,
-    groupViewModel: GroupViewModel
+    groupViewModel: GroupViewModel,
 ) {
     LaunchedEffect(isGroupDeleted) {
         if (isGroupDeleted) {
@@ -114,7 +115,7 @@ private fun GroupListTopBar(
     navController: NavController,
     group: GroupDataDetailed,
     groupViewModel: GroupViewModel,
-    currentUserId: String?
+    currentUserId: String?,
 ) {
     TopAppBar(
         title = { Text("Members", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)) },
@@ -126,12 +127,13 @@ private fun GroupListTopBar(
         actions = {
             FilledTonalButton(
                 onClick = { currentUserId?.let { groupViewModel.leaveGroup(group.joinCode, it) } },
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
+                colors =
+                    ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                modifier = Modifier.height(32.dp)
+                modifier = Modifier.height(32.dp),
             ) { Text("Leave Squad", style = MaterialTheme.typography.labelSmall) }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -139,20 +141,24 @@ private fun GroupListTopBar(
             if (group.groupLeaderId?.id == currentUserId) {
                 Button(
                     onClick = { groupViewModel.deleteGroup(group.joinCode) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    ),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        ),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                    modifier = Modifier.height(32.dp)
+                    modifier = Modifier.height(32.dp),
                 ) { Text("Delete Squad", style = MaterialTheme.typography.labelSmall) }
             }
-        }
+        },
     )
 }
 
 @Composable
-private fun GroupListBottomBar(navController: NavController, group: GroupDataDetailed) {
+private fun GroupListBottomBar(
+    navController: NavController,
+    group: GroupDataDetailed,
+) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
@@ -161,75 +167,85 @@ private fun GroupListBottomBar(navController: NavController, group: GroupDataDet
             onClick = { },
             icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Squads") },
             label = { Text("Squads") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                indicatorColor = MaterialTheme.colorScheme.primaryContainer
-            )
+            colors =
+                NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
         )
         NavigationBarItem(
             selected = false,
             onClick = { navController.navigate("${NavRoutes.MEMBER_SETTINGS}/${group.joinCode}") },
             icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
             label = { Text("Settings") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                indicatorColor = MaterialTheme.colorScheme.primaryContainer
-            )
+            colors =
+                NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
         )
     }
 }
 
 @Composable
-private fun SearchBar(searchQuery: String, onQueryChange: (String) -> Unit) {
+private fun SearchBar(
+    searchQuery: String,
+    onQueryChange: (String) -> Unit,
+) {
     OutlinedTextField(
         value = searchQuery,
         onValueChange = onQueryChange,
         modifier = Modifier.fillMaxWidth(),
         placeholder = { Text("Search ...") },
         singleLine = true,
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") }
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
     )
 }
 
 @Composable
-private fun MemberList(members: List<GroupUser>, searchQuery: String) {
+private fun MemberList(
+    members: List<GroupUser>,
+    searchQuery: String,
+) {
     val filteredMembers = members.filter { it.name?.contains(searchQuery, ignoreCase = true) == true }
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         items(filteredMembers) { member ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         Icons.Default.AccountCircle,
                         contentDescription = "Member",
                         modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         member.name,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }

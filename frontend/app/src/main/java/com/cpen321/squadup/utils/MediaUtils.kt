@@ -6,11 +6,13 @@ import android.util.Log
 import java.io.File
 
 object MediaUtils {
-
     private const val TAG = "MediaUtils"
 
-    fun uriToFile(context: Context, uri: Uri): File {
-        return when (uri.scheme) {
+    fun uriToFile(
+        context: Context,
+        uri: Uri,
+    ): File =
+        when (uri.scheme) {
             "file" -> handleFileUri(uri)
             "content" -> handleContentUri(context, uri)
             else -> {
@@ -18,7 +20,6 @@ object MediaUtils {
                 throw IllegalArgumentException("Unsupported URI scheme: ${uri.scheme}")
             }
         }
-    }
 
     private fun handleFileUri(uri: Uri): File {
         try {
@@ -32,7 +33,10 @@ object MediaUtils {
         }
     }
 
-    private fun handleContentUri(context: Context, uri: Uri): File {
+    private fun handleContentUri(
+        context: Context,
+        uri: Uri,
+    ): File {
         val inputStream = context.contentResolver.openInputStream(uri)
         if (inputStream == null) {
             Log.e(TAG, "Failed to open input stream for URI: $uri")
@@ -55,7 +59,10 @@ object MediaUtils {
         }
     }
 
-    private fun copyInputStreamToFile(inputStream: java.io.InputStream, file: File) {
+    private fun copyInputStreamToFile(
+        inputStream: java.io.InputStream,
+        file: File,
+    ) {
         inputStream.use { input ->
             file.outputStream().use { output ->
                 input.copyTo(output)

@@ -16,55 +16,54 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.cpen321.squadup.data.remote.dto.Activity
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.data.remote.dto.SquadGoal
-import com.cpen321.squadup.ui.navigation.NavRoutes
 import com.cpen321.squadup.ui.viewmodels.ActivityPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.google.android.gms.maps.model.LatLng
 
-private fun extractMidpointLocations(
-    midpoint: com.cpen321.squadup.data.remote.dto.SquadGoal?
-): List<LatLng> {
-    return midpoint?.location?.let { location ->
+private fun extractMidpointLocations(midpoint: com.cpen321.squadup.data.remote.dto.SquadGoal?): List<LatLng> =
+    midpoint?.location?.let { location ->
         val lat = location.lat
         val lng = location.lng
         if (lat != null && lng != null) listOf(LatLng(lat, lng)) else emptyList()
     } ?: emptyList()
-}
 
 @Composable
 private fun MapStatusBox(
     isCalculatingMidpoint: Boolean,
     midpoint: com.cpen321.squadup.data.remote.dto.SquadGoal?,
     activities: List<Activity>,
-    onFindMidpoint: () -> Unit
+    onFindMidpoint: () -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(260.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(260.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface),
+            contentAlignment = Alignment.Center,
         ) {
             when {
                 isCalculatingMidpoint -> {
                     Text(
                         text = "Getting midpoint...",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
+                        style =
+                            MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                            ),
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
 
@@ -73,33 +72,34 @@ private fun MapStatusBox(
                     LeaderActivityMapView(
                         locations = locations,
                         activities = activities,
-                        modifier = Modifier.fillMaxSize().testTag("LeaderMapView")
+                        modifier = Modifier.fillMaxSize().testTag("LeaderMapView"),
                     )
                 }
 
                 else -> {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(horizontal = 24.dp)
+                        modifier = Modifier.padding(horizontal = 24.dp),
                     ) {
                         Text(
                             text = "Waiting for members to join...",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
+                            style =
+                                MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                ),
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Or you can calculate midpoint now",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = onFindMidpoint) {
                             Text(
                                 text = "Find midpoint",
-                                style = MaterialTheme.typography.labelLarge
+                                style = MaterialTheme.typography.labelLarge,
                             )
                         }
                     }
@@ -110,15 +110,14 @@ private fun MapStatusBox(
 }
 
 @Composable
-private fun RecalculateButton(
-    onRecalculate: () -> Unit
-) {
+private fun RecalculateButton(onRecalculate: () -> Unit) {
     Spacer(modifier = Modifier.height(8.dp))
     Button(
         onClick = onRecalculate,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
     ) {
         Text(text = "Recalculate Midpoint")
     }
@@ -133,7 +132,7 @@ fun LeaderGroupView(
     selectedActivity: Activity?,
     midpoint: SquadGoal?,
     onUpdate: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val isCalculatingMidpoint by groupViewModel.isCalculatingMidpoint.collectAsState()
     val activities by activityPickerViewModel.activities.collectAsState()
@@ -149,14 +148,15 @@ fun LeaderGroupView(
     }
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier =
+            modifier
+                .fillMaxWidth(),
     ) {
         MapStatusBox(
             isCalculatingMidpoint = isCalculatingMidpoint,
             midpoint = midpoint,
             activities = activities,
-            onFindMidpoint = handleMidpointCalculation
+            onFindMidpoint = handleMidpointCalculation,
         )
 
         if (midpoint != null && !isCalculatingMidpoint) {
@@ -168,10 +168,11 @@ fun LeaderGroupView(
                 viewModel = activityPickerViewModel,
                 joinCode = group.joinCode,
                 onSelectActivity = { onUpdate() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .testTag("ActivityPicker")
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .testTag("ActivityPicker"),
             )
         }
     }

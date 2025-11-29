@@ -35,20 +35,20 @@ import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
+import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.AuthViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileUiState
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import com.cpen321.squadup.ui.theme.LocalSpacing
 
 private data class ProfileDialogState(
-    val showDeleteDialog: Boolean = false
+    val showDeleteDialog: Boolean = false,
 )
 
 data class ProfileScreenActions(
     val onBackClick: () -> Unit,
     val onManageProfileClick: () -> Unit,
     val onAccountDeleted: () -> Unit,
-    val onAccountLogOut: () -> Unit
+    val onAccountLogOut: () -> Unit,
 )
 
 private data class ProfileScreenCallbacks(
@@ -59,14 +59,14 @@ private data class ProfileScreenCallbacks(
     val onDeleteDialogDismiss: () -> Unit,
     val onDeleteDialogConfirm: () -> Unit,
     val onSuccessMessageShown: () -> Unit,
-    val onErrorMessageShown: () -> Unit
+    val onErrorMessageShown: () -> Unit,
 )
 
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
-    actions: ProfileScreenActions
+    actions: ProfileScreenActions,
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -86,27 +86,28 @@ fun ProfileScreen(
         uiState = uiState,
         dialogState = dialogState,
         snackBarHostState = snackBarHostState,
-        callbacks = ProfileScreenCallbacks(
-            onBackClick = actions.onBackClick,
-            onManageProfileClick = actions.onManageProfileClick,
-            onDeleteAccountClick = {
-                dialogState = dialogState.copy(showDeleteDialog = true)
-            },
-            onDeleteDialogDismiss = {
-                dialogState = dialogState.copy(showDeleteDialog = false)
-            },
-            onDeleteDialogConfirm = {
-                dialogState = dialogState.copy(showDeleteDialog = false)
-                authViewModel.handleAccountDeletion()
-                actions.onAccountDeleted()
-            },
-            onSuccessMessageShown = profileViewModel::clearSuccessMessage,
-            onErrorMessageShown = profileViewModel::clearError,
-            onLogoutClick = {
-                authViewModel.handleLogout()
-                actions.onAccountLogOut()
-            },
-        )
+        callbacks =
+            ProfileScreenCallbacks(
+                onBackClick = actions.onBackClick,
+                onManageProfileClick = actions.onManageProfileClick,
+                onDeleteAccountClick = {
+                    dialogState = dialogState.copy(showDeleteDialog = true)
+                },
+                onDeleteDialogDismiss = {
+                    dialogState = dialogState.copy(showDeleteDialog = false)
+                },
+                onDeleteDialogConfirm = {
+                    dialogState = dialogState.copy(showDeleteDialog = false)
+                    authViewModel.handleAccountDeletion()
+                    actions.onAccountDeleted()
+                },
+                onSuccessMessageShown = profileViewModel::clearSuccessMessage,
+                onErrorMessageShown = profileViewModel::clearError,
+                onLogoutClick = {
+                    authViewModel.handleLogout()
+                    actions.onAccountLogOut()
+                },
+            ),
     )
 }
 
@@ -117,7 +118,7 @@ private fun ProfileContent(
     dialogState: ProfileDialogState,
     snackBarHostState: SnackbarHostState,
     callbacks: ProfileScreenCallbacks,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
@@ -127,14 +128,15 @@ private fun ProfileContent(
         snackbarHost = {
             MessageSnackbar(
                 hostState = snackBarHostState,
-                messageState = MessageSnackbarState(
-                    successMessage = uiState.successMessage,
-                    errorMessage = uiState.errorMessage,
-                    onSuccessMessageShown = callbacks.onSuccessMessageShown,
-                    onErrorMessageShown = callbacks.onErrorMessageShown
-                )
+                messageState =
+                    MessageSnackbarState(
+                        successMessage = uiState.successMessage,
+                        errorMessage = uiState.errorMessage,
+                        onSuccessMessageShown = callbacks.onSuccessMessageShown,
+                        onErrorMessageShown = callbacks.onErrorMessageShown,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         ProfileBody(
             paddingValues = paddingValues,
@@ -148,7 +150,7 @@ private fun ProfileContent(
     if (dialogState.showDeleteDialog) {
         DeleteAccountDialog(
             onDismiss = callbacks.onDeleteDialogDismiss,
-            onConfirm = callbacks.onDeleteDialogConfirm
+            onConfirm = callbacks.onDeleteDialogConfirm,
         )
     }
 }
@@ -157,7 +159,7 @@ private fun ProfileContent(
 @Composable
 private fun ProfileTopBar(
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     TopAppBar(
         modifier = modifier,
@@ -165,7 +167,7 @@ private fun ProfileTopBar(
             Text(
                 text = stringResource(R.string.profile),
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
         },
         navigationIcon = {
@@ -173,10 +175,11 @@ private fun ProfileTopBar(
                 Icon(name = R.drawable.ic_arrow_back)
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+        colors =
+            TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+            ),
     )
 }
 
@@ -187,17 +190,18 @@ private fun ProfileBody(
     onManageProfileClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(paddingValues),
     ) {
         when {
             isLoading -> {
                 LoadingIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
                 )
             }
 
@@ -205,7 +209,7 @@ private fun ProfileBody(
                 ProfileMenuItems(
                     onManageProfileClick = onManageProfileClick,
                     onDeleteAccountClick = onDeleteAccountClick,
-                    onLogoutClick =  onLogoutClick
+                    onLogoutClick = onLogoutClick,
                 )
             }
         }
@@ -217,25 +221,26 @@ private fun ProfileMenuItems(
     onManageProfileClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
     val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(spacing.large)
-            .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.spacedBy(spacing.medium)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(spacing.large)
+                .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(spacing.medium),
     ) {
         ProfileSection(
-            onManageProfileClick = onManageProfileClick
+            onManageProfileClick = onManageProfileClick,
         )
 
         AccountSection(
             onDeleteAccountClick = onDeleteAccountClick,
-            onLogoutClick = onLogoutClick
+            onLogoutClick = onLogoutClick,
         )
     }
 }
@@ -243,11 +248,11 @@ private fun ProfileMenuItems(
 @Composable
 private fun ProfileSection(
     onManageProfileClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.medium)
+        verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.medium),
     ) {
         ManageProfileButton(onClick = onManageProfileClick)
     }
@@ -257,11 +262,11 @@ private fun ProfileSection(
 private fun AccountSection(
     onDeleteAccountClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.medium)
+        verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.medium),
     ) {
         DeleteAccountButton(onClick = onDeleteAccountClick)
         LogoutButton(onClick = onLogoutClick)
@@ -269,9 +274,7 @@ private fun AccountSection(
 }
 
 @Composable
-private fun ManageProfileButton(
-    onClick: () -> Unit,
-) {
+private fun ManageProfileButton(onClick: () -> Unit) {
     MenuButtonItem(
         text = stringResource(R.string.manage_profile),
         iconRes = R.drawable.ic_manage_profile,
@@ -280,9 +283,7 @@ private fun ManageProfileButton(
 }
 
 @Composable
-private fun DeleteAccountButton(
-    onClick: () -> Unit,
-) {
+private fun DeleteAccountButton(onClick: () -> Unit) {
     MenuButtonItem(
         text = stringResource(R.string.delete_account),
         iconRes = R.drawable.ic_delete_forever,
@@ -291,13 +292,11 @@ private fun DeleteAccountButton(
 }
 
 @Composable
-private fun LogoutButton(
-    onClick: () -> Unit
-) {
+private fun LogoutButton(onClick: () -> Unit) {
     MenuButtonItem(
         text = stringResource(R.string.logout),
         iconRes = R.drawable.ic_logout, // add a logout icon to resources
-        onClick = onClick
+        onClick = onClick,
     )
 }
 
@@ -305,7 +304,7 @@ private fun LogoutButton(
 private fun DeleteAccountDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     AlertDialog(
         modifier = modifier,
@@ -321,36 +320,30 @@ private fun DeleteAccountDialog(
         },
         dismissButton = {
             DeleteDialogDismissButton(onClick = onDismiss)
-        }
+        },
     )
 }
 
 @Composable
-private fun DeleteDialogTitle(
-    modifier: Modifier = Modifier
-) {
+private fun DeleteDialogTitle(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.delete_account),
         style = MaterialTheme.typography.headlineSmall,
         fontWeight = FontWeight.Bold,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
-private fun DeleteDialogText(
-    modifier: Modifier = Modifier
-) {
+private fun DeleteDialogText(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.delete_account_confirmation),
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
-private fun DeleteDialogConfirmButton(
-    onClick: () -> Unit,
-) {
+private fun DeleteDialogConfirmButton(onClick: () -> Unit) {
     Button(
         fullWidth = false,
         onClick = onClick,
@@ -360,9 +353,7 @@ private fun DeleteDialogConfirmButton(
 }
 
 @Composable
-private fun DeleteDialogDismissButton(
-    onClick: () -> Unit,
-) {
+private fun DeleteDialogDismissButton(onClick: () -> Unit) {
     Button(
         fullWidth = false,
         type = "secondary",
@@ -373,8 +364,6 @@ private fun DeleteDialogDismissButton(
 }
 
 @Composable
-private fun LoadingIndicator(
-    modifier: Modifier = Modifier
-) {
+private fun LoadingIndicator(modifier: Modifier = Modifier) {
     CircularProgressIndicator(modifier = modifier)
 }

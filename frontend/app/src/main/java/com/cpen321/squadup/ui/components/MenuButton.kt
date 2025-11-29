@@ -25,10 +25,11 @@ fun MenuButton(
 ) {
     val spacing = LocalSpacing.current
 
-    val colors = ButtonDefaults.buttonColors(
-        containerColor = Color.White,
-        contentColor = Color.Black,
-    )
+    val colors =
+        ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Color.Black,
+        )
 
     val border = BorderStroke(1.dp, Color.LightGray)
 
@@ -37,9 +38,10 @@ fun MenuButton(
         border = border,
         onClick = onClick,
         enabled = enabled,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(spacing.extraLarge2),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(spacing.extraLarge2),
     ) {
         content()
     }
@@ -60,7 +62,7 @@ fun MenuButtonItem(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 name = iconRes,
@@ -69,7 +71,7 @@ fun MenuButtonItem(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(start = spacing.medium)
+                modifier = Modifier.padding(start = spacing.medium),
             )
         }
     }

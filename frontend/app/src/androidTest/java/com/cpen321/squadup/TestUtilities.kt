@@ -16,17 +16,16 @@ import androidx.test.uiautomator.Until
 
 /**
  * Utility functions and extension methods for testing.
- * 
+ *
  * These helpers make writing tests more concise and maintainable.
  */
 object TestUtilities {
-
     /**
      * Extension function to wait for a text node and assert it's displayed.
      */
     fun ComposeContentTestRule.waitForNodeWithText(
         text: String,
-        timeoutMillis: Long = 5000
+        timeoutMillis: Long = 5000,
     ): SemanticsNodeInteraction {
         this.waitUntil(timeoutMillis) {
             try {
@@ -45,7 +44,7 @@ object TestUtilities {
      */
     fun SemanticsNodeInteraction.assertTextDisplayed(
         expectedText: String,
-        substring: Boolean = false
+        substring: Boolean = false,
     ) {
         if (substring) {
             assertTextContains(expectedText)
@@ -61,20 +60,17 @@ object TestUtilities {
      */
     fun UiDevice.waitForPackage(
         packageName: String,
-        timeoutMillis: Long = 5000
-    ): Boolean {
-        return this.wait(
+        timeoutMillis: Long = 5000,
+    ): Boolean =
+        this.wait(
             Until.hasObject(By.pkg(packageName)),
-            timeoutMillis
+            timeoutMillis,
         )
-    }
 
     /**
      * Helper to perform common click operations with retry logic.
      */
-    fun SemanticsNodeInteraction.performClickWithRetry(
-        maxAttempts: Int = 3
-    ) {
+    fun SemanticsNodeInteraction.performClickWithRetry(maxAttempts: Int = 3) {
         var attempts = 0
         while (attempts < maxAttempts) {
             try {
@@ -105,7 +101,7 @@ object TestUtilities {
      */
     fun ComposeContentTestRule.waitForEnabled(
         text: String,
-        timeoutMillis: Long = 5000
+        timeoutMillis: Long = 5000,
     ): SemanticsNodeInteraction {
         this.waitUntil(timeoutMillis) {
             try {
@@ -123,7 +119,7 @@ object TestUtilities {
      */
     fun ComposeContentTestRule.waitForNodeToDisappear(
         text: String,
-        timeoutMillis: Long = 5000
+        timeoutMillis: Long = 5000,
     ) {
         this.waitUntil(timeoutMillis) {
             try {
@@ -140,7 +136,7 @@ object TestUtilities {
      */
     fun ComposeContentTestRule.waitForNodeWithContentDescription(
         description: String,
-        timeoutMillis: Long = 5000
+        timeoutMillis: Long = 5000,
     ): SemanticsNodeInteraction {
         this.waitUntil(timeoutMillis) {
             try {
@@ -158,7 +154,7 @@ object TestUtilities {
      */
     fun SemanticsNodeInteraction.performTextInputWithRetry(
         text: String,
-        maxAttempts: Int = 3
+        maxAttempts: Int = 3,
     ): SemanticsNodeInteraction {
         var attempts = 0
         while (attempts < maxAttempts) {
@@ -179,7 +175,7 @@ object TestUtilities {
      */
     fun UiDevice.clickByText(
         text: String,
-        timeoutMillis: Long = 5000
+        timeoutMillis: Long = 5000,
     ): Boolean {
         this.wait(Until.hasObject(By.text(text)), timeoutMillis)
         val element = this.findObject(By.text(text))
@@ -195,7 +191,7 @@ object TestUtilities {
      */
     fun ComposeContentTestRule.waitForAnyNodeWithText(
         texts: List<String>,
-        timeoutMillis: Long = 5000
+        timeoutMillis: Long = 5000,
     ): String? {
         val endTime = System.currentTimeMillis() + timeoutMillis
         while (System.currentTimeMillis() < endTime) {
@@ -218,7 +214,7 @@ object TestUtilities {
     fun UiDevice.navigateBackAndVerify(
         composeTestRule: ComposeContentTestRule,
         expectedText: String,
-        timeoutMillis: Long = 3000
+        timeoutMillis: Long = 3000,
     ) {
         this.pressBack()
         composeTestRule.waitForIdle()
@@ -228,14 +224,13 @@ object TestUtilities {
     /**
      * Check if a node with text exists without failing.
      */
-    fun ComposeContentTestRule.nodeWithTextExists(text: String): Boolean {
-        return try {
+    fun ComposeContentTestRule.nodeWithTextExists(text: String): Boolean =
+        try {
             this.onNodeWithText(text).fetchSemanticsNode()
             true
         } catch (e: Exception) {
             false
         }
-    }
 
     /**
      * Wait for loading to complete (useful after API calls).
@@ -253,18 +248,18 @@ object TestData {
     const val TEST_EMAIL = "test@example.com"
     const val TEST_PASSWORD = "testPassword123"
     const val TEST_USERNAME = "testuser"
-    
+
     const val APP_PACKAGE_NAME = "com.cpen321.squadup"
     const val TEST_TIMEOUT_SHORT = 3000L
     const val TEST_TIMEOUT_MEDIUM = 5000L
     const val TEST_TIMEOUT_LONG = 10000L
-    
+
     // Group Management Test Data
     const val TEST_GROUP_NAME = "Test Group"
     const val TEST_EXPECTED_PEOPLE = "5"
     const val TEST_JOIN_CODE_LENGTH = 6
     const val INVALID_JOIN_CODE = "XXXXXX"
-    
+
     // Common UI Text
     const val CREATE_GROUP_TEXT = "Create Group"
     const val JOIN_GROUP_TEXT = "Join Group"

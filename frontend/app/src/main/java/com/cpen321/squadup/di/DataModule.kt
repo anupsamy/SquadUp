@@ -13,18 +13,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
-
     @Provides
     @Singleton
     fun provideTokenManager(
-        @ApplicationContext context: Context
-    ): TokenManager {
-        return TokenManager(context)
-    }
+        @ApplicationContext context: Context,
+    ): TokenManager = TokenManager(context)
 
     @Provides
     @Singleton
-    fun provideNavigationStateManager(): NavigationStateManager {
-        return NavigationStateManager()
-    }
+    fun provideNavigationStateManager(): NavigationStateManager = NavigationStateManager()
 }

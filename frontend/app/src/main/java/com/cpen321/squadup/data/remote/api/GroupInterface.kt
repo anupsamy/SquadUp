@@ -1,82 +1,71 @@
 package com.cpen321.squadup.data.remote.api
 
-import com.cpen321.squadup.data.remote.dto.ActivityCoordinates
 import com.cpen321.squadup.data.remote.dto.ApiResponse
-import com.cpen321.squadup.data.remote.dto.GroupData
-import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.CreateGroupRequest
-import com.cpen321.squadup.data.remote.dto.SquadGoal
-import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
-import com.google.android.gms.maps.model.LatLng
+import com.cpen321.squadup.data.remote.dto.GroupData
+import com.cpen321.squadup.data.remote.dto.GroupsDataAll
 import com.cpen321.squadup.data.remote.dto.LeaveGroupRequest
 import com.cpen321.squadup.data.remote.dto.MidpointActivitiesResponse
-import okhttp3.MultipartBody
+import com.cpen321.squadup.data.remote.dto.UpdateGroupRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.Multipart
 import retrofit2.http.POST
-import retrofit2.http.Part
-import retrofit2.http.Query
 
 interface GroupInterface {
-
     @POST("group/create")
     suspend fun createGroup(
         @Header("Authorization") authHeader: String,
-        @Body request: CreateGroupRequest
+        @Body request: CreateGroupRequest,
     ): Response<ApiResponse<GroupData>>
 
     @GET("group/{joinCode}")
     suspend fun getGroupByJoinCode(
         @Header("Authorization") authHeader: String,
-        @retrofit2.http.Path("joinCode") joinCode: String
+        @retrofit2.http.Path("joinCode") joinCode: String,
     ): Response<ApiResponse<GroupData>>
 
     @GET("group/info")
     suspend fun getGroups(
-        @Header("Authorization") authHeader: String
+        @Header("Authorization") authHeader: String,
     ): Response<ApiResponse<GroupsDataAll>>
 
     @POST("group/update")
     suspend fun updateGroup(
         @Header("Authorization") authHeader: String,
-        @Body request: UpdateGroupRequest
+        @Body request: UpdateGroupRequest,
     ): Response<Unit>
 
     @POST("group/join")
     suspend fun joinGroup(
         @Header("Authorization") authHeader: String,
-        @Body request: UpdateGroupRequest
+        @Body request: UpdateGroupRequest,
     ): Response<Unit>
 
     @POST("group/leave/{joinCode}")
     suspend fun leaveGroup(
         @Header("Authorization") authHeader: String,
         @retrofit2.http.Path("joinCode") joinCode: String,
-        @Body request: LeaveGroupRequest
+        @Body request: LeaveGroupRequest,
     ): Response<Unit>
 
     @GET("group/midpoint/{joinCode}")
     suspend fun getMidpointByJoinCode(
         @Header("Authorization") authHeader: String,
-        @retrofit2.http.Path("joinCode") joinCode: String
+        @retrofit2.http.Path("joinCode") joinCode: String,
     ): Response<ApiResponse<MidpointActivitiesResponse>>
 
     @POST("group/midpoint/{joinCode}")
     suspend fun updateMidpointByJoinCode(
         @Header("Authorization") authHeader: String,
-        @retrofit2.http.Path("joinCode") joinCode: String
+        @retrofit2.http.Path("joinCode") joinCode: String,
     ): Response<ApiResponse<MidpointActivitiesResponse>>
 
     @DELETE("group/delete/{joinCode}")
     suspend fun deleteGroup(
         @Header("Authorization") authHeader: String,
-        @retrofit2.http.Path("joinCode") joinCode: String
+        @retrofit2.http.Path("joinCode") joinCode: String,
     ): Response<Unit>
-
-    
 }

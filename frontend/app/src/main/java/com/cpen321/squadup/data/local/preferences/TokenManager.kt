@@ -13,8 +13,9 @@ import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
 
-class TokenManager(private val context: Context) {
-
+class TokenManager(
+    private val context: Context,
+) {
     companion object {
         private const val TAG = "TokenManager"
     }
@@ -35,8 +36,8 @@ class TokenManager(private val context: Context) {
         }
     }
 
-    fun getToken(): Flow<String?> {
-        return try {
+    fun getToken(): Flow<String?> =
+        try {
             context.dataStore.data.map { preferences ->
                 preferences[tokenKey]
             }
@@ -47,10 +48,9 @@ class TokenManager(private val context: Context) {
             Log.e(TAG, "Permission denied to get token flow", e)
             throw e
         }
-    }
 
-    suspend fun getTokenSync(): String? {
-        return try {
+    suspend fun getTokenSync(): String? =
+        try {
             val token = context.dataStore.data.first()[tokenKey]
             token
         } catch (e: java.io.IOException) {
@@ -60,7 +60,6 @@ class TokenManager(private val context: Context) {
             Log.e(TAG, "Permission denied to get token synchronously", e)
             null
         }
-    }
 
     suspend fun clearToken() {
         try {

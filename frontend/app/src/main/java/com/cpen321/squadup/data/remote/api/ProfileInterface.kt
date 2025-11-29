@@ -16,12 +16,14 @@ import retrofit2.http.Part
 
 interface UserInterface {
     @GET("user/profile")
-    suspend fun getProfile(@Header("Authorization") authHeader: String): Response<ApiResponse<ProfileData>>
+    suspend fun getProfile(
+        @Header("Authorization") authHeader: String,
+    ): Response<ApiResponse<ProfileData>>
 
     @POST("user/profile")
     suspend fun updateProfile(
         @Header("Authorization") authHeader: String,
-        @Body request: UpdateProfileRequest
+        @Body request: UpdateProfileRequest,
     ): Response<ApiResponse<ProfileData>>
 
     @DELETE("user/profile")
@@ -35,6 +37,6 @@ interface ImageInterface {
     @POST("media/upload")
     suspend fun uploadPicture(
         @Header("Authorization") authHeader: String,
-        @Part media: MultipartBody.Part
+        @Part media: MultipartBody.Part,
     ): Response<ApiResponse<UploadImageData>>
 }

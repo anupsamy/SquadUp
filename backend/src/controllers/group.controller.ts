@@ -172,17 +172,14 @@ export class GroupController {
       const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
       const leaderId = currentGroup.groupLeaderId.id;
 
-      if (newMemberIds.some(id => id === leaderId)) {
+      // Find who is joining (new IDs not in current list)
+      const joiningMemberIds = newMemberIds.filter(id => !currentMemberIds.includes(id));
+      
+      if (joiningMemberIds.length === 0) {
         return res.status(400).json({
-          message: 'You are the leader of this group',
+          message: 'You are already a member of this group',
         });
       }
-      
-      if (newMemberIds.some(id => currentMemberIds.includes(id))) {
-      return res.status(400).json({
-        message: 'You are already a member of this group',
-      });
-    }
       
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode,
         {joinCode, expectedPeople,

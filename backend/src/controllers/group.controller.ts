@@ -41,7 +41,7 @@ export class GroupController {
         activityType,
         autoMidpoint
       } = req.body;
-      console.log(activityType);
+      
       const joinCode = Math.random().toString(36).slice(2, 8);
 
       // Use the GroupModel to create the group
@@ -63,8 +63,7 @@ export class GroupController {
         },
       });
     } catch (error) {
-      logger.error('Failed to create group:', error);
-      next(error);
+      res.status(500).json({ message: 'Failed to create group' });
     }
   }
 
@@ -157,6 +156,13 @@ export class GroupController {
     try {
       const { joinCode, expectedPeople, groupMemberIds } = req.body;
 
+      if (!joinCode || typeof joinCode !== 'string' || joinCode == '' || joinCode == null) {
+        res.status(400).json({
+          message: 'Invalid joinCode'
+        });
+        return;
+      }
+
       // Get the current group to compare member changes
       const currentGroup = await groupModel.findByJoinCode(joinCode);
       if (!currentGroup) {
@@ -241,6 +247,20 @@ export class GroupController {
     try {
       const { joinCode, expectedPeople, groupMemberIds, meetingTime, autoMidpoint, activityType } =
         req.body;
+
+      if (!joinCode || typeof joinCode !== 'string' || joinCode == '' || joinCode == null) {
+        res.status(400).json({
+          message: 'Invalid joinCode'
+        });
+        return;
+      }
+      if (!expectedPeople && !groupMemberIds && !meetingTime && !autoMidpoint && !activityType) {
+        res.status(400).json({
+          message: 'Must update group with valid data'
+        });
+        return;
+      }
+
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
         expectedPeople,
@@ -371,6 +391,11 @@ export class GroupController {
         joinCode,
         midpoint
       });
+       if(!updatedGroup){
+        return res.status(404).json({
+          message: `Failed to update group midpoint`,
+        });
+      }
       const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
 
       console.log('Activities List: ', activityList);
@@ -419,6 +444,12 @@ export class GroupController {
         });
       }
 
+      if(group.groupMemberIds?.length == 0){
+        return res.status(404).json({
+          message: `Group contains no valid members`,
+        });
+      }
+
       const locationInfo: LocationInfo[] = (group.groupMemberIds ?? [])
         .filter(member => member.address != null && member.transitType != null)
         .map(member => {
@@ -440,17 +471,26 @@ export class GroupController {
 
       const midpoint = lat.toString() + ' ' + lng.toString();
 
-      // Need error handler
       const updatedGroup = await groupModel.updateGroupByJoinCode(joinCode, {
         joinCode,
         midpoint,
       });
+      if(!updatedGroup){
+        return res.status(404).json({
+          message: `Failed to update group midpoint`,
+        });
+      }
 
       const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService);
+      if(!updatedTravelTime){
+        return res.status(404).json({
+          message: `Failed to update group travel time`,
+        });
+      }
 
       //console.log("Activities List: " , activityList);
       res.status(200).json({
-        message: 'Get midpoint successfully!',
+        message: 'Updated midpoint successfully!',
         data: {
           midpoint: {
             location: {
@@ -463,7 +503,14 @@ export class GroupController {
       });
     } catch (error) {
       logger.error('Failed to get midpoint joinCode:', error);
-      next(error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : 'Failed to update midpoint by joinCode';
+
+      return res.status(500).json({ message });
     }
   }
 
@@ -742,88 +789,87 @@ export class GroupController {
   // }
 
   async leaveGroup(
-    req: Request<{ joinCode: string }, unknown, { userId: string }>,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      const { joinCode } = req.params;
-      const { userId } = req.body;
+  req: Request<{ joinCode: string }, unknown, { userId: string }>,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { joinCode } = req.params;
+    const { userId } = req.body;
 
-      // Get the current group to get user info before they leave
-      const currentGroup = await groupModel.findByJoinCode(joinCode);
-      if (!currentGroup) {
-        return res.status(404).json({
-          message: 'Group not found',
-        });
-      }
-
-      // Find the user who is leaving
-      const leavingUser =
-        (currentGroup.groupMemberIds ?? []).find(
-          member => member.id === userId
-        ) ||
-        (currentGroup.groupLeaderId.id === userId
-          ? currentGroup.groupLeaderId
-          : null);
-
-      const result = await groupModel.leaveGroup(joinCode, userId);
-
-      // Send WebSocket notification for user leaving
-      const wsService = getWebSocketService();
-      if (wsService && leavingUser) {
-        wsService.notifyGroupLeave(
-          joinCode,
-          leavingUser.id,
-          leavingUser.name,
-          currentGroup.groupName
-        );
-        // FCM topic notification (clients subscribe to topic == joinCode)
-        void sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id);
-      }
-
-      if (result.deleted) {
-        // Notify about group deletion
-        if (wsService) {
-          wsService.notifyGroupUpdate(
-            joinCode,
-            `Group "${currentGroup.groupName}" has been deleted as no members remain`,
-            { deleted: true }
-          );
-        }
-
-        res.status(200).json({
-          message: 'Group deleted successfully as no members remain',
-        });
-      } else {
-        // Notify about leadership transfer if applicable
-        if (wsService && result.newLeader) {
-          wsService.notifyGroupUpdate(
-            joinCode,
-            `${result.newLeader.name} is now the new group leader`,
-            { newLeader: result.newLeader }
-          );
-        }
-      }
-
-      res.status(200).json({
-        message: 'Left group successfully',
-        data: result.newLeader ? { newLeader: result.newLeader } : undefined,
+    // Get the current group to get user info before they leave
+    const currentGroup = await groupModel.findByJoinCode(joinCode);
+    if (!currentGroup) {
+      return res.status(404).json({
+        message: 'Group not found',
       });
-      //}
-    } catch (error) {
-      logger.error('Failed to leave group:', error);
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Failed to leave group';
-
-      return res.status(500).json({ message });
     }
+
+    // Find the user who is leaving
+    const leavingUser =
+      (currentGroup.groupMemberIds ?? []).find(
+        member => member.id === userId
+      ) ||
+      (currentGroup.groupLeaderId.id === userId
+        ? currentGroup.groupLeaderId
+        : null);
+
+    const result = await groupModel.leaveGroup(joinCode, userId);
+
+    // Send WebSocket notification for user leaving
+    const wsService = getWebSocketService();
+    if (wsService && leavingUser) {
+      wsService.notifyGroupLeave(
+        joinCode,
+        leavingUser.id,
+        leavingUser.name,
+        currentGroup.groupName
+      );
+      // FCM topic notification (clients subscribe to topic == joinCode)
+      void sendGroupLeaveFCM(joinCode, leavingUser.name, currentGroup.groupName, leavingUser.id);
+    }
+
+    if (result.deleted) {
+      // Notify about group deletion
+      if (wsService) {
+        wsService.notifyGroupUpdate(
+          joinCode,
+          `Group "${currentGroup.groupName}" has been deleted as no members remain`,
+          { deleted: true }
+        );
+      }
+
+      return res.status(200).json({
+        message: 'Group deleted successfully as no members remain',
+      });
+    }
+
+    // Notify about leadership transfer if applicable
+    if (wsService && result.newLeader) {
+      wsService.notifyGroupUpdate(
+        joinCode,
+        `${result.newLeader.name} is now the new group leader`,
+        { newLeader: result.newLeader }
+      );
+    }
+
+    return res.status(200).json({
+      message: 'Left group successfully',
+      data: result.newLeader ? { newLeader: result.newLeader } : undefined,
+    });
+  } catch (error) {
+    logger.error('Failed to leave group:', error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : 'Failed to leave group';
+
+    return res.status(500).json({ message });
   }
+}
 
   // Test endpoint for WebSocket notifications
   /* async testWebSocketNotification(

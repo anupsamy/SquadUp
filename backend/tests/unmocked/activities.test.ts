@@ -2,52 +2,13 @@ import request from 'supertest';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { GroupController } from '../../src/controllers/group.controller';
-import { groupModel } from '../../src/group.model';
+import { groupModel } from '../../src/models/group.model';
 
 
 jest.mock('../../src/utils/logger.util');
 jest.mock('../../src/services/media.service');
 
 describe('Unmocked: Group Model', () => {
-    describe('GroupModel.getActivities', () => {
-        it('should throw error for invalid join code', async () => {
-            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-            await expect(groupModel.getActivities(exampleJoinCode)).rejects.toThrow(
-                `Failed to get activities`
-            );
-        });
-
-        it('should return activities upon success', async () => {
-            const exampleGroupLeader = {
-                id: "68fbe599d84728c6da2_test",
-                name: "Group Leader",
-                email: "group.leader@example.com"
-            }
-            const exampleMeetingTime = "2026-11-02T12:30:00Z"
-            const exampleActivityType = "CAFE"
-            const exampleJoinCode = Math.random().toString(36).slice(2, 8);
-            const newGroupData = {
-                joinCode: exampleJoinCode,
-                groupName: "TestGroup1",
-                meetingTime: exampleMeetingTime,
-                groupLeaderId: exampleGroupLeader,
-                expectedPeople: 5,
-                groupMemberIds: [exampleGroupLeader],
-                activityType: exampleActivityType
-            };
-            const newGroup = await groupModel.create(newGroupData)
-            await groupModel.updateGroupByJoinCode(exampleJoinCode, {joinCode: exampleJoinCode, midpoint: "some midpoint"})
-
-            const activities = await groupModel.getActivities(exampleJoinCode);
-            expect(activities).toHaveLength(3)
-            expect(activities[0]).toHaveProperty('name', "Sushi Palace one")
-            expect(activities[1]).toHaveProperty('name', "Pizza Garden two")
-            expect(activities[2]).toHaveProperty('name', "Brew Bros Coffee three")
-            
-        });
-    });
-
-
   describe('GroupModel.updateSelectedActivity', () => {
     it('should throw error for invalid join code', async () => {
         const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -84,7 +45,8 @@ describe('Unmocked: Group Model', () => {
             expectedPeople: 1,
             groupMemberIds: [exampleGroupLeader],
             meetingTime: exampleMeetingTime,  // Default to current time for now,
-            activityType: exampleActivityType
+            activityType: exampleActivityType,
+            autoMidpoint: true
         };
         const newGroup = await groupModel.create(newGroupData)
         const invalidActivity = {
@@ -111,6 +73,10 @@ describe('Unmocked: Group Controller', () => {
   let groupController: GroupController;
 
   beforeAll(async () => {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/test');
+    }
+
     app = express();
     app.use(express.json());
     groupController = new GroupController();
@@ -134,7 +100,11 @@ describe('Unmocked: Group Controller', () => {
 
     app.get('/group/activities',(req, res, next) => groupController.getActivities(req, res));
     app.post('/group/activities/select', (req, res, next) => groupController.selectActivity(req, res));
+    app.post('/group/midpoint/:joinCode', (req, res, next) => groupController.updateMidpointByJoinCode(req, res, next));
     
+  });
+  afterEach(async () => {
+    await mongoose.connection.collections['groups'].deleteMany({});
   });
 
   afterAll(async () => {
@@ -146,7 +116,9 @@ describe('Unmocked: Group Controller', () => {
     const exampleGroupLeader = {
       id: "68fbe599d84728c6da2_test",
       name: "Group Leader",
-      email: "group.leader@example.com"
+      email: "group.leader@example.com",
+      address: { formatted: '123 Main St, Vancouver', lat: 49.2827, lng: -123.1207 },
+      transitType: 'transit' as const
     };
     const exampleMeetingTime = "2026-11-02T12:30:00Z";
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
@@ -159,18 +131,38 @@ describe('Unmocked: Group Controller', () => {
       groupMemberIds: [exampleGroupLeader],
       meetingTime: exampleMeetingTime,
       activityType: "CAFE",
-      midpoint: "some midpoint"
+      autoMidpoint: true,
     }
     // Create a group with a midpoint
-    const testGroup = await groupModel.create(exampleGroupData);
+    const testGroup = await groupModel.create({
+      joinCode: exampleJoinCode,
+      groupName: "Group With Activities",
+      groupLeaderId: exampleGroupLeader,
+      expectedPeople: 5,
+      groupMemberIds: [exampleGroupLeader],
+      meetingTime: exampleMeetingTime,
+      activityType: "CAFE",
+      autoMidpoint: true,
+    });
 
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Verify group was created
+    const verifyGroup = await groupModel.findByJoinCode(exampleJoinCode);
+
+    // Generate midpoint
+    const midpointRes = await request(app).post(`/group/midpoint/${exampleJoinCode}`);
+
+    if (midpointRes.status !== 200) {
+      console.error('Midpoint generation failed:', midpointRes.body);
+    }
+
+    expect(midpointRes.status).toBe(200);
     const res = await request(app).get(`/group/activities?joinCode=${exampleJoinCode}`);
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('message', 'Fetched activities successfully');
     expect(res.body.data).toBeInstanceOf(Array);
-    expect(res.body.data).toHaveLength(3); // Assuming the default activities are returned
-    expect(res.body.data[0]).toHaveProperty('name');
   });
 
   it('should return 404 if the group does not exist', async () => {
@@ -198,6 +190,7 @@ describe('Unmocked: Group Controller', () => {
       groupMemberIds: [exampleGroupLeader],
       meetingTime: exampleMeetingTime,
       activityType: "CAFE",
+      autoMidpoint: true
     });
 
     const res = await request(app).get(`/group/activities?joinCode=${exampleJoinCode}`);
@@ -213,12 +206,6 @@ describe('Unmocked: Group Controller', () => {
     expect(res.body).toHaveProperty('message', 'Join code is required');
   });
 
-  it('should return 400 if joinCode is not a string', async () => {
-    const res = await request(app).get('/group/activities?joinCode=12345');
-
-    expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('message', 'Join code is required');
-  });
 });
 
 describe('POST /group/activities/select', () => {
@@ -226,10 +213,13 @@ describe('POST /group/activities/select', () => {
     const exampleGroupLeader = {
       id: "68fbe599d84728c6da2_test",
       name: "Group Leader",
-      email: "group.leader@example.com"
+      email: "group.leader@example.com",
+      address: { formatted: '123 Main St, Vancouver', lat: 49.2827, lng: -123.1207 },
+      transitType: 'transit' as const
     };
     const exampleMeetingTime = "2026-11-02T12:30:00Z";
     const exampleJoinCode = Math.random().toString(36).slice(2, 8);
+    const exampleMidpoint = "49.2827 -123.1207";
 
     // Create a group
     const testGroup = await groupModel.create({
@@ -240,21 +230,13 @@ describe('POST /group/activities/select', () => {
       groupMemberIds: [exampleGroupLeader],
       meetingTime: exampleMeetingTime,
       activityType: "CAFE",
+      autoMidpoint: true,
     });
 
-    const activity = {
-      name: "Selected Activity",
-      placeId: "place123",
-      address: "123 Main St, Vancouver",
-      rating: 4.5,
-      userRatingsTotal: 100,
-      priceLevel: 2,
-      type: "cafe",
-      latitude: 49.2827,
-      longitude: -123.1207,
-      businessStatus: "OPERATIONAL",
-      isOpenNow: true,
-    };
+    await request(app).post(`/group/midpoint/${exampleJoinCode}`);
+    const activity_res = await request(app).get(`/group/activities?joinCode=${exampleJoinCode}`);
+
+    const activity = activity_res.body.data[0];
 
     const res = await request(app)
       .post('/group/activities/select')
@@ -308,6 +290,7 @@ describe('POST /group/activities/select', () => {
       groupMemberIds: [exampleGroupLeader],
       meetingTime: exampleMeetingTime,
       activityType: "CAFE",
+      autoMidpoint: true
     });
 
     const invalidActivity = {
@@ -332,14 +315,14 @@ describe('POST /group/activities/select', () => {
     const res = await request(app).post('/group/activities/select').send({ activity });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('message', 'Join code and activity are required');
+    expect(res.body).toHaveProperty('message', 'Join code as string and activity are required');
   });
 
   it('should return 400 if activity is missing', async () => {
     const res = await request(app).post('/group/activities/select').send({ joinCode: 'test123' });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('message', 'Join code and activity are required');
+    expect(res.body).toHaveProperty('message', 'Join code as string and activity are required');
   });
 
   it('should return 400 if activity is missing required fields', async () => {

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { MediaService } from '../../src/services/media.service';
-import { IMAGES_DIR } from '../../src/storage';
+import { IMAGES_DIR } from '../../src/config/storage';
 
 jest.mock('../../src/utils/logger.util');
 

@@ -1,28 +1,26 @@
 package com.cpen321.squadup.ui.screens
 import Icon
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import com.cpen321.squadup.ui.viewmodels.MainViewModel
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import com.cpen321.squadup.data.remote.dto.GroupUser
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
 import androidx.compose.material3.TextField
-import com.cpen321.squadup.data.remote.dto.Address
-import com.cpen321.squadup.data.remote.dto.TransitType
+import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.cpen321.squadup.R
-import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
+import com.cpen321.squadup.data.remote.dto.GroupUser
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
 import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.ui.viewmodels.MainViewModel
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +28,7 @@ fun JoinGroupScreen(
     navController: NavController,
     mainViewModel: MainViewModel,
     groupViewMode: GroupViewModel,
-    profileViewModel: ProfileViewModel = hiltViewModel()
+    profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val profileUiState by profileViewModel.uiState.collectAsState()
     var useDefaultSettings by remember { mutableStateOf(false) }
@@ -58,13 +56,13 @@ fun JoinGroupScreen(
             title = { Text("Already a Member") },
             text = { Text("You are already a member of this group.") },
             confirmButton = {
-                Button(onClick = { 
+                Button(onClick = {
                     showAlreadyMemberDialog = false
                     navController.popBackStack()
                 }) {
                     Text("OK")
                 }
-            }
+            },
         )
     }
 
@@ -74,13 +72,13 @@ fun JoinGroupScreen(
             title = { Text("Group Leader") },
             text = { Text("You are the leader of this group. You cannot join your own group as a member.") },
             confirmButton = {
-                Button(onClick = { 
+                Button(onClick = {
                     showAlreadyLeaderDialog = false
                     navController.popBackStack()
                 }) {
                     Text("OK")
                 }
-            }
+            },
         )
     }
 
@@ -92,17 +90,18 @@ fun JoinGroupScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             // Join Code Input
             TextField(
@@ -112,11 +111,12 @@ fun JoinGroupScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 maxLines = 1,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface
-                )
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -129,19 +129,19 @@ fun JoinGroupScreen(
                             onSuccess = { group ->
                                 groupExists = true
                                 groupName = group.groupName
-                                groupMeetingTime = group.meetingTime 
+                                groupMeetingTime = group.meetingTime
                                 joinGroupMessage = ""
                             },
                             onError = {
                                 groupExists = false
                                 joinGroupMessage = "Group not found. Please check the join code."
-                            }
+                            },
                         )
                     } else {
                         joinGroupMessage = "Invalid join code!"
                     }
                 },
-                enabled = joinCode.length == 6
+                enabled = joinCode.length == 6,
             ) {
                 Text("Check Group")
             }
@@ -152,7 +152,7 @@ fun JoinGroupScreen(
                 groupName?.let {
                     Text(
                         text = "$it",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -160,21 +160,21 @@ fun JoinGroupScreen(
                 groupMeetingTime?.let {
                     Text(
                         text = "Meeting Date & Time: $it",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 Text(
                     text = "Please enter your location prior to event and your preferred mode of transit.",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Checkbox for using default profile settings
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp),
                 ) {
                     Checkbox(
                         checked = useDefaultSettings,
@@ -187,7 +187,7 @@ fun JoinGroupScreen(
                                 address = null
                                 transitType = null
                             }
-                        }
+                        },
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Use default settings from my profile")
@@ -208,28 +208,29 @@ fun JoinGroupScreen(
                 TransitTypeInputField(
                     transitType = transitType,
                     isEnabled = !useDefaultSettings,
-                    onTransitTypeChange = { if (!useDefaultSettings) transitType = it }
+                    onTransitTypeChange = { if (!useDefaultSettings) transitType = it },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Join Group Button
                 Button(
                     onClick = {
-                        val currentUser = GroupUser(
-                            id = profileUiState.user!!._id,
-                            name = profileUiState.user!!.name,
-                            email = profileUiState.user!!.email,
-                            address = address!!,
-                            transitType = transitType
-                        )
+                        val currentUser =
+                            GroupUser(
+                                id = profileUiState.user!!._id,
+                                name = profileUiState.user!!.name,
+                                email = profileUiState.user!!.email,
+                                address = address!!,
+                                transitType = transitType,
+                            )
                         mainViewModel.joinGroup(
                             joinCode = joinCode,
                             currentUser = currentUser,
                             onSuccess = { message ->
                                 joinGroupMessage = message
                                 groupViewMode.updateMidpoint(joinCode)
-                                mainViewModel.fetchGroups()     // Refresh groups after joining
-                                navController.popBackStack()    // Navigate back after joining
+                                mainViewModel.fetchGroups() // Refresh groups after joining
+                                navController.popBackStack() // Navigate back after joining
                             },
                             onError = { error ->
                                 when {
@@ -243,10 +244,10 @@ fun JoinGroupScreen(
                                         joinGroupMessage = error
                                     }
                                 }
-                            }
+                            },
                         )
                     },
-                    enabled = address != null && transitType != null
+                    enabled = address != null && transitType != null,
                 ) {
                     Text("Join Group")
                 }
@@ -257,7 +258,16 @@ fun JoinGroupScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = it,
-                    color = if (it.contains("success", ignoreCase = true)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                    color =
+                        if (it.contains(
+                                "success",
+                                ignoreCase = true,
+                            )
+                        ) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        },
                 )
             }
         }
@@ -270,7 +280,7 @@ private fun TransitTypeInputField(
     transitType: TransitType?,
     isEnabled: Boolean,
     onTransitTypeChange: (TransitType?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val transitOptions = TransitType.entries.toList() // Use enum
     var expanded by remember { mutableStateOf(false) }
@@ -278,7 +288,7 @@ private fun TransitTypeInputField(
     ExposedDropdownMenuBox(
         expanded = expanded && isEnabled,
         onExpandedChange = { if (isEnabled) expanded = !expanded },
-        modifier = modifier
+        modifier = modifier,
     ) {
         OutlinedTextField(
             value = transitType?.name?.replaceFirstChar { it.uppercase() } ?: "",
@@ -289,15 +299,16 @@ private fun TransitTypeInputField(
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(),
-            enabled = isEnabled
+            modifier =
+                Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+            enabled = isEnabled,
         )
 
         ExposedDropdownMenu(
             expanded = expanded && isEnabled,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
         ) {
             transitOptions.forEach { option ->
                 DropdownMenuItem(
@@ -305,7 +316,7 @@ private fun TransitTypeInputField(
                     onClick = {
                         onTransitTypeChange(option) // pass enum, not string
                         expanded = false
-                    }
+                    },
                 )
             }
         }

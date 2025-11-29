@@ -13,7 +13,7 @@ class UserManagementApplication : Application() {
         if (!Places.isInitialized()) {
             Places.initializeWithNewPlacesApiEnabled(
                 applicationContext,
-                BuildConfig.GOOGLE_PLACES_API_KEY
+                BuildConfig.GOOGLE_PLACES_API_KEY,
             )
         }
     }

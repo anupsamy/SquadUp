@@ -5,7 +5,7 @@ import fs from 'fs';
 import mongoose from 'mongoose';
 import { MediaController } from '../../src/controllers/media.controller';
 import { MediaService } from '../../src/services/media.service';
-import { IMAGES_DIR } from '../../src/storage';
+import { IMAGES_DIR } from '../../src/config/storage';
 
 jest.mock('../../src/utils/logger.util');
 
@@ -57,21 +57,27 @@ describe('Unmocked: Media Controller - uploadImage', () => {
   });
 
   afterAll(async () => {
-    // Cleanup test files
+    // Cleanup test files - Fixed to handle both files and directories
     if (fs.existsSync(IMAGES_DIR)) {
       const files = fs.readdirSync(IMAGES_DIR);
       files.forEach(file => {
-        fs.unlinkSync(path.join(IMAGES_DIR, file));
+        const filePath = path.join(IMAGES_DIR, file);
+        const stat = fs.statSync(filePath);
+        
+        if (stat.isDirectory()) {
+          // Remove directory recursively
+          fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+          // Remove file
+          fs.unlinkSync(filePath);
+        }
       });
     }
 
     const tempDir = path.join(process.cwd(), 'temp');
     if (fs.existsSync(tempDir)) {
-      const files = fs.readdirSync(tempDir);
-      files.forEach(file => {
-        fs.unlinkSync(path.join(tempDir, file));
-      });
-      fs.rmdirSync(tempDir);
+      // Use rmSync for the temp directory too
+      fs.rmSync(tempDir, { recursive: true, force: true });
     }
 
     await mongoose.connection.close();

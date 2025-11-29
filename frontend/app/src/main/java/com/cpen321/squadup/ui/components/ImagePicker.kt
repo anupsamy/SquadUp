@@ -32,35 +32,39 @@ import java.io.File
 @Composable
 fun ImagePicker(
     onDismiss: () -> Unit,
-    onImageSelected: (Uri) -> Unit
+    onImageSelected: (Uri) -> Unit,
 ) {
     val context = LocalContext.current
     var hasCameraPermission by remember { mutableStateOf(false) }
     var hasStoragePermission by remember { mutableStateOf(false) }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
-    val cameraLauncher = rememberCameraLauncher(
-        photoUri = photoUri,
-        onImageSelected = onImageSelected,
-        onDismiss = onDismiss
-    )
+    val cameraLauncher =
+        rememberCameraLauncher(
+            photoUri = photoUri,
+            onImageSelected = onImageSelected,
+            onDismiss = onDismiss,
+        )
 
-    val galleryLauncher = rememberGalleryLauncher(
-        onImageSelected = onImageSelected,
-        onDismiss = onDismiss
-    )
+    val galleryLauncher =
+        rememberGalleryLauncher(
+            onImageSelected = onImageSelected,
+            onDismiss = onDismiss,
+        )
 
-    val cameraPermissionLauncher = rememberCameraPermissionLauncher(
-        context = context,
-        cameraLauncher = cameraLauncher,
-        onPhotoUriSet = { photoUri = it },
-        onPermissionGranted = { hasCameraPermission = it }
-    )
+    val cameraPermissionLauncher =
+        rememberCameraPermissionLauncher(
+            context = context,
+            cameraLauncher = cameraLauncher,
+            onPhotoUriSet = { photoUri = it },
+            onPermissionGranted = { hasCameraPermission = it },
+        )
 
-    val storagePermissionLauncher = rememberStoragePermissionLauncher(
-        galleryLauncher = galleryLauncher,
-        onPermissionGranted = { hasStoragePermission = it }
-    )
+    val storagePermissionLauncher =
+        rememberStoragePermissionLauncher(
+            galleryLauncher = galleryLauncher,
+            onPermissionGranted = { hasStoragePermission = it },
+        )
 
     LaunchedEffect(Unit) {
         checkInitialPermissions(context) { camera, storage ->
@@ -77,16 +81,16 @@ fun ImagePicker(
                 hasCameraPermission = hasCameraPermission,
                 cameraLauncher = cameraLauncher,
                 permissionLauncher = cameraPermissionLauncher,
-                onPhotoUriSet = { photoUri = it }
+                onPhotoUriSet = { photoUri = it },
             )
         },
         onGalleryClick = {
             handleGalleryClick(
                 hasStoragePermission = hasStoragePermission,
                 galleryLauncher = galleryLauncher,
-                permissionLauncher = storagePermissionLauncher
+                permissionLauncher = storagePermissionLauncher,
             )
-        }
+        },
     )
 }
 
@@ -94,9 +98,9 @@ fun ImagePicker(
 private fun rememberCameraLauncher(
     photoUri: Uri?,
     onImageSelected: (Uri) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.TakePicture()
+    contract = ActivityResultContracts.TakePicture(),
 ) { success ->
     if (success) {
         photoUri?.let { uri ->
@@ -109,9 +113,9 @@ private fun rememberCameraLauncher(
 @Composable
 private fun rememberGalleryLauncher(
     onImageSelected: (Uri) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.GetContent()
+    contract = ActivityResultContracts.GetContent(),
 ) { uri ->
     uri?.let { onImageSelected(it) }
     onDismiss()
@@ -122,22 +126,24 @@ private fun rememberCameraPermissionLauncher(
     context: android.content.Context,
     cameraLauncher: androidx.activity.result.ActivityResultLauncher<Uri>,
     onPhotoUriSet: (Uri) -> Unit,
-    onPermissionGranted: (Boolean) -> Unit
+    onPermissionGranted: (Boolean) -> Unit,
 ) = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.RequestPermission()
+    contract = ActivityResultContracts.RequestPermission(),
 ) { isGranted ->
     onPermissionGranted(isGranted)
     if (isGranted) {
-        val photoFile = File.createTempFile(
-            "profile_photo_${System.currentTimeMillis()}",
-            ".jpg",
-            context.cacheDir
-        )
-        val newPhotoUri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileProvider",
-            photoFile
-        )
+        val photoFile =
+            File.createTempFile(
+                "profile_photo_${System.currentTimeMillis()}",
+                ".jpg",
+                context.cacheDir,
+            )
+        val newPhotoUri =
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileProvider",
+                photoFile,
+            )
         onPhotoUriSet(newPhotoUri)
         launchCamera(cameraLauncher, newPhotoUri)
     }
@@ -146,9 +152,9 @@ private fun rememberCameraPermissionLauncher(
 @Composable
 private fun rememberStoragePermissionLauncher(
     galleryLauncher: androidx.activity.result.ActivityResultLauncher<String>,
-    onPermissionGranted: (Boolean) -> Unit
+    onPermissionGranted: (Boolean) -> Unit,
 ) = rememberLauncherForActivityResult(
-    contract = ActivityResultContracts.RequestPermission()
+    contract = ActivityResultContracts.RequestPermission(),
 ) { isGranted ->
     onPermissionGranted(isGranted)
     if (isGranted) {
@@ -160,25 +166,26 @@ private fun rememberStoragePermissionLauncher(
 private fun ImagePickerDialog(
     onDismiss: () -> Unit,
     onCameraClick: () -> Unit,
-    onGalleryClick: () -> Unit
+    onGalleryClick: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.medium),
-            shape = MaterialTheme.shapes.medium
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(spacing.medium),
+            shape = MaterialTheme.shapes.medium,
         ) {
             Column(
                 modifier = Modifier.padding(spacing.large),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "Select Image Source",
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 Spacer(modifier = Modifier.height(spacing.large))
@@ -208,23 +215,24 @@ private fun ImagePickerDialog(
 
 private fun checkInitialPermissions(
     context: android.content.Context,
-    onPermissionsChecked: (Boolean, Boolean) -> Unit
+    onPermissionsChecked: (Boolean, Boolean) -> Unit,
 ) {
-    val cameraPermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
+    val cameraPermission =
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA,
+        ) == PackageManager.PERMISSION_GRANTED
 
     val storagePermission =
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.READ_MEDIA_IMAGES
+                Manifest.permission.READ_MEDIA_IMAGES,
             ) == PackageManager.PERMISSION_GRANTED
         } else {
             ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Manifest.permission.READ_EXTERNAL_STORAGE,
             ) == PackageManager.PERMISSION_GRANTED
         }
 
@@ -236,19 +244,21 @@ private fun handleCameraClick(
     hasCameraPermission: Boolean,
     cameraLauncher: androidx.activity.result.ActivityResultLauncher<Uri>,
     permissionLauncher: androidx.activity.result.ActivityResultLauncher<String>,
-    onPhotoUriSet: (Uri) -> Unit
+    onPhotoUriSet: (Uri) -> Unit,
 ) {
     if (hasCameraPermission) {
-        val photoFile = File.createTempFile(
-            "profile_photo_${System.currentTimeMillis()}",
-            ".jpg",
-            context.cacheDir
-        )
-        val newPhotoUri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileProvider",
-            photoFile
-        )
+        val photoFile =
+            File.createTempFile(
+                "profile_photo_${System.currentTimeMillis()}",
+                ".jpg",
+                context.cacheDir,
+            )
+        val newPhotoUri =
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileProvider",
+                photoFile,
+            )
         onPhotoUriSet(newPhotoUri)
         launchCamera(cameraLauncher, newPhotoUri)
     } else {
@@ -259,7 +269,7 @@ private fun handleCameraClick(
 private fun handleGalleryClick(
     hasStoragePermission: Boolean,
     galleryLauncher: androidx.activity.result.ActivityResultLauncher<String>,
-    permissionLauncher: androidx.activity.result.ActivityResultLauncher<String>
+    permissionLauncher: androidx.activity.result.ActivityResultLauncher<String>,
 ) {
     if (hasStoragePermission) {
         galleryLauncher.launch("image/*")
@@ -276,7 +286,7 @@ private fun handleGalleryClick(
 
 private fun launchCamera(
     cameraLauncher: androidx.activity.result.ActivityResultLauncher<Uri>,
-    photoUri: Uri
+    photoUri: Uri,
 ) {
     cameraLauncher.launch(photoUri)
 }

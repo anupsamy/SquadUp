@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,18 +42,18 @@ import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
-import com.cpen321.squadup.ui.viewmodels.ProfileUiState
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.theme.LocalFontSizes
 import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
+import com.cpen321.squadup.ui.viewmodels.ProfileUiState
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 
 private data class ProfileCompletionFormState(
     val address: Address? = null,
     val transitType: TransitType? = null,
-    val hasSavedProfile: Boolean = false
+    val hasSavedProfile: Boolean = false,
 ) {
-    //fun canSave(): Boolean = address != null && transitType != null
+    // fun canSave(): Boolean = address != null && transitType != null
     fun canSave(): Boolean = transitType != null
 }
 
@@ -64,7 +63,7 @@ private data class ProfileCompletionScreenData(
     val onAddressChange: (Address?) -> Unit,
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
-    val onSaveClick: () -> Unit
+    val onSaveClick: () -> Unit,
 )
 
 private data class ProfileCompletionScreenContentData(
@@ -75,16 +74,19 @@ private data class ProfileCompletionScreenContentData(
     val onTransitTypeChange: (TransitType?) -> Unit,
     val onSkipClick: () -> Unit,
     val onSaveClick: () -> Unit,
-    val onErrorMessageShown: () -> Unit
+    val onErrorMessageShown: () -> Unit,
 )
 
 @Composable
 fun ProfileCompletionScreen(
     profileViewModel: ProfileViewModel,
     onProfileCompleted: () -> Unit,
-    onProfileCompletedWithMessage: (String) -> Unit = { onProfileCompleted() }
+    onProfileCompletedWithMessage: (String) -> Unit = { onProfileCompleted() },
 ) {
-    val user = profileViewModel.uiState.collectAsState().value.user
+    val user =
+        profileViewModel.uiState
+            .collectAsState()
+            .value.user
     val uiState = profileViewModel.uiState.collectAsState().value
     if (user != null) {
         Text(text = "Welcome, ${user.name}")
@@ -108,70 +110,72 @@ fun ProfileCompletionScreen(
 
     LaunchedEffect(uiState.user) {
         user?.let { user ->
-            if ( user.transitType != null && !formState.hasSavedProfile) {
+            if (user.transitType != null && !formState.hasSavedProfile) {
                 onProfileCompleted()
             }
         }
     }
 
     ProfileCompletionContent(
-        data = ProfileCompletionScreenContentData(
-            uiState = uiState,
-            formState = formState,
-            snackBarHostState = snackBarHostState,
-            onAddressChange = { newAddress: Address? ->
-                formState = formState.copy(address = newAddress)
-            },
-
-            onTransitTypeChange = { formState = formState.copy(transitType = it) },
-            onSkipClick = onProfileCompleted,
-            onSaveClick = {
-                if (formState.canSave()) {
-                    formState = formState.copy(hasSavedProfile = true)
-                    profileViewModel.updateProfile(
-                        name = uiState.user?.name ?: "",
-                        address = formState.address,
-                        transitType = formState.transitType,
-                        onSuccess = {
-                            onProfileCompletedWithMessage(successfulUpdateMessage)
-                        }
-                    )
-                }
-            },
-            onErrorMessageShown = profileViewModel::clearError
-        )
+        data =
+            ProfileCompletionScreenContentData(
+                uiState = uiState,
+                formState = formState,
+                snackBarHostState = snackBarHostState,
+                onAddressChange = { newAddress: Address? ->
+                    formState = formState.copy(address = newAddress)
+                },
+                onTransitTypeChange = { formState = formState.copy(transitType = it) },
+                onSkipClick = onProfileCompleted,
+                onSaveClick = {
+                    if (formState.canSave()) {
+                        formState = formState.copy(hasSavedProfile = true)
+                        profileViewModel.updateProfile(
+                            name = uiState.user?.name ?: "",
+                            address = formState.address,
+                            transitType = formState.transitType,
+                            onSuccess = {
+                                onProfileCompletedWithMessage(successfulUpdateMessage)
+                            },
+                        )
+                    }
+                },
+                onErrorMessageShown = profileViewModel::clearError,
+            ),
     )
 }
 
 @Composable
 private fun ProfileCompletionContent(
     data: ProfileCompletionScreenContentData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
         snackbarHost = {
             MessageSnackbar(
                 hostState = data.snackBarHostState,
-                messageState = MessageSnackbarState(
-                    successMessage = null,
-                    errorMessage = data.uiState.errorMessage,
-                    onSuccessMessageShown = { },
-                    onErrorMessageShown = data.onErrorMessageShown
-                )
+                messageState =
+                    MessageSnackbarState(
+                        successMessage = null,
+                        errorMessage = data.uiState.errorMessage,
+                        onSuccessMessageShown = { },
+                        onErrorMessageShown = data.onErrorMessageShown,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         ProfileCompletionBody(
             paddingValues = paddingValues,
-            data = ProfileCompletionScreenData(
-                formState = data.formState,
-                isSavingProfile = data.uiState.isSavingProfile,
-                onAddressChange = data.onAddressChange,
-                onTransitTypeChange = data.onTransitTypeChange,
-                onSkipClick = data.onSkipClick,
-                onSaveClick = data.onSaveClick
-            )
+            data =
+                ProfileCompletionScreenData(
+                    formState = data.formState,
+                    isSavingProfile = data.uiState.isSavingProfile,
+                    onAddressChange = data.onAddressChange,
+                    onTransitTypeChange = data.onTransitTypeChange,
+                    onSkipClick = data.onSkipClick,
+                    onSaveClick = data.onSaveClick,
+                ),
         )
     }
 }
@@ -180,17 +184,18 @@ private fun ProfileCompletionContent(
 private fun ProfileCompletionBody(
     paddingValues: PaddingValues,
     data: ProfileCompletionScreenData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .padding(spacing.extraLarge),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(spacing.extraLarge),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         ProfileCompletionHeader()
 
@@ -202,7 +207,7 @@ private fun ProfileCompletionBody(
             initialValue = data.formState.address,
             onAddressSelected = { newAddress ->
                 data.onAddressChange(newAddress)
-            }
+            },
         )
 
         Spacer(modifier = Modifier.height(spacing.medium))
@@ -210,7 +215,7 @@ private fun ProfileCompletionBody(
         TransitTypeInputField(
             transitType = data.formState.transitType,
             isEnabled = !data.isSavingProfile,
-            onTransitTypeChange = data.onTransitTypeChange
+            onTransitTypeChange = data.onTransitTypeChange,
         )
 
         Spacer(modifier = Modifier.height(spacing.extraLarge))
@@ -219,20 +224,18 @@ private fun ProfileCompletionBody(
             isSavingProfile = data.isSavingProfile,
             isSaveEnabled = data.formState.canSave(),
             onSkipClick = data.onSkipClick,
-            onSaveClick = data.onSaveClick
+            onSaveClick = data.onSaveClick,
         )
     }
 }
 
 @Composable
-private fun ProfileCompletionHeader(
-    modifier: Modifier = Modifier
-) {
+private fun ProfileCompletionHeader(modifier: Modifier = Modifier) {
     val spacing = LocalSpacing.current
 
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         WelcomeTitle()
 
@@ -243,29 +246,25 @@ private fun ProfileCompletionHeader(
 }
 
 @Composable
-private fun WelcomeTitle(
-    modifier: Modifier = Modifier
-) {
+private fun WelcomeTitle(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.complete_profile),
         style = MaterialTheme.typography.headlineLarge,
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.primary,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
-private fun ProfileDescription(
-    modifier: Modifier = Modifier
-) {
+private fun ProfileDescription(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.profile_description),
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -275,7 +274,7 @@ private fun TransitTypeInputField(
     transitType: TransitType?,
     isEnabled: Boolean,
     onTransitTypeChange: (TransitType?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val transitOptions = TransitType.entries.toList() // Use enum
     var expanded by remember { mutableStateOf(false) }
@@ -283,7 +282,7 @@ private fun TransitTypeInputField(
     ExposedDropdownMenuBox(
         expanded = expanded && isEnabled,
         onExpandedChange = { if (isEnabled) expanded = !expanded },
-        modifier = modifier
+        modifier = modifier,
     ) {
         OutlinedTextField(
             value = transitType?.name?.replaceFirstChar { it.uppercase() } ?: "",
@@ -294,15 +293,16 @@ private fun TransitTypeInputField(
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(),
-            enabled = isEnabled
+            modifier =
+                Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+            enabled = isEnabled,
         )
 
         ExposedDropdownMenu(
             expanded = expanded && isEnabled,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
         ) {
             transitOptions.forEach { option ->
                 DropdownMenuItem(
@@ -310,13 +310,12 @@ private fun TransitTypeInputField(
                     onClick = {
                         onTransitTypeChange(option) // pass enum, not string
                         expanded = false
-                    }
+                    },
                 )
             }
         }
     }
 }
-
 
 @Composable
 private fun ActionButtons(
@@ -324,25 +323,25 @@ private fun ActionButtons(
     isSaveEnabled: Boolean,
     onSkipClick: () -> Unit,
     onSaveClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(spacing.medium)
+        horizontalArrangement = Arrangement.spacedBy(spacing.medium),
     ) {
         SkipButton(
             isEnabled = !isSavingProfile,
             onClick = onSkipClick,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
 
         SaveButton(
             isSaving = isSavingProfile,
             isEnabled = isSaveEnabled && !isSavingProfile,
             onClick = onSaveClick,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -351,7 +350,7 @@ private fun ActionButtons(
 private fun SkipButton(
     isEnabled: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val fontSizes = LocalFontSizes.current
 
@@ -359,12 +358,12 @@ private fun SkipButton(
         Button(
             type = "secondary",
             onClick = onClick,
-            enabled = isEnabled
+            enabled = isEnabled,
         ) {
             Text(
                 text = stringResource(R.string.skip),
                 fontSize = fontSizes.medium,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
         }
     }
@@ -375,25 +374,25 @@ private fun SaveButton(
     isSaving: Boolean,
     isEnabled: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     Box(modifier = modifier) {
         Button(
             onClick = onClick,
-            enabled = isEnabled
+            enabled = isEnabled,
         ) {
             if (isSaving) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(spacing.medium),
                     color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = 2.dp
+                    strokeWidth = 2.dp,
                 )
             } else {
                 Text(
                     text = stringResource(R.string.save),
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
             }
         }

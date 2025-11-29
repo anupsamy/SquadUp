@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { MediaService } from '../../src/services/media.service';
-import { IMAGES_DIR } from '../../src/storage';
+import { IMAGES_DIR } from '../../src/config/storage';
 
 jest.mock('../../src/utils/logger.util');
 
@@ -59,7 +59,7 @@ describe('Mocked: MediaService - Error Handling', () => {
       jest.spyOn(fs, 'unlinkSync').mockImplementationOnce(() => {});
 
       await expect(MediaService.saveImage(filePath as any, userId)).rejects.toThrow(
-        'Failed to save profile picture: Error: Cannot read property path'
+        'Failed to save profile picture: TypeError [ERR_INVALID_ARG_TYPE]: The \"path\" argument must be of type string. Received null'
       );
     });
   });

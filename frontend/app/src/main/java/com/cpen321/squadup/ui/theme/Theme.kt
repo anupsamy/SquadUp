@@ -20,32 +20,26 @@ import androidx.core.view.WindowCompat
 // - Bright primary blue for key actions
 // - Soft grey background
 // - White cards/surfaces with subtle contrast
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF2563EB),          // Action blue
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFE0EDFF),
-    onPrimaryContainer = Color(0xFF0B1F4B),
-
-    secondary = Color(0xFF4B5563),
-    onSecondary = Color(0xFFFFFFFF),
-
-    tertiary = Color(0xFF10B981),
-    onTertiary = Color(0xFFFFFFFF),
-
-    background = Color(0xFFF3F4F6),
-    onBackground = Color(0xFF111827),
-
-    surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF111827),
-
-    surfaceVariant = Color(0xFFE5E7EB),
-    onSurfaceVariant = Color(0xFF4B5563),
-
-    outline = Color(0xFFD1D5DB),
-
-    error = Color(0xFFDC2626),            // Destructive red
-    onError = Color(0xFFFFFFFF)
-)
+private val LightColorScheme =
+    lightColorScheme(
+        primary = Color(0xFF2563EB), // Action blue
+        onPrimary = Color(0xFFFFFFFF),
+        primaryContainer = Color(0xFFE0EDFF),
+        onPrimaryContainer = Color(0xFF0B1F4B),
+        secondary = Color(0xFF4B5563),
+        onSecondary = Color(0xFFFFFFFF),
+        tertiary = Color(0xFF10B981),
+        onTertiary = Color(0xFFFFFFFF),
+        background = Color(0xFFF3F4F6),
+        onBackground = Color(0xFF111827),
+        surface = Color(0xFFFFFFFF),
+        onSurface = Color(0xFF111827),
+        surfaceVariant = Color(0xFFE5E7EB),
+        onSurfaceVariant = Color(0xFF4B5563),
+        outline = Color(0xFFD1D5DB),
+        error = Color(0xFFDC2626), // Destructive red
+        onError = Color(0xFFFFFFFF),
+    )
 
 data class Spacing(
     val none: Dp = 0.dp,
@@ -92,7 +86,7 @@ fun ProvideFontSizes(content: @Composable () -> Unit) {
 @Composable
 fun UserManagementTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = LightColorScheme
 
@@ -116,6 +110,6 @@ fun UserManagementTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = content,
     )
 }

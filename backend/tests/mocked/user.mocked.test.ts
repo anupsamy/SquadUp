@@ -2,7 +2,7 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import { ObjectId } from 'mongodb';
 import { UserController } from '../../src/controllers/user.controller';
-import { userModel } from '../../src/user.model';
+import { userModel } from '../../src/models/user.model';
 import { MediaService } from '../../src/services/media.service';
 
 jest.mock('../../src/utils/logger.util');

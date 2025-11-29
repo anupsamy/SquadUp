@@ -13,17 +13,17 @@ interface ActivityInterface {
     @GET("group/activities")
     suspend fun getActivities(
         @Header("Authorization") authHeader: String,
-        @Query("joinCode") joinCode: String  // Changed from @Body to @Query
+        @Query("joinCode") joinCode: String, // Changed from @Body to @Query
     ): Response<ApiResponse<List<Activity>>>
 
     @POST("group/activities/select")
     suspend fun selectActivity(
         @Header("Authorization") authHeader: String,
-        @Body request: SelectActivityRequest
+        @Body request: SelectActivityRequest,
     ): Response<ApiResponse<Unit>>
 }
 
 data class SelectActivityRequest(
     val joinCode: String,
-    val activity: Activity
+    val activity: Activity,
 )

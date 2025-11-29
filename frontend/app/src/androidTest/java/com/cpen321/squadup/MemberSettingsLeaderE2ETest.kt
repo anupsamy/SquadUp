@@ -3,7 +3,6 @@ package com.cpen321.squadup
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -27,9 +26,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.Calendar
 
-@RunWith(AndroidJUnit4::class)
-@ExperimentalTestApi
-@LargeTest
 /**
  * End-to-End Tests for Group Details Features
  *
@@ -41,8 +37,10 @@ import java.util.Calendar
  * 5. Update Automatic Midpoint Checkbox (as Squad Leader)
  *
  */
+@RunWith(AndroidJUnit4::class)
+@ExperimentalTestApi
+@LargeTest
 class MemberSettingsLeaderE2ETest {
-
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
@@ -61,17 +59,20 @@ class MemberSettingsLeaderE2ETest {
      */
     private fun navigateToMemberSettings() {
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
 
         // Click "See Details"
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .assertIsDisplayed()
             .performClick()
 
@@ -79,7 +80,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(2000)
 
         // Click "Settings"
-        composeTestRule.onNodeWithText("Settings")
+        composeTestRule
+            .onNodeWithText("Settings")
             .assertIsDisplayed()
             .performClick()
 
@@ -91,16 +93,19 @@ class MemberSettingsLeaderE2ETest {
     private fun testExpectedPeople() {
         // Expected People
         // Failure scenario of invalid input
-        composeTestRule.onNode(hasText("Expected People"))
+        composeTestRule
+            .onNode(hasText("Expected People"))
             .performTextClearance()
 
         composeTestRule.waitForIdle()
         Thread.sleep(500)
-        composeTestRule.onNode(hasText("Expected People"))
+        composeTestRule
+            .onNode(hasText("Expected People"))
             .performTextInput("0")
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -108,25 +113,34 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(1000)
 
         // Verify failure
-        composeTestRule.waitForNodeWithText("Expected people must be a positive number", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Expected people must be a positive number", timeoutMillis = 10000)
             .assertIsDisplayed()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
         // Successful scenario
-        composeTestRule.onNode(hasText("Expected People"))
+        composeTestRule
+            .onNode(hasText("Expected People"))
             .performTextClearance()
 
-        composeTestRule.onNode(hasText("Expected People"))
+        composeTestRule
+            .onNode(hasText("Expected People"))
             .performTextInput("7")
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText("Expected people must be a positive number", substring = true).fetchSemanticsNodes().isEmpty()
+            composeTestRule
+                .onAllNodesWithText(
+                    "Expected people must be a positive number",
+                    substring = true,
+                ).fetchSemanticsNodes()
+                .isEmpty()
         }
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -134,7 +148,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(3000)
 
         // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
@@ -145,7 +160,8 @@ class MemberSettingsLeaderE2ETest {
     // Use case: Update Meeting Time
     private fun testMeetingTime() {
         // Meeting Time (click to open picker, then confirm date & time)
-        composeTestRule.onNodeWithText("Click to update Meeting Date & Time")
+        composeTestRule
+            .onNodeWithText("Click to update Meeting Date & Time")
             .performClick()
         Thread.sleep(500)
         device.findObject(By.text("OK"))?.click() // date
@@ -156,19 +172,21 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(1000)
 
         // Verify failure
-        composeTestRule.waitForNodeWithText("Meeting time must be in the future", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Meeting time must be in the future", timeoutMillis = 10000)
             .assertIsDisplayed()
 
         composeTestRule.waitForIdle()
         Thread.sleep(500)
 
-        composeTestRule.onNodeWithText("Click to update Meeting Date & Time")
+        composeTestRule
+            .onNodeWithText("Click to update Meeting Date & Time")
             .performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(500)
         // Wait until TimePicker dialog shows
         val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_MONTH, 1)  // next day
+        calendar.add(Calendar.DAY_OF_MONTH, 1) // next day
         val day = calendar.get(Calendar.DAY_OF_MONTH)
         device.wait(Until.hasObject(By.clazz("android.widget.TimePicker")), 2000)
         device.findObject(By.text(day.toString()))?.click()
@@ -187,7 +205,8 @@ class MemberSettingsLeaderE2ETest {
         }
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -195,7 +214,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(2000)
 
         // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithText("Settings saved successfully!", substring = true).fetchSemanticsNodes().isEmpty()
@@ -210,31 +230,36 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(500)
         composeTestRule.onNode(hasText("Address")).performTextInput("Some random text")
 
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        composeTestRule.waitForNodeWithText("Please select a valid address", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Please select a valid address", timeoutMillis = 10000)
             .assertIsDisplayed()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        composeTestRule.onNode(hasText("Address"))
+        composeTestRule
+            .onNode(hasText("Address"))
             .performTextClearance()
 
         composeTestRule.waitForIdle()
         Thread.sleep(500)
 
-        composeTestRule.onNodeWithText("Address")
+        composeTestRule
+            .onNodeWithText("Address")
             .performTextInput("6445 University Boulevard, Vancouver, BC, Canada, V6T 1Z2")
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        composeTestRule.onAllNodesWithText("6445 University Boulevard", substring = true)
+        composeTestRule
+            .onAllNodesWithText("6445 University Boulevard", substring = true)
             .onLast()
             .performClick()
 
@@ -246,7 +271,8 @@ class MemberSettingsLeaderE2ETest {
         }
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -254,7 +280,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(2000)
 
         // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithText("Settings saved successfully!", substring = true).fetchSemanticsNodes().isEmpty()
@@ -266,11 +293,13 @@ class MemberSettingsLeaderE2ETest {
         // TransitType
         composeTestRule.waitForIdle()
         Thread.sleep(500)
-        composeTestRule.onNodeWithText("Preferred Mode of Transport")
+        composeTestRule
+            .onNodeWithText("Preferred Mode of Transport")
             .performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(500)
-        composeTestRule.onAllNodesWithText("DRIVING")
+        composeTestRule
+            .onAllNodesWithText("DRIVING")
             .onLast()
             .performClick()
 
@@ -278,7 +307,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(1000)
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -286,7 +316,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(2000)
 
         // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule.onAllNodesWithText("Settings saved successfully!", substring = true).fetchSemanticsNodes().isEmpty()
@@ -298,7 +329,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(500)
 
         // Find the checkbox with text "Automatic Midpoint" and click it
-        composeTestRule.onNodeWithText("Automatic Midpoint Update")
+        composeTestRule
+            .onNodeWithText("Automatic Midpoint Update")
             .assertExists("Automatic Midpoint checkbox not found")
             .performClick()
 
@@ -306,7 +338,8 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(500)
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -314,11 +347,10 @@ class MemberSettingsLeaderE2ETest {
         Thread.sleep(2000)
 
         // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
-
     }
-
 
     @Test
     fun updateMemberSettings() {

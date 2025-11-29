@@ -36,7 +36,7 @@ import java.util.Calendar
 fun CreateGroupScreen(
     navController: NavController,
     groupViewModel: GroupViewModel = hiltViewModel(),
-    profileViewModel: ProfileViewModel = hiltViewModel()
+    profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by groupViewModel.uiState.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
@@ -70,7 +70,7 @@ fun CreateGroupScreen(
             uiState.responseData?.let { respData ->
                 val joinCode = respData["joinCode"] as? String ?: ""
                 val gName = respData["groupName"] as? String ?: ""
-                
+
                 if (joinCode.isNotEmpty() && gName.isNotEmpty()) {
                     navController.navigate("group_success/$gName/$joinCode")
                     groupViewModel.clearMessages() // Clear the success message after navigation
@@ -88,42 +88,45 @@ fun CreateGroupScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             TextField(
                 value = groupName,
                 onValueChange = { groupName = it },
                 label = { Text("Group Name") },
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface
-                )
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
 
             DateTimePickerSection(context) { meetingDateTime = it }
-            val parsed = try {
-                OffsetDateTime.parse(meetingDateTime).toLocalDateTime()
-            } catch (e: DateTimeParseException) {
-                null
-            }
+            val parsed =
+                try {
+                    OffsetDateTime.parse(meetingDateTime).toLocalDateTime()
+                } catch (e: DateTimeParseException) {
+                    null
+                }
 
             AutoMidpointToggle(
                 checked = autoMidpoint,
-                onCheckedChange = { autoMidpoint = it }
+                onCheckedChange = { autoMidpoint = it },
             )
 
             TextField(
@@ -132,11 +135,12 @@ fun CreateGroupScreen(
                 label = { Text("Expected People") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface
-                )
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
 
             ActivityDropdown(selected = selectedActivity) { selectedActivity = it }
@@ -147,20 +151,24 @@ fun CreateGroupScreen(
                     when {
                         groupName.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Group name is required")
                         meetingDateTime.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Meeting date and time are required")
-                        parsed != null && parsed.isBefore(LocalDateTime.now()) -> snackbarHostState.showMessage(coroutineScope, "Meeting time must be in the future")
+                        parsed != null &&
+                            parsed.isBefore(
+                                LocalDateTime.now(),
+                            ) -> snackbarHostState.showMessage(coroutineScope, "Meeting time must be in the future")
                         expectedPeople.isBlank() -> snackbarHostState.showMessage(coroutineScope, "Expected people is required")
                         expectedPeople.toIntOrNull() == null || expectedPeople.toInt() <= 0 ->
                             snackbarHostState.showMessage(coroutineScope, "Expected people must be a positive number")
                         selectedActivity == null -> snackbarHostState.showMessage(coroutineScope, "Select an activity")
                         user == null -> snackbarHostState.showMessage(coroutineScope, "User not loaded")
                         else -> {
-                            val groupLeader = GroupUser(
-                                id = user._id,
-                                name = user.name,
-                                email = user.email,
-                                address = user.address,
-                                transitType = user.transitType
-                            )
+                            val groupLeader =
+                                GroupUser(
+                                    id = user._id,
+                                    name = user.name,
+                                    email = user.email,
+                                    address = user.address,
+                                    transitType = user.transitType,
+                                )
 
                             groupViewModel.createGroup(
                                 groupName = groupName,
@@ -168,15 +176,16 @@ fun CreateGroupScreen(
                                 groupLeaderId = groupLeader,
                                 expectedPeople = expectedPeople.toInt(),
                                 activityType = selectedActivity!!.storedValue,
-                                autoMidpoint = autoMidpoint
+                                autoMidpoint = autoMidpoint,
                             )
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("createGroupButton"),
-                enabled = !uiState.isCreatingGroup
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .testTag("createGroupButton"),
+                enabled = !uiState.isCreatingGroup,
             ) {
                 Text(if (uiState.isCreatingGroup) "Creating..." else "Create Group")
             }
@@ -188,14 +197,20 @@ fun CreateGroupScreen(
     }
 }
 
-private fun SnackbarHostState.showMessage(scope: CoroutineScope, msg: String) {
+private fun SnackbarHostState.showMessage(
+    scope: CoroutineScope,
+    msg: String,
+) {
     scope.launch {
         this@showMessage.showSnackbar(msg)
     }
 }
 
 @Composable
-fun DateTimePickerSection(context: Context, onDateTimeSelected: (String) -> Unit) {
+fun DateTimePickerSection(
+    context: Context,
+    onDateTimeSelected: (String) -> Unit,
+) {
     var meetingDate by remember { mutableStateOf("") }
     var meetingTime by remember { mutableStateOf("") }
     val calendar = Calendar.getInstance()
@@ -207,15 +222,17 @@ fun DateTimePickerSection(context: Context, onDateTimeSelected: (String) -> Unit
                 { _, y, m, d -> meetingDate = "%04d-%02d-%02d".format(y, m + 1, d) },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
+                calendar.get(Calendar.DAY_OF_MONTH),
             ).show()
         },
-        modifier = Modifier
-            .fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+        modifier =
+            Modifier
+                .fillMaxWidth(),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
     ) {
         Text(if (meetingDate.isEmpty()) "Select Meeting Date" else "Date: $meetingDate")
     }
@@ -227,33 +244,38 @@ fun DateTimePickerSection(context: Context, onDateTimeSelected: (String) -> Unit
                 { _, h, min -> meetingTime = "%02d:%02d".format(h, min) },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
-                true
+                true,
             ).show()
         },
-        modifier = Modifier
-            .fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+        modifier =
+            Modifier
+                .fillMaxWidth(),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
     ) {
         Text(if (meetingTime.isEmpty()) "Select Meeting Time" else "Time: $meetingTime")
     }
 
     if (meetingDate.isNotEmpty() && meetingTime.isNotEmpty()) {
-        onDateTimeSelected("${meetingDate}T${meetingTime}:00Z")
+        onDateTimeSelected("${meetingDate}T$meetingTime:00Z")
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) {
+fun ActivityDropdown(
+    selected: ActivityType?,
+    onSelect: (ActivityType) -> Unit,
+) {
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         TextField(
             value = selected?.displayName ?: "",
@@ -261,19 +283,21 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
             readOnly = true,
             label = { Text("Select Activity Type") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            colors = ExposedDropdownMenuDefaults.textFieldColors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                disabledContainerColor = MaterialTheme.colorScheme.background
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor()
+            colors =
+                ExposedDropdownMenuDefaults.textFieldColors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                    disabledContainerColor = MaterialTheme.colorScheme.background,
+                ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
         ) {
             ActivityType.values().forEach { type ->
                 DropdownMenuItem(
@@ -281,7 +305,7 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
                     onClick = {
                         onSelect(type)
                         expanded = false
-                    }
+                    },
                 )
             }
         }
@@ -291,22 +315,22 @@ fun ActivityDropdown(selected: ActivityType?, onSelect: (ActivityType) -> Unit) 
 @Composable
 fun AutoMidpointToggle(
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) },
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { onCheckedChange(!checked) },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = onCheckedChange,
         )
         Text(
             "Automatic Midpoint Update",
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 8.dp),
         )
     }
 }
-

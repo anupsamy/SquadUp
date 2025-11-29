@@ -1,4 +1,4 @@
-import { groupModel } from '../../src/group.model';
+import { groupModel } from '../../src/models/group.model';
 import mongoose from 'mongoose';
 
 jest.mock('../../src/utils/logger.util');

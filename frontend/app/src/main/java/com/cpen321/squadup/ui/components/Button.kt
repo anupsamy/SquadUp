@@ -21,10 +21,11 @@ fun Button(
 
     var colors = ButtonDefaults.buttonColors()
     if (type == "secondary") {
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = Color.Black
-        )
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = Color.Black,
+            )
     }
 
     var modifier = Modifier.height(spacing.extraLarge2)

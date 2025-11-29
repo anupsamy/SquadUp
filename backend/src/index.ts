@@ -3,12 +3,12 @@ dotenv.config();
 import express from 'express';
 import { createServer } from 'http';
 
-import { connectDB } from './database';
+import { connectDB } from './config/database';
 import {
   errorHandler,
   notFoundHandler,
 } from './middleware/errorHandler.middleware';
-import router from './routes';
+import router from './routes/routes';
 import path from 'path';
 import { initializeWebSocketService } from './services/websocket.service';
 

@@ -1,5 +1,8 @@
 package com.cpen321.squadup.ui.screens
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,29 +12,26 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.cpen321.squadup.data.remote.dto.ActivityType
 import com.cpen321.squadup.data.remote.dto.Address
 import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
-import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.data.remote.dto.GroupUser
-import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.data.remote.dto.TransitType
 import com.cpen321.squadup.ui.components.AddressPicker
 import com.cpen321.squadup.ui.navigation.NavRoutes
-import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import com.cpen321.squadup.ui.viewmodels.AddressPickerViewModel
-import androidx.compose.ui.platform.LocalContext
-import android.content.Context
-import android.app.TimePickerDialog
-import android.app.DatePickerDialog
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
+import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
 import kotlinx.coroutines.CoroutineScope
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import com.cpen321.squadup.data.remote.dto.ActivityType
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -39,40 +39,40 @@ import java.util.*
 @Composable
 private fun MemberSettingsTopBar(
     navController: NavController,
-    joinCode: String
+    joinCode: String,
 ) {
     TopAppBar(
-        title = { 
+        title = {
             Text(
-                "Member Settings", 
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-            ) 
+                "Member Settings",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            )
         },
         navigationIcon = {
             IconButton(onClick = { navController.navigate("${NavRoutes.GROUP_DETAILS}/$joinCode") }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
             }
-        }
+        },
     )
 }
 
 @Composable
 private fun MemberSettingsBottomBar(
     navController: NavController,
-    joinCode: String
+    joinCode: String,
 ) {
     NavigationBar {
         NavigationBarItem(
             selected = false,
             onClick = { navController.navigate("${NavRoutes.GROUP_LIST}/$joinCode") },
             icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Squads") },
-            label = { Text("Squads") }
+            label = { Text("Squads") },
         )
         NavigationBarItem(
             selected = true,
             onClick = { },
             icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-            label = { Text("Settings") }
+            label = { Text("Settings") },
         )
     }
 }
@@ -88,7 +88,7 @@ data class MemberSettingsState(
     val expectedPeopleError: String?,
     val existingMemberInfo: GroupUser?,
     val autoMidpoint: Boolean,
-    val activityType: String
+    val activityType: String,
 )
 
 data class MemberSettingsHandlers(
@@ -101,24 +101,25 @@ data class MemberSettingsHandlers(
     val onMeetingTimeChange: (String, String?) -> Unit,
     val onExpectedPeopleChange: (String) -> Unit,
     val onAutoMidpointChange: (Boolean) -> Unit,
-    val onActivityChange: (ActivityType) -> Unit
+    val onActivityChange: (ActivityType) -> Unit,
 )
 
 @Composable
 private fun MemberSettingsContent(
     state: MemberSettingsState,
     handlers: MemberSettingsHandlers,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Address picker
         AddressPickerSection(handlers.addressPickerViewModel, state.address) { selected ->
@@ -134,14 +135,14 @@ private fun MemberSettingsContent(
             ExpectedPeopleField(
                 value = state.expectedPeople,
                 error = state.expectedPeopleError,
-                onValueChange = handlers.onExpectedPeopleChange
+                onValueChange = handlers.onExpectedPeopleChange,
             )
 
             MeetingTimePickerButton(
                 context = context,
                 meetingTime = state.meetingTime,
                 meetingTimeError = state.meetingTimeError,
-                onMeetingTimeSelected = handlers.onMeetingTimeChange
+                onMeetingTimeSelected = handlers.onMeetingTimeChange,
             )
             AutoMidpointToggle(checked = state.autoMidpoint, onCheckedChange = handlers.onAutoMidpointChange)
         }
@@ -151,12 +152,10 @@ private fun MemberSettingsContent(
             addressPickerViewModel = handlers.addressPickerViewModel,
             groupViewModel = handlers.groupViewModel,
             snackbarHostState = handlers.snackbarHostState,
-            coroutineScope = handlers.coroutineScope
+            coroutineScope = handlers.coroutineScope,
         )
     }
 }
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -165,16 +164,17 @@ fun MemberSettingsScreen(
     group: GroupDataDetailed,
     profileViewModel: ProfileViewModel = hiltViewModel(),
     groupViewModel: GroupViewModel = hiltViewModel(),
-    addressPickerViewModel: AddressPickerViewModel = hiltViewModel()
+    addressPickerViewModel: AddressPickerViewModel = hiltViewModel(),
 ) {
     val profileUiState by profileViewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
     val currentUserId = profileUiState.user?._id
-    val existingMemberInfo = remember(group, currentUserId) {
-        group.groupMemberIds?.find { it.id == currentUserId }
-    }
+    val existingMemberInfo =
+        remember(group, currentUserId) {
+            group.groupMemberIds?.find { it.id == currentUserId }
+        }
 
     var address by remember { mutableStateOf(existingMemberInfo?.address) }
     var transitType by remember { mutableStateOf(existingMemberInfo?.transitType) }
@@ -185,59 +185,60 @@ fun MemberSettingsScreen(
     var autoMidpoint by remember { mutableStateOf(group.autoMidpoint) }
     var activityType by remember { mutableStateOf<String>(group.activityType) }
 
-    val state = MemberSettingsState(
-        group = group,
-        currentUserId = currentUserId,
-        address = address,
-        transitType = transitType,
-        meetingTime = meetingTime,
-        expectedPeople = expectedPeople,
-        meetingTimeError = meetingTimeError,
-        expectedPeopleError = expectedPeopleError,
-        existingMemberInfo = existingMemberInfo,
-        autoMidpoint = autoMidpoint,
-        activityType = activityType
-    )
+    val state =
+        MemberSettingsState(
+            group = group,
+            currentUserId = currentUserId,
+            address = address,
+            transitType = transitType,
+            meetingTime = meetingTime,
+            expectedPeople = expectedPeople,
+            meetingTimeError = meetingTimeError,
+            expectedPeopleError = expectedPeopleError,
+            existingMemberInfo = existingMemberInfo,
+            autoMidpoint = autoMidpoint,
+            activityType = activityType,
+        )
 
-    val handlers = MemberSettingsHandlers(
-        addressPickerViewModel = addressPickerViewModel,
-        groupViewModel = groupViewModel,
-        snackbarHostState = snackbarHostState,
-        coroutineScope = coroutineScope,
-        onAddressChange = { address = it },
-        onTransitTypeChange = { transitType = it },
-        onMeetingTimeChange = { newTime, error ->
-            meetingTime = newTime
-            meetingTimeError = error
-        },
-        onExpectedPeopleChange = {
-            expectedPeople = it
-            expectedPeopleError = null
-        },
-        onAutoMidpointChange = { autoMidpoint = it },
-        onActivityChange = { activityType = it.storedValue }
-    )
+    val handlers =
+        MemberSettingsHandlers(
+            addressPickerViewModel = addressPickerViewModel,
+            groupViewModel = groupViewModel,
+            snackbarHostState = snackbarHostState,
+            coroutineScope = coroutineScope,
+            onAddressChange = { address = it },
+            onTransitTypeChange = { transitType = it },
+            onMeetingTimeChange = { newTime, error ->
+                meetingTime = newTime
+                meetingTimeError = error
+            },
+            onExpectedPeopleChange = {
+                expectedPeople = it
+                expectedPeopleError = null
+            },
+            onAutoMidpointChange = { autoMidpoint = it },
+            onActivityChange = { activityType = it.storedValue },
+        )
 
     Scaffold(
         topBar = { MemberSettingsTopBar(navController, group.joinCode) },
         bottomBar = { MemberSettingsBottomBar(navController, group.joinCode) },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         MemberSettingsContent(
             state = state,
             handlers = handlers,
-            modifier = Modifier.padding(padding)
+            modifier = Modifier.padding(padding),
         )
     }
 }
-
 
 @Composable
 fun MeetingTimePickerButton(
     context: Context,
     meetingTime: String,
     meetingTimeError: String?,
-    onMeetingTimeSelected: (String, String?) -> Unit
+    onMeetingTimeSelected: (String, String?) -> Unit,
 ) {
     val calendar = Calendar.getInstance()
     Column {
@@ -248,7 +249,7 @@ fun MeetingTimePickerButton(
             modifier = Modifier.fillMaxWidth(),
             readOnly = true,
             isError = meetingTimeError != null,
-            supportingText = { if (meetingTimeError != null) Text(meetingTimeError, color = MaterialTheme.colorScheme.error) }
+            supportingText = { if (meetingTimeError != null) Text(meetingTimeError, color = MaterialTheme.colorScheme.error) },
         )
         Button(onClick = {
             DatePickerDialog(
@@ -268,26 +269,30 @@ fun MeetingTimePickerButton(
                         },
                         calendar.get(Calendar.HOUR_OF_DAY),
                         calendar.get(Calendar.MINUTE),
-                        true
+                        true,
                     ).show()
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
+                calendar.get(Calendar.DAY_OF_MONTH),
             ).show()
         }, modifier = Modifier.fillMaxWidth()) { Text("Click to update Meeting Date & Time") }
     }
 }
 
 @Composable
-fun ExpectedPeopleField(value: String, error: String?, onValueChange: (String) -> Unit) {
+fun ExpectedPeopleField(
+    value: String,
+    error: String?,
+    onValueChange: (String) -> Unit,
+) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text("Expected People") },
         modifier = Modifier.fillMaxWidth(),
         isError = error != null,
-        supportingText = { if (error != null) Text(error, color = MaterialTheme.colorScheme.error) }
+        supportingText = { if (error != null) Text(error, color = MaterialTheme.colorScheme.error) },
     )
 }
 
@@ -295,7 +300,7 @@ fun ExpectedPeopleField(value: String, error: String?, onValueChange: (String) -
 fun AddressPickerSection(
     viewModel: AddressPickerViewModel,
     initialValue: Address?,
-    onAddressSelected: (Address?) -> Unit
+    onAddressSelected: (Address?) -> Unit,
 ) {
     AddressPicker(viewModel, initialValue = initialValue, onAddressSelected = onAddressSelected)
 }
@@ -304,17 +309,17 @@ private fun validateSettings(
     state: MemberSettingsState,
     addressPickerQuery: String,
     snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
 ): Boolean {
     // query must match the selected address formatted string
     if (addressPickerQuery != (state.address as? Address)?.formatted) {
         coroutineScope.launch { snackbarHostState.showSnackbar("Please select a valid address") }
-        return false;
+        return false
     }
     // expected people must be a positive integer
     if (state.expectedPeople.toIntOrNull()?.let { it <= 0 } == true) {
         coroutineScope.launch { snackbarHostState.showSnackbar("Expected people must be a positive number") }
-        return false;
+        return false
     }
     // meetingTimeError blocks saving
     if (state.meetingTimeError != null) return false
@@ -327,7 +332,7 @@ fun SaveSettingsButton(
     addressPickerViewModel: AddressPickerViewModel,
     groupViewModel: GroupViewModel,
     snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
 ) {
     Button(
         onClick = {
@@ -336,15 +341,21 @@ fun SaveSettingsButton(
                     state = state,
                     addressPickerQuery = addressPickerViewModel.query,
                     snackbarHostState = snackbarHostState,
-                    coroutineScope = coroutineScope
-            )) return@Button
+                    coroutineScope = coroutineScope,
+                )
+            ) {
+                return@Button
+            }
 
             // build updated members list
-            val updatedMembers = state.group.groupMemberIds?.map { member ->
-                if (member.id == state.currentUserId) {
-                    member.copy(address = state.address, transitType = state.transitType)
-                } else member
-            } ?: emptyList()
+            val updatedMembers =
+                state.group.groupMemberIds?.map { member ->
+                    if (member.id == state.currentUserId) {
+                        member.copy(address = state.address, transitType = state.transitType)
+                    } else {
+                        member
+                    }
+                } ?: emptyList()
 
             // perform update
             groupViewModel.updateMember(
@@ -367,10 +378,10 @@ fun SaveSettingsButton(
                         }
                     }
                 },
-                onError = { coroutineScope.launch { snackbarHostState.showSnackbar("Error saving!") } }
+                onError = { coroutineScope.launch { snackbarHostState.showSnackbar("Error saving!") } },
             )
         },
-        enabled = state.address != null && state.transitType != null
+        enabled = state.address != null && state.transitType != null,
     ) {
         Text("Save")
     }

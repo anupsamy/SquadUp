@@ -7,31 +7,30 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavGraphBuilder
 import com.cpen321.squadup.R
-import com.cpen321.squadup.data.remote.dto.GroupDataDetailed
 import com.cpen321.squadup.ui.screens.AuthScreen
-import com.cpen321.squadup.ui.screens.LoadingScreen
 import com.cpen321.squadup.ui.screens.CreateGroupScreen
 import com.cpen321.squadup.ui.screens.GroupDetailsScreen
 import com.cpen321.squadup.ui.screens.GroupListScreen
 import com.cpen321.squadup.ui.screens.GroupSuccessScreen
+import com.cpen321.squadup.ui.screens.JoinGroupScreen
+import com.cpen321.squadup.ui.screens.LoadingScreen
 import com.cpen321.squadup.ui.screens.MainScreen
 import com.cpen321.squadup.ui.screens.ManageProfileScreen
-import com.cpen321.squadup.ui.screens.ProfileScreenActions
+import com.cpen321.squadup.ui.screens.MemberSettingsScreen
 import com.cpen321.squadup.ui.screens.ProfileCompletionScreen
 import com.cpen321.squadup.ui.screens.ProfileScreen
-import com.cpen321.squadup.ui.screens.JoinGroupScreen
-import com.cpen321.squadup.ui.screens.MemberSettingsScreen
+import com.cpen321.squadup.ui.screens.ProfileScreenActions
 import com.cpen321.squadup.ui.viewmodels.AuthViewModel
+import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 import com.cpen321.squadup.ui.viewmodels.MainViewModel
 import com.cpen321.squadup.ui.viewmodels.NavigationViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import com.cpen321.squadup.ui.viewmodels.GroupViewModel
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -49,9 +48,7 @@ object NavRoutes {
 }
 
 @Composable
-fun AppNavigation(
-    navController: NavHostController = rememberNavController()
-) {
+fun AppNavigation(navController: NavHostController = rememberNavController()) {
     val navigationViewModel: NavigationViewModel = hiltViewModel()
     val navigationStateManager = navigationViewModel.navigationStateManager
     val navigationEvent by navigationStateManager.navigationEvent.collectAsState()
@@ -70,7 +67,7 @@ fun AppNavigation(
             navigationStateManager,
             authViewModel,
             mainViewModel,
-            groupViewModel
+            groupViewModel,
         )
     }
 
@@ -80,7 +77,7 @@ fun AppNavigation(
         profileViewModel = profileViewModel,
         mainViewModel = mainViewModel,
         navigationStateManager = navigationStateManager,
-        groupViewModel = groupViewModel
+        groupViewModel = groupViewModel,
     )
 }
 
@@ -90,16 +87,24 @@ private fun handleNavigationEvent(
     navigationStateManager: NavigationStateManager,
     authViewModel: AuthViewModel,
     mainViewModel: MainViewModel,
-    groupViewModel: GroupViewModel
+    groupViewModel: GroupViewModel,
 ) {
-    fun nav(route: String, popToRoot: Boolean = false) {
+    fun nav(
+        route: String,
+        popToRoot: Boolean = false,
+    ) {
         navController.navigate(route) {
             if (popToRoot) popUpTo(0) { inclusive = true }
         }
         navigationStateManager.clearNavigationEvent()
     }
 
-    fun navWithMessage(setter: (String) -> Unit, message: String, route: String, popToRoot: Boolean = false) {
+    fun navWithMessage(
+        setter: (String) -> Unit,
+        message: String,
+        route: String,
+        popToRoot: Boolean = false,
+    ) {
         setter(message)
         nav(route, popToRoot)
     }
@@ -139,7 +144,7 @@ private fun handleNavigationEvent(
 
 private fun NavGraphBuilder.addLoadingAndAuthRoutes(
     authViewModel: AuthViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
 ) {
     composable(NavRoutes.LOADING) {
         LoadingScreen(message = stringResource(R.string.checking_authentication))
@@ -153,7 +158,7 @@ private fun NavGraphBuilder.addLoadingAndAuthRoutes(
 private fun NavGraphBuilder.addProfileRoutes(
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
-    navigationStateManager: NavigationStateManager
+    navigationStateManager: NavigationStateManager,
 ) {
     composable(NavRoutes.PROFILE_COMPLETION) {
         ProfileCompletionScreen(
@@ -162,7 +167,7 @@ private fun NavGraphBuilder.addProfileRoutes(
             onProfileCompletedWithMessage = { message ->
                 Log.d("AppNavigation", "Profile completed with message: $message")
                 navigationStateManager.handleProfileCompletionWithMessage(message)
-            }
+            },
         )
     }
 
@@ -170,19 +175,20 @@ private fun NavGraphBuilder.addProfileRoutes(
         ProfileScreen(
             authViewModel = authViewModel,
             profileViewModel = profileViewModel,
-            actions = ProfileScreenActions(
-                onBackClick = { navigationStateManager.navigateBack() },
-                onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
-                onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
-                onAccountLogOut = { navigationStateManager.handleAccountLogOut() }
-            )
+            actions =
+                ProfileScreenActions(
+                    onBackClick = { navigationStateManager.navigateBack() },
+                    onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
+                    onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
+                    onAccountLogOut = { navigationStateManager.handleAccountLogOut() },
+                ),
         )
     }
 
     composable(NavRoutes.MANAGE_PROFILE) {
         ManageProfileScreen(
             profileViewModel = profileViewModel,
-            onBackClick = { navigationStateManager.navigateBack() }
+            onBackClick = { navigationStateManager.navigateBack() },
         )
     }
 }
@@ -191,21 +197,19 @@ private fun NavGraphBuilder.addMainRoute(
     navController: NavHostController,
     mainViewModel: MainViewModel,
     profileViewModel: ProfileViewModel,
-    navigationStateManager: NavigationStateManager
+    navigationStateManager: NavigationStateManager,
 ) {
     composable(NavRoutes.MAIN) {
         MainScreen(
             navController = navController,
             mainViewModel = mainViewModel,
             profileViewModel = profileViewModel,
-            onProfileClick = { navigationStateManager.navigateToProfile() }
+            onProfileClick = { navigationStateManager.navigateToProfile() },
         )
     }
 }
 
-private fun NavGraphBuilder.addGroupCreationRoutes(
-    navController: NavHostController
-) {
+private fun NavGraphBuilder.addGroupCreationRoutes(navController: NavHostController) {
     composable(NavRoutes.CREATE_GROUP) {
         CreateGroupScreen(navController = navController)
     }
@@ -217,7 +221,7 @@ private fun NavGraphBuilder.addGroupCreationRoutes(
         GroupSuccessScreen(
             navController = navController,
             groupName = groupName,
-            joinCode = joinCode
+            joinCode = joinCode,
         )
     }
 }
@@ -226,7 +230,7 @@ private fun NavGraphBuilder.addGroupDetailRoutes(
     navController: NavHostController,
     mainViewModel: MainViewModel,
     groupViewModel: GroupViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
 ) {
     composable("${NavRoutes.GROUP_DETAILS}/{joinCode}") { backStackEntry ->
         val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
@@ -237,7 +241,7 @@ private fun NavGraphBuilder.addGroupDetailRoutes(
                 navController = navController,
                 group = group,
                 groupViewModel = groupViewModel,
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
             )
         }
     }
@@ -251,7 +255,7 @@ private fun NavGraphBuilder.addGroupDetailRoutes(
                 navController = navController,
                 group = group,
                 groupViewModel = groupViewModel,
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
             )
         }
     }
@@ -265,7 +269,7 @@ private fun NavGraphBuilder.addGroupDetailRoutes(
                 navController = navController,
                 group = group,
                 groupViewModel = groupViewModel,
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
             )
         }
     }
@@ -275,7 +279,7 @@ private fun NavGraphBuilder.addJoinGroupRoute(
     navController: NavHostController,
     mainViewModel: MainViewModel,
     groupViewModel: GroupViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
 ) {
     composable(NavRoutes.JOIN_GROUP) {
         JoinGroupScreen(
@@ -294,11 +298,11 @@ private fun AppNavHost(
     profileViewModel: ProfileViewModel,
     mainViewModel: MainViewModel,
     navigationStateManager: NavigationStateManager,
-    groupViewModel: GroupViewModel
+    groupViewModel: GroupViewModel,
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.LOADING
+        startDestination = NavRoutes.LOADING,
     ) {
         addLoadingAndAuthRoutes(authViewModel, profileViewModel)
         addProfileRoutes(authViewModel, profileViewModel, navigationStateManager)

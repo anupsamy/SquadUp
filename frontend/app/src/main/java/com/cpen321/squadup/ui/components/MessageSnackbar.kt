@@ -11,20 +11,20 @@ data class MessageSnackbarState(
     val successMessage: String?,
     val errorMessage: String?,
     val onSuccessMessageShown: () -> Unit,
-    val onErrorMessageShown: () -> Unit
+    val onErrorMessageShown: () -> Unit,
 )
 
 @Composable
 fun MessageSnackbar(
     hostState: SnackbarHostState,
     messageState: MessageSnackbarState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(messageState.successMessage) {
         messageState.successMessage?.let { message ->
             hostState.showSnackbar(
                 message = message,
-                duration = SnackbarDuration.Long
+                duration = SnackbarDuration.Long,
             )
             messageState.onSuccessMessageShown()
         }
@@ -34,7 +34,7 @@ fun MessageSnackbar(
         messageState.errorMessage?.let { message ->
             hostState.showSnackbar(
                 message = message,
-                duration = SnackbarDuration.Short
+                duration = SnackbarDuration.Short,
             )
             messageState.onErrorMessageShown()
         }
@@ -42,6 +42,6 @@ fun MessageSnackbar(
 
     SnackbarHost(
         hostState = hostState,
-        modifier = modifier
+        modifier = modifier,
     )
 }

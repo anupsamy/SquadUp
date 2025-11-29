@@ -20,7 +20,7 @@ fun AddressPicker(
     viewModel: AddressPickerViewModel,
     modifier: Modifier = Modifier,
     initialValue: Address? = null,
-    onAddressSelected: (Address) -> Unit
+    onAddressSelected: (Address) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -51,15 +51,16 @@ fun AddressPicker(
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
 
         if (expanded && viewModel.predictions.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 250.dp)
-                    .padding(top = 4.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 250.dp)
+                        .padding(top = 4.dp),
             ) {
                 items(viewModel.predictions) { prediction ->
                     PredictionItem(prediction = prediction) {
@@ -83,21 +84,22 @@ fun AddressPicker(
 @Composable
 private fun PredictionItem(
     prediction: AutocompletePrediction,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(12.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { onClick() }
+                .padding(12.dp),
     ) {
         Text(
             text = prediction.getPrimaryText(null).toString(),
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
         )
         Text(
             text = prediction.getSecondaryText(null).toString(),
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }

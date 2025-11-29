@@ -6,8 +6,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
-import androidx.compose.ui.test.onLast
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -25,13 +23,12 @@ import org.junit.runner.RunWith
 @ExperimentalTestApi
 @LargeTest
 class GroupDetailsLeaderE2ETest {
-
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     private lateinit var device: UiDevice
 
-    //Note: These tests assume a group with midpoint is calculated, and
+    // Note: These tests assume a group with midpoint is calculated, and
     // an activity is selected from the list of activities.
 
     @Before
@@ -45,11 +42,13 @@ class GroupDetailsLeaderE2ETest {
     private fun navigateToFirstGroup() {
         // Click the first group (by "Leader:" label)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -106,19 +105,23 @@ class GroupDetailsLeaderE2ETest {
         }
 
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
+        Thread.sleep(100)
 
         // Verify success
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText(
-                "Activity selected successfully!",
-                substring = true
-            ).fetchSemanticsNodes().isNotEmpty()
+            composeTestRule
+                .onAllNodesWithText(
+                    "Activity selected successfully!",
+                    substring = true,
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithText(
-            "Activity selected successfully!",
-            substring = true
-        ).onFirst().assertIsDisplayed()
+        composeTestRule
+            .onAllNodesWithText(
+                "Activity selected successfully!",
+                substring = true,
+            ).onFirst()
+            .assertIsDisplayed()
     }
 
     // Use case: View recommended locations
@@ -131,7 +134,8 @@ class GroupDetailsLeaderE2ETest {
         }
 
         // Assert map is displayed
-        composeTestRule.onNodeWithTag("LeaderMapView")
+        composeTestRule
+            .onNodeWithTag("LeaderMapView")
             .assertIsDisplayed()
 
         // Wait for ActivityPicker to appear
@@ -140,7 +144,8 @@ class GroupDetailsLeaderE2ETest {
         }
 
         // Assert activity picker is displayed
-        composeTestRule.onNodeWithTag("ActivityPicker")
+        composeTestRule
+            .onNodeWithTag("ActivityPicker")
             .assertIsDisplayed()
     }
 }

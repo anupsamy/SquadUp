@@ -22,194 +22,202 @@ data class AuthUiState(
     val isSigningIn: Boolean = false,
     val isSigningUp: Boolean = false,
     val isCheckingAuth: Boolean = true,
-
     // Auth states
     val isAuthenticated: Boolean = false,
     val user: User? = null,
-
     // Message states
     val errorMessage: String? = null,
     val successMessage: String? = null,
-
     // Control flags
-    val shouldSkipAuthCheck: Boolean = false
+    val shouldSkipAuthCheck: Boolean = false,
 )
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val navigationStateManager: NavigationStateManager
-) : ViewModel() {
-
-    companion object {
-        private const val TAG = "AuthViewModel"
-    }
-
-    private val _uiState = MutableStateFlow(AuthUiState())
-    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-
-    init {
-        if (!_uiState.value.shouldSkipAuthCheck) {
-            checkAuthenticationStatus()
+class AuthViewModel
+    @Inject
+    constructor(
+        private val authRepository: AuthRepository,
+        private val navigationStateManager: NavigationStateManager,
+    ) : ViewModel() {
+        companion object {
+            private const val TAG = "AuthViewModel"
         }
-    }
 
-    private fun checkAuthenticationStatus() {
-        viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(isCheckingAuth = true)
-                updateNavigationState(isLoading = true)
+        private val _uiState = MutableStateFlow(AuthUiState())
+        val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-                val isAuthenticated = authRepository.isUserAuthenticated()
-                val user = if (isAuthenticated) authRepository.getCurrentUser() else null
-                val needsProfileCompletion = user?.address?.formatted.isNullOrBlank() ||
-                        user.transitType == null
-
-
-                _uiState.value = _uiState.value.copy(
-                    isAuthenticated = isAuthenticated,
-                    user = user,
-                    isCheckingAuth = false
-                )
-
-                updateNavigationState(
-                    isAuthenticated = isAuthenticated,
-                    needsProfileCompletion = needsProfileCompletion,
-                    isLoading = false
-                )
-            } catch (e: java.net.SocketTimeoutException) {
-                handleAuthError("Network timeout. Please check your connection.", e)
-            } catch (e: java.net.UnknownHostException) {
-                handleAuthError("No internet connection. Please check your network.", e)
-            } catch (e: java.io.IOException) {
-                handleAuthError("Connection error. Please try again.", e)
+        init {
+            if (!_uiState.value.shouldSkipAuthCheck) {
+                checkAuthenticationStatus()
             }
         }
-    }
 
-    private fun updateNavigationState(
-        isAuthenticated: Boolean = false,
-        needsProfileCompletion: Boolean = false,
-        isLoading: Boolean = false
-    ) {
-        navigationStateManager.updateAuthenticationState(
-            isAuthenticated = isAuthenticated,
-            needsProfileCompletion = needsProfileCompletion,
-            isLoading = isLoading,
-            currentRoute = NavRoutes.LOADING
-        )
-    }
+        private fun checkAuthenticationStatus() {
+            viewModelScope.launch {
+                try {
+                    _uiState.value = _uiState.value.copy(isCheckingAuth = true)
+                    updateNavigationState(isLoading = true)
 
-    private fun handleAuthError(errorMessage: String, exception: Exception) {
-        Log.e(TAG, "Authentication check failed: $errorMessage", exception)
-        _uiState.value = _uiState.value.copy(
-            isCheckingAuth = false,
-            isAuthenticated = false,
-            errorMessage = errorMessage
-        )
-        updateNavigationState()
-    }
-
-    suspend fun signInWithGoogle(context: Context): Result<GoogleIdTokenCredential> {
-        return authRepository.signInWithGoogle(context)
-    }
-
-    private fun handleGoogleAuthResult(
-        credential: GoogleIdTokenCredential,
-        isSignUp: Boolean,
-        authOperation: suspend (String) -> Result<AuthData>
-    ) {
-        viewModelScope.launch {
-            // Update loading state based on operation type
-            _uiState.value = _uiState.value.copy(
-                isSigningIn = !isSignUp,
-                isSigningUp = isSignUp
-            )
-
-            authOperation(credential.idToken)
-                .onSuccess { authData ->
+                    val isAuthenticated = authRepository.isUserAuthenticated()
+                    val user = if (isAuthenticated) authRepository.getCurrentUser() else null
                     val needsProfileCompletion =
-                        authData.user.address?.formatted.isNullOrBlank() ||
-                        authData.user.transitType == null
+                        user?.address?.formatted.isNullOrBlank() ||
+                            user.transitType == null
 
+                    _uiState.value =
+                        _uiState.value.copy(
+                            isAuthenticated = isAuthenticated,
+                            user = user,
+                            isCheckingAuth = false,
+                        )
 
-                    _uiState.value = _uiState.value.copy(
-                        isSigningIn = false,
-                        isSigningUp = false,
-                        isAuthenticated = true,
-                        user = authData.user,
-                        errorMessage = null
-                    )
-
-                    // Trigger navigation through NavigationStateManager
-                    navigationStateManager.updateAuthenticationState(
-                        isAuthenticated = true,
+                    updateNavigationState(
+                        isAuthenticated = isAuthenticated,
                         needsProfileCompletion = needsProfileCompletion,
                         isLoading = false,
-                        currentRoute = NavRoutes.AUTH
                     )
+                } catch (e: java.net.SocketTimeoutException) {
+                    handleAuthError("Network timeout. Please check your connection.", e)
+                } catch (e: java.net.UnknownHostException) {
+                    handleAuthError("No internet connection. Please check your network.", e)
+                } catch (e: java.io.IOException) {
+                    handleAuthError("Connection error. Please try again.", e)
                 }
-                .onFailure { error ->
-                    val operationType = if (isSignUp) "sign up" else "sign in"
-                    Log.e(TAG, "Google $operationType failed", error)
-                    _uiState.value = _uiState.value.copy(
-                        isSigningIn = false,
-                        isSigningUp = false,
-                        errorMessage = error.message
-                    )
-                }
-        }
-    }
-
-    fun handleGoogleSignInResult(credential: GoogleIdTokenCredential) {
-        handleGoogleAuthResult(credential, isSignUp = false) { idToken ->
-            authRepository.googleSignIn(idToken)
-        }
-    }
-
-    fun handleGoogleSignUpResult(credential: GoogleIdTokenCredential) {
-        handleGoogleAuthResult(credential, isSignUp = true) { idToken ->
-            authRepository.googleSignUp(idToken)
-        }
-    }
-
-    fun handleLogout() {
-        viewModelScope.launch {
-            authRepository.clearToken()
-            _uiState.value = AuthUiState(
-                isAuthenticated = false,
-                isCheckingAuth = false,
-                shouldSkipAuthCheck = true
-            )
-        }
-    }
-    fun handleAccountDeletion() {
-        viewModelScope.launch {
-            val result = authRepository.deleteAccount()
-            if (result.isSuccess) {
-                authRepository.clearToken()
-                _uiState.value = AuthUiState(
-                    isAuthenticated = false,
-                    isCheckingAuth = false,
-                    shouldSkipAuthCheck = true
-                )
-            } else {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = "Failed to delete account"
-                )
             }
         }
-    }
 
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
-    }
+        private fun updateNavigationState(
+            isAuthenticated: Boolean = false,
+            needsProfileCompletion: Boolean = false,
+            isLoading: Boolean = false,
+        ) {
+            navigationStateManager.updateAuthenticationState(
+                isAuthenticated = isAuthenticated,
+                needsProfileCompletion = needsProfileCompletion,
+                isLoading = isLoading,
+                currentRoute = NavRoutes.LOADING,
+            )
+        }
 
-    fun setSuccessMessage(message: String) {
-        _uiState.value = _uiState.value.copy(successMessage = message)
-    }
+        private fun handleAuthError(
+            errorMessage: String,
+            exception: Exception,
+        ) {
+            Log.e(TAG, "Authentication check failed: $errorMessage", exception)
+            _uiState.value =
+                _uiState.value.copy(
+                    isCheckingAuth = false,
+                    isAuthenticated = false,
+                    errorMessage = errorMessage,
+                )
+            updateNavigationState()
+        }
 
-    fun clearSuccessMessage() {
-        _uiState.value = _uiState.value.copy(successMessage = null)
+        suspend fun signInWithGoogle(context: Context): Result<GoogleIdTokenCredential> = authRepository.signInWithGoogle(context)
+
+        private fun handleGoogleAuthResult(
+            credential: GoogleIdTokenCredential,
+            isSignUp: Boolean,
+            authOperation: suspend (String) -> Result<AuthData>,
+        ) {
+            viewModelScope.launch {
+                // Update loading state based on operation type
+                _uiState.value =
+                    _uiState.value.copy(
+                        isSigningIn = !isSignUp,
+                        isSigningUp = isSignUp,
+                    )
+
+                authOperation(credential.idToken)
+                    .onSuccess { authData ->
+                        val needsProfileCompletion =
+                            authData.user.address
+                                ?.formatted
+                                .isNullOrBlank() ||
+                                authData.user.transitType == null
+
+                        _uiState.value =
+                            _uiState.value.copy(
+                                isSigningIn = false,
+                                isSigningUp = false,
+                                isAuthenticated = true,
+                                user = authData.user,
+                                errorMessage = null,
+                            )
+
+                        // Trigger navigation through NavigationStateManager
+                        navigationStateManager.updateAuthenticationState(
+                            isAuthenticated = true,
+                            needsProfileCompletion = needsProfileCompletion,
+                            isLoading = false,
+                            currentRoute = NavRoutes.AUTH,
+                        )
+                    }.onFailure { error ->
+                        val operationType = if (isSignUp) "sign up" else "sign in"
+                        Log.e(TAG, "Google $operationType failed", error)
+                        _uiState.value =
+                            _uiState.value.copy(
+                                isSigningIn = false,
+                                isSigningUp = false,
+                                errorMessage = error.message,
+                            )
+                    }
+            }
+        }
+
+        fun handleGoogleSignInResult(credential: GoogleIdTokenCredential) {
+            handleGoogleAuthResult(credential, isSignUp = false) { idToken ->
+                authRepository.googleSignIn(idToken)
+            }
+        }
+
+        fun handleGoogleSignUpResult(credential: GoogleIdTokenCredential) {
+            handleGoogleAuthResult(credential, isSignUp = true) { idToken ->
+                authRepository.googleSignUp(idToken)
+            }
+        }
+
+        fun handleLogout() {
+            viewModelScope.launch {
+                authRepository.clearToken()
+                _uiState.value =
+                    AuthUiState(
+                        isAuthenticated = false,
+                        isCheckingAuth = false,
+                        shouldSkipAuthCheck = true,
+                    )
+            }
+        }
+
+        fun handleAccountDeletion() {
+            viewModelScope.launch {
+                val result = authRepository.deleteAccount()
+                if (result.isSuccess) {
+                    authRepository.clearToken()
+                    _uiState.value =
+                        AuthUiState(
+                            isAuthenticated = false,
+                            isCheckingAuth = false,
+                            shouldSkipAuthCheck = true,
+                        )
+                } else {
+                    _uiState.value =
+                        _uiState.value.copy(
+                            errorMessage = "Failed to delete account",
+                        )
+                }
+            }
+        }
+
+        fun clearError() {
+            _uiState.value = _uiState.value.copy(errorMessage = null)
+        }
+
+        fun setSuccessMessage(message: String) {
+            _uiState.value = _uiState.value.copy(successMessage = message)
+        }
+
+        fun clearSuccessMessage() {
+            _uiState.value = _uiState.value.copy(successMessage = null)
+        }
     }
-}

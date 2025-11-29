@@ -35,30 +35,30 @@ import androidx.lifecycle.lifecycleScope
 import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.components.MessageSnackbar
 import com.cpen321.squadup.ui.components.MessageSnackbarState
+import com.cpen321.squadup.ui.theme.LocalSpacing
 import com.cpen321.squadup.ui.viewmodels.AuthUiState
 import com.cpen321.squadup.ui.viewmodels.AuthViewModel
 import com.cpen321.squadup.ui.viewmodels.ProfileViewModel
-import com.cpen321.squadup.ui.theme.LocalSpacing
 import kotlinx.coroutines.launch
 
 private data class AuthSnackbarData(
     val successMessage: String?,
     val errorMessage: String?,
     val onSuccessMessageShown: () -> Unit,
-    val onErrorMessageShown: () -> Unit
+    val onErrorMessageShown: () -> Unit,
 )
 
 private data class AuthScreenActions(
     val isSigningIn: Boolean,
     val isSigningUp: Boolean,
     val onSignInClick: () -> Unit,
-    val onSignUpClick: () -> Unit
+    val onSignUpClick: () -> Unit,
 )
 
 @Composable
 fun AuthScreen(
     authViewModel: AuthViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
 ) {
     val context = LocalContext.current
     val uiState by authViewModel.uiState.collectAsState()
@@ -91,7 +91,7 @@ fun AuthScreen(
             }
         },
         onSuccessMessageShown = authViewModel::clearSuccessMessage,
-        onErrorMessageShown = authViewModel::clearError
+        onErrorMessageShown = authViewModel::clearError,
     )
 }
 
@@ -103,30 +103,32 @@ private fun AuthContent(
     onSignUpClick: () -> Unit,
     onSuccessMessageShown: () -> Unit,
     onErrorMessageShown: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
         snackbarHost = {
             AuthSnackbarHost(
                 hostState = snackBarHostState,
-                messages = AuthSnackbarData(
-                    successMessage = uiState.successMessage,
-                    errorMessage = uiState.errorMessage,
-                    onSuccessMessageShown = onSuccessMessageShown,
-                    onErrorMessageShown = onErrorMessageShown
-                )
+                messages =
+                    AuthSnackbarData(
+                        successMessage = uiState.successMessage,
+                        errorMessage = uiState.errorMessage,
+                        onSuccessMessageShown = onSuccessMessageShown,
+                        onErrorMessageShown = onErrorMessageShown,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         AuthBody(
             paddingValues = paddingValues,
-            actions = AuthScreenActions(
-                isSigningIn = uiState.isSigningIn,
-                isSigningUp = uiState.isSigningUp,
-                onSignInClick = onSignInClick,
-                onSignUpClick = onSignUpClick
-            )
+            actions =
+                AuthScreenActions(
+                    isSigningIn = uiState.isSigningIn,
+                    isSigningUp = uiState.isSigningUp,
+                    onSignInClick = onSignInClick,
+                    onSignUpClick = onSignUpClick,
+                ),
         )
     }
 }
@@ -135,17 +137,18 @@ private fun AuthContent(
 private fun AuthSnackbarHost(
     hostState: SnackbarHostState,
     messages: AuthSnackbarData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     MessageSnackbar(
         hostState = hostState,
-        messageState = MessageSnackbarState(
-            successMessage = messages.successMessage,
-            errorMessage = messages.errorMessage,
-            onSuccessMessageShown = messages.onSuccessMessageShown,
-            onErrorMessageShown = messages.onErrorMessageShown
-        ),
-        modifier = modifier
+        messageState =
+            MessageSnackbarState(
+                successMessage = messages.successMessage,
+                errorMessage = messages.errorMessage,
+                onSuccessMessageShown = messages.onSuccessMessageShown,
+                onErrorMessageShown = messages.onErrorMessageShown,
+            ),
+        modifier = modifier,
     )
 }
 
@@ -153,17 +156,18 @@ private fun AuthSnackbarHost(
 private fun AuthBody(
     paddingValues: PaddingValues,
     actions: AuthScreenActions,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .padding(spacing.extraLarge),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(spacing.extraLarge),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         AuthHeader()
 
@@ -173,29 +177,25 @@ private fun AuthBody(
             isSigningIn = actions.isSigningIn,
             isSigningUp = actions.isSigningUp,
             onSignInClick = actions.onSignInClick,
-            onSignUpClick = actions.onSignUpClick
+            onSignUpClick = actions.onSignUpClick,
         )
     }
 }
 
 @Composable
-private fun AuthHeader(
-    modifier: Modifier = Modifier
-) {
+private fun AuthHeader(modifier: Modifier = Modifier) {
     AppTitle(modifier = modifier)
 }
 
 @Composable
-private fun AppTitle(
-    modifier: Modifier = Modifier
-) {
+private fun AppTitle(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.app_name),
         style = MaterialTheme.typography.headlineLarge,
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.primary,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -205,25 +205,25 @@ private fun AuthButtons(
     isSigningUp: Boolean,
     onSignInClick: () -> Unit,
     onSignUpClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(spacing.medium)
+        verticalArrangement = Arrangement.spacedBy(spacing.medium),
     ) {
         GoogleSignInButton(
             isLoading = isSigningIn,
             onClick = onSignInClick,
-            enabled = !isSigningIn && !isSigningUp
+            enabled = !isSigningIn && !isSigningUp,
         )
 
         GoogleSignUpButton(
             isLoading = isSigningUp,
             onClick = onSignUpClick,
-            enabled = !isSigningIn && !isSigningUp
+            enabled = !isSigningIn && !isSigningUp,
         )
     }
 }
@@ -241,7 +241,7 @@ private fun GoogleSignInButton(
         GoogleButtonContent(
             isLoading = isLoading,
             text = stringResource(R.string.sign_in_with_google),
-            showOnPrimaryColor = true
+            showOnPrimaryColor = true,
         )
     }
 }
@@ -260,7 +260,7 @@ private fun GoogleSignUpButton(
         GoogleButtonContent(
             isLoading = isLoading,
             text = stringResource(R.string.sign_up_with_google),
-            showOnPrimaryColor = false
+            showOnPrimaryColor = false,
         )
     }
 }
@@ -270,20 +270,20 @@ private fun GoogleButtonContent(
     isLoading: Boolean,
     text: String,
     showOnPrimaryColor: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     if (isLoading) {
         ButtonLoadingIndicator(
             showOnPrimaryColor = showOnPrimaryColor,
-            modifier = modifier
+            modifier = modifier,
         )
     } else {
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
             GoogleLogo()
             Spacer(modifier = Modifier.width(spacing.small))
@@ -295,41 +295,40 @@ private fun GoogleButtonContent(
 @Composable
 private fun ButtonLoadingIndicator(
     showOnPrimaryColor: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
     CircularProgressIndicator(
         modifier = modifier.size(spacing.large),
-        color = if (showOnPrimaryColor) {
-            MaterialTheme.colorScheme.onPrimary
-        } else {
-            MaterialTheme.colorScheme.primary
-        },
-        strokeWidth = 2.dp
+        color =
+            if (showOnPrimaryColor) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.primary
+            },
+        strokeWidth = 2.dp,
     )
 }
 
 @Composable
-private fun GoogleLogo(
-    modifier: Modifier = Modifier
-) {
+private fun GoogleLogo(modifier: Modifier = Modifier) {
     val spacing = LocalSpacing.current
 
     Image(
         painter = painterResource(id = R.drawable.ic_google),
         contentDescription = stringResource(R.string.google_logo),
-        modifier = modifier.size(spacing.large)
+        modifier = modifier.size(spacing.large),
     )
 }
 
 @Composable
 private fun ButtonText(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Text(
         text = text,
-        modifier = modifier
+        modifier = modifier,
     )
 }

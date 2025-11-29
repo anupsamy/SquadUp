@@ -18,25 +18,24 @@ import com.cpen321.squadup.R
 import com.cpen321.squadup.ui.theme.LocalSpacing
 
 @Composable
-fun LoadingScreen(
-    message: String = stringResource(R.string.loading)
-) {
+fun LoadingScreen(message: String = stringResource(R.string.loading)) {
     val spacing = LocalSpacing.current
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(spacing.medium),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(spacing.medium),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.size(spacing.extraLarge2),
                 color = MaterialTheme.colorScheme.primary,
-                strokeWidth = spacing.extraSmall
+                strokeWidth = spacing.extraSmall,
             )
 
             Text(
@@ -44,7 +43,7 @@ fun LoadingScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(top = spacing.medium)
+                modifier = Modifier.padding(top = spacing.medium),
             )
         }
     }

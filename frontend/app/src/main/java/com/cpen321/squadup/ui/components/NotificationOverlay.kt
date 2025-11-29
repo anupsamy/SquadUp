@@ -22,7 +22,7 @@ import kotlinx.coroutines.delay
 fun NotificationOverlay(
     notification: NotificationMessage?,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var isVisible by remember { mutableStateOf(false) }
 
@@ -35,21 +35,23 @@ fun NotificationOverlay(
         }
     }
 
-    val enterAnim = slideInVertically(
-        initialOffsetY = { fullHeight -> -fullHeight },
-        animationSpec = tween(durationMillis = 300)
-    ) + fadeIn(animationSpec = tween(durationMillis = 300))
+    val enterAnim =
+        slideInVertically(
+            initialOffsetY = { fullHeight -> -fullHeight },
+            animationSpec = tween(durationMillis = 300),
+        ) + fadeIn(animationSpec = tween(durationMillis = 300))
 
-    val exitAnim = slideOutVertically(
-        targetOffsetY = { fullHeight -> -fullHeight },
-        animationSpec = tween(durationMillis = 300)
-    ) + fadeOut(animationSpec = tween(durationMillis = 300))
+    val exitAnim =
+        slideOutVertically(
+            targetOffsetY = { fullHeight -> -fullHeight },
+            animationSpec = tween(durationMillis = 300),
+        ) + fadeOut(animationSpec = tween(durationMillis = 300))
 
     AnimatedVisibility(
         visible = isVisible,
         enter = enterAnim,
         exit = exitAnim,
-        modifier = modifier.zIndex(1f)
+        modifier = modifier.zIndex(1f),
     ) {
         notification?.let {
             NotificationCard(it.message) {
@@ -63,28 +65,32 @@ fun NotificationOverlay(
 @Composable
 private fun NotificationCard(
     message: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(Color.Red, RoundedCornerShape(4.dp))
+                modifier =
+                    Modifier
+                        .size(8.dp)
+                        .background(Color.Red, RoundedCornerShape(4.dp)),
             )
 
             Spacer(Modifier.width(12.dp))
@@ -94,12 +100,12 @@ private fun NotificationCard(
                     "New Notification",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
                     message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
 
@@ -107,10 +113,9 @@ private fun NotificationCard(
                 Text(
                     "×",
                     fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
     }
 }
-

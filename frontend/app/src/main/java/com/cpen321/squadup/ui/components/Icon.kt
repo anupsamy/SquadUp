@@ -9,19 +9,20 @@ import com.cpen321.squadup.ui.theme.LocalSpacing
 @Composable
 fun Icon(
     type: String = "dark",
-    name: Int
+    name: Int,
 ) {
     val spacing = LocalSpacing.current
-    val color = if (type == "dark") {
-        Color.Black
-    } else {
-        Color.White
-    }
+    val color =
+        if (type == "dark") {
+            Color.Black
+        } else {
+            Color.White
+        }
 
     Icon(
         painter = painterResource(name),
         contentDescription = null,
         modifier = Modifier.size(spacing.large),
-        tint = color
+        tint = color,
     )
 }

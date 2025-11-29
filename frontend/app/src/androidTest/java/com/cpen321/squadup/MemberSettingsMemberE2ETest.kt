@@ -26,11 +26,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.Calendar
 
-@RunWith(AndroidJUnit4::class)
-@ExperimentalTestApi
-@LargeTest
 /**
  * End-to-End Tests for Group Details Features
  *
@@ -39,8 +35,10 @@ import java.util.Calendar
  * 2. Update Transit (as Squad Member)
  *
  */
+@RunWith(AndroidJUnit4::class)
+@ExperimentalTestApi
+@LargeTest
 class MemberSettingsMemberE2ETest {
-
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
@@ -59,17 +57,20 @@ class MemberSettingsMemberE2ETest {
      */
     private fun navigateToMemberSettings() {
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
 
         // Click "See Details"
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .assertIsDisplayed()
             .performClick()
 
@@ -77,7 +78,8 @@ class MemberSettingsMemberE2ETest {
         Thread.sleep(2000)
 
         // Click "Settings"
-        composeTestRule.onNodeWithText("Settings")
+        composeTestRule
+            .onNodeWithText("Settings")
             .assertIsDisplayed()
             .performClick()
 
@@ -93,31 +95,36 @@ class MemberSettingsMemberE2ETest {
         Thread.sleep(500)
         composeTestRule.onNode(hasText("Address")).performTextInput("Some random text")
 
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        composeTestRule.waitForNodeWithText("Please select a valid address", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Please select a valid address", timeoutMillis = 10000)
             .assertIsDisplayed()
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        composeTestRule.onNode(hasText("Address"))
+        composeTestRule
+            .onNode(hasText("Address"))
             .performTextClearance()
 
         composeTestRule.waitForIdle()
         Thread.sleep(500)
 
-        composeTestRule.onNodeWithText("Address")
+        composeTestRule
+            .onNodeWithText("Address")
             .performTextInput("6445 University Boulevard, Vancouver, BC, Canada, V6T 1Z2")
 
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        composeTestRule.onAllNodesWithText("6445 University Boulevard", substring = true)
+        composeTestRule
+            .onAllNodesWithText("6445 University Boulevard", substring = true)
             .onLast()
             .performClick()
 
@@ -129,7 +136,8 @@ class MemberSettingsMemberE2ETest {
         }
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -137,7 +145,8 @@ class MemberSettingsMemberE2ETest {
         Thread.sleep(2000)
 
         // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             composeTestRule.onAllNodesWithText("Settings saved successfully!", substring = true).fetchSemanticsNodes().isEmpty()
@@ -149,11 +158,13 @@ class MemberSettingsMemberE2ETest {
         // TransitType
         composeTestRule.waitForIdle()
         Thread.sleep(500)
-        composeTestRule.onNodeWithText("Preferred Mode of Transport")
+        composeTestRule
+            .onNodeWithText("Preferred Mode of Transport")
             .performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(500)
-        composeTestRule.onAllNodesWithText("DRIVING")
+        composeTestRule
+            .onAllNodesWithText("DRIVING")
             .onLast()
             .performClick()
 
@@ -161,7 +172,8 @@ class MemberSettingsMemberE2ETest {
         Thread.sleep(1000)
 
         // Save
-        composeTestRule.onNodeWithText("Save")
+        composeTestRule
+            .onNodeWithText("Save")
             .assertIsEnabled()
             .performClick()
 
@@ -169,7 +181,8 @@ class MemberSettingsMemberE2ETest {
         Thread.sleep(2000)
 
         // Verify success
-        composeTestRule.waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
+        composeTestRule
+            .waitForNodeWithText("Settings saved successfully!", timeoutMillis = 10000)
             .assertIsDisplayed()
     }
 

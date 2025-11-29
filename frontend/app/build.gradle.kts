@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Properties
 import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -11,6 +11,10 @@ plugins {
     // secrets gradle plugin
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.google.gms.google.services)
+
+    // code formatting and linting
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
 android {
@@ -41,7 +45,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -57,7 +61,7 @@ android {
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
-                "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\""
+                "\"94902906165-jgeta84u7do6sqpugcdb216bf4tlgqpd.apps.googleusercontent.com\"",
             )
             buildConfigField("String", "FLAVOR", "\"local\"")
         }
@@ -68,17 +72,17 @@ android {
             buildConfigField(
                 "String",
                 "API_BASE_URL",
-                "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/api/\""
+                "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/api/\"",
             )
             buildConfigField(
                 "String",
                 "IMAGE_BASE_URL",
-                "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/\""
+                "\"http://ec2-18-221-196-3.us-east-2.compute.amazonaws.com/\"",
             )
             buildConfigField(
                 "String",
                 "GOOGLE_CLIENT_ID",
-                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\""
+                "\"282207727635-uqma630dg0ldl557l01es2h7uqhmtg9r.apps.googleusercontent.com\"",
             )
             buildConfigField("String", "FLAVOR", "\"staging\"")
         }
@@ -155,18 +159,17 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.places) // maps places api
-    implementation(libs.maps.compose)// map view with compose
+    implementation(libs.maps.compose) // map view with compose
 
-    //map component
+    // map component
     implementation(libs.maps.compose.v433)
     implementation(libs.google.android.maps.utils)
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.ui.automator)
-    //androidTestImplementation(libs.androidx.material3)
+    // androidTestImplementation(libs.androidx.material3)
     // Compose BOM - manages versions for all Compose dependencies
     androidTestImplementation(platform(libs.androidx.compose.bom))
 

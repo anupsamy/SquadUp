@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import type { AuthResult } from '../types/auth.types';
 import type { GoogleUserInfo, IUser } from '../types/user.types';
 import logger from '../utils/logger.util';
-import { userModel } from '../user.model';
+import { userModel } from '../models/user.model';
 
 export class AuthService {
   private googleClient: OAuth2Client;
@@ -42,14 +42,21 @@ export class AuthService {
   }
 
   private generateAccessToken(user: IUser): string {
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not configured');
-    }
-    return jwt.sign({ id: user._id }, jwtSecret, {
-      expiresIn: '19h',
-    });
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET is not configured');
   }
+  
+  const token = jwt.sign({ id: user._id }, jwtSecret, {
+    expiresIn: '19h',
+  });
+  
+  if (typeof token !== 'string') {
+    throw new Error('Failed to generate access token');
+  }
+  
+  return token;
+}
 
   async signUpWithGoogle(idToken: string): Promise<AuthResult> {
     try {

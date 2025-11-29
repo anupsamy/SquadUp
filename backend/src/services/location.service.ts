@@ -1,6 +1,5 @@
 import { Client, TravelMode } from '@googlemaps/google-maps-services-js';
 import type { LocationInfo, GeoLocation } from '../types/location.types';
-import { format } from 'path';
 import { Activity } from '../types/group.types';
 import { TransitType } from '../types/transit.types';
 

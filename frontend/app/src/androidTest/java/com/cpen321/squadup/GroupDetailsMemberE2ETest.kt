@@ -5,7 +5,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -25,7 +24,6 @@ import org.junit.runner.RunWith
 @ExperimentalTestApi
 @LargeTest
 class GroupDetailsMemberE2ETest {
-
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
@@ -48,11 +46,13 @@ class GroupDetailsMemberE2ETest {
 
         // Step 1: From main screen, click on a group (using testTag for reliability)
         composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithTag("groupButton")
+            composeTestRule
+                .onAllNodesWithTag("groupButton")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onAllNodesWithTag("groupButton")
+        composeTestRule
+            .onAllNodesWithTag("groupButton")
             .onFirst()
             .assertIsDisplayed()
             .performClick()
@@ -66,7 +66,8 @@ class GroupDetailsMemberE2ETest {
         Thread.sleep(2000)
 
         // Click "See Details"
-        composeTestRule.onNodeWithText("Group details")
+        composeTestRule
+            .onNodeWithText("Group details")
             .assertIsDisplayed()
             .performClick()
 
@@ -78,16 +79,18 @@ class GroupDetailsMemberE2ETest {
     private fun viewAttendees() {
         // Wait for members to appear
         composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule.onAllNodesWithContentDescription("Member", substring = true)
-                .fetchSemanticsNodes().isNotEmpty()
+            composeTestRule
+                .onAllNodesWithContentDescription("Member", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
 
         // Assert that at least one member exists
-        composeTestRule.onAllNodesWithContentDescription("Member", substring = true)
+        composeTestRule
+            .onAllNodesWithContentDescription("Member", substring = true)
             .onFirst()
             .assertIsDisplayed()
     }
-
 
     @Test
     fun groupDetailsScreen() {

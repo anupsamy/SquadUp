@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { MediaService } from '../../src/services/media.service';
-import { IMAGES_DIR } from '../../src/storage';
+import { IMAGES_DIR } from '../../src/config/storage';
 
 jest.mock('../../src/utils/logger.util');
 
@@ -12,6 +12,7 @@ describe('Unmocked: MediaService', () => {
     }
   });
 
+  //backend video comment commit
   afterEach(() => {
     if (fs.existsSync(IMAGES_DIR)) {
       const files = fs.readdirSync(IMAGES_DIR);

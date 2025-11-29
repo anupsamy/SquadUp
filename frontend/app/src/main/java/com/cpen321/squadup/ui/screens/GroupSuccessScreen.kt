@@ -24,7 +24,7 @@ import com.cpen321.squadup.ui.navigation.NavRoutes
 fun GroupSuccessScreen(
     navController: NavController,
     groupName: String,
-    joinCode: String
+    joinCode: String,
 ) {
     val clipboard = LocalClipboardManager.current
 
@@ -36,23 +36,24 @@ fun GroupSuccessScreen(
                     IconButton(onClick = { navController.navigate(NavRoutes.MAIN) }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = groupName,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -60,13 +61,13 @@ fun GroupSuccessScreen(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = "Join Code: $joinCode",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                    color = Color.Black,
                 )
                 OutlinedButton(onClick = { clipboard.setText(AnnotatedString(joinCode)) }) {
                     Text("Copy")
@@ -77,17 +78,17 @@ fun GroupSuccessScreen(
 
             Button(
                 onClick = { navController.navigate(NavRoutes.MAIN) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .padding(horizontal = 16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(horizontal = 16.dp),
             ) {
                 Text("Back to Home", fontSize = 18.sp)
             }
         }
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -96,6 +97,6 @@ fun PreviewGroupSuccessScreen() {
     GroupSuccessScreen(
         navController = navController,
         groupName = "Study Buddies",
-        joinCode = "ABC123"
+        joinCode = "ABC123",
     )
 }

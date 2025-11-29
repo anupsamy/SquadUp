@@ -34,15 +34,15 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Set up environment
-        working-directory: ./backend
-        run: |
-          echo "MONGODB_URI=mongodb://localhost:27017/testdb" >> .env
-
       - name: Run tests
         working-directory: ./backend
         env:
           MONGODB_URI: mongodb://localhost:27017/testdb
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: npm test
 
   deploy: 

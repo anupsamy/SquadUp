@@ -1,5 +1,3 @@
-import { Express } from 'express';
-
 export type UploadImageRequest = {
   file: Express.Multer.File;
 };

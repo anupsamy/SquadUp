@@ -1,10 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
-import { MediaService } from '../services/media.service';
 import { groupModel } from '../models/group.model';
-import { userModel } from '../models/user.model';
 import {
   GetGroupResponse,
   UpdateGroupRequest,

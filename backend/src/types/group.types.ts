@@ -1,11 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import z from 'zod';
-import { HOBBIES } from '../hobbies';
-import { UserModel, userModel } from '../models/user.model';
-import { GoogleUserInfo } from '../types/user.types';
 import { Address } from './address.types';
 import { TransitType, transitTypeSchema } from './transit.types';
-import { GeoLocation } from './location.types';
 
 // Group model
 // ------------------------------------------------------------

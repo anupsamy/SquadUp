@@ -17,5 +17,5 @@
     "declarationMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts", "jest.config.ts", "jest.setup.ts"]
+  "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts", "jest.config.cjs", "jest.setup.ts"]
 }

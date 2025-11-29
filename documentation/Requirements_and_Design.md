@@ -12,6 +12,7 @@
 | 2025-10-30 | 3.6 | Inserted the Figma prototypes to screen mock-up section. |
 | 2025-10-30 | 4.5 | Dependencies diagram updated based on Firebase edge feedback from M2. |
 | 2025-10-30 | 4.1, 4.7 | Updated for M3. |
+| 2025-11-28 | 3.1–3.4 | Updated Create Group use case with automatic midpoint update; updated use cases with the new **View Travel Time** feature; updated the use case diagram to include **View Travel Time** and **Update Midpoint Automatically**. |
 
 
 ---
@@ -23,6 +24,7 @@ The target audience for SquadUp is anybody who hates dealing with dead group cha
 SquadUp aims to solve the friction of planning group meetups: long back-and-forth chats, infrequent communication, and disagreements over where to meet. By having one Squad Leader create the event with a given time, Squad Members can input their locations in order to receive a list of meeting place suggestions. The suggestions will be calculated using a “midpoint” calculation algorithm, using relative location data from the Google Maps API.
 
 One of the most interesting technical highlights of the MeetUp Planner project is the optimization of using Google Maps and user inputs. This enables the app to propose meetup options that are both time-feasible and geographically fair—such as suggesting a café that minimizes total travel time for the group.
+
 
 
 
@@ -50,29 +52,31 @@ One of the most interesting technical highlights of the MeetUp Planner project i
 - View event time  
 - View current midpoint  
 - View attendees  
-- View selected activity  
+- View selected activity
+- View travel time
 - View recommended locations  
 
 #### Update Group
 - Update expected people  
 - Update event time  
 - Update member address  
-- Update member transit  
+- Update member transit
+- Update midpoint automatically
 - Find midpoint  
 - Select activity  
 
 
 ### **3.2. Use Case Diagram**
-![Use Case Diagram](images/M3-Use-Case.png)
+![Use Case Diagram](images/M5-Use-Case.png)
 ### **3.3. Actors Description**
 #### Registered User
-A registered user is somebody who can create and join events. Their home page will contain a list of all event groups they are currently a part of, as well as archived groups of past events.
+A registered user is somebody who can create and join groups. Their home page will contain a list of all groups they are currently a part of.
 
 #### Squad Leader
-The Squad Leader will be the registered user who creates the group with the intention of sorting out an event. They create a group, input the meeting time, date, and expected number of group members, send out the invite code to join, and decide on the final meeting place once the algorithm has run.
+The Squad Leader will be the registered user who creates the group with the intention of sorting out an event. They create a group, input event information, send out the invite code for other members to join, and decide on the final activity once the algorithm has run to get the midpoint.
 
 #### Squad Member
-A Squad Member will be any registered user who joins an event created by a Squad Leader. They join the group, input their location before the event, and wait for the decision on a meeting place.
+A Squad Member will be any registered user who joins a group created by a Squad Leader. They join the group, input their information, and wait for the decision on a meeting place.
 
 #### Google Maps API
 External API that provides geolocation, distance matrix, and nearby place recommendations for midpoint and venue calculation.
@@ -81,7 +85,7 @@ External API that provides geolocation, distance matrix, and nearby place recomm
 External service used to deliver push notifications (updates, reminders) from the backend to the Android frontend.
 
 #### Google Authentication
-External API that provides user authentication services.
+External API that provides user authentication services. 
 
 ### **3.4. Use Case Description**
 
@@ -92,7 +96,7 @@ External API that provides user authentication services.
 4. **Delete account**: The user is able to delete their profile while they are currently signed in.  
 
 #### Use cases for feature 2: **Group Management**
-1. **Create group**: A registered user can create a new group by entering event details such as name, time and date, expected number of people, and activity type.  
+1. **Create group**: A registered user can create a new group by entering event details such as name, time and date, expected number of people, and activity type, and choose if they want the midpoint to be updated automatically.
 2. **Join group**: A registered user can join an existing group using an invitation code, then provide their location information.  
 3. **View all groups**: A registered user can see an overview list of all the groups they are currently a part of.  
 4. **View specific group**: A Squad Member can click on a particular group to view its details, including the leader’s name, member list, midpoint status, and selected activity if available.  
@@ -103,8 +107,9 @@ External API that provides user authentication services.
 1. **View event time**: A Squad Member can check the scheduled time of the event to plan accordingly.  
 2. **View current midpoint**: A Squad Member can see the calculated geographic midpoint based on all members’ locations.  
 3. **View attendees**: A Squad Member can view and search the list of members currently in the group.  
-4. **View recommended locations**: After the midpoint location algorithm is run, the Squad Leader can view the list of activities around the midpoint for their desired activity type.  
-5. **View selected activity**: A Squad Member can see the selected activity (final meeting place/activity) or view the current planning status if no goal has been chosen.  
+4. **View recommended locations**: After the midpoint location algorithm is run, the Squad Leader can view the list of activities around the midpoint for their desired activity type.
+5. **View Travel Time**: After the midpoint location algorithm is run and an activity is selected, the members can view the travel time from their starting location to the selected activity. 
+6. **View selected activity**: A Squad Member can see the selected activity (final meeting place/activity) or view the current planning status if no goal has been chosen.  
 
 #### Use cases for feature 4: **Update Group**
 1. **Update expected people**: The Squad Leader can adjust the estimated number of attendees to refine planning.  
@@ -112,7 +117,9 @@ External API that provides user authentication services.
 3. **Update member address**: The Squad Member can update the location they’ll be departing from.  
 4. **Update member transit**: The Squad Member can update the form of transportation they’ll be using to get to the midpoint.  
 5. **Find midpoint**: The Squad Leader can trigger a recalculation of the midpoint and activity suggestions when new information is added or members change.  
-6. **Select activity**: The Squad Leader can finalize the chosen meeting place and activity, confirming it as the event destination.  
+6. **Select activity**: The Squad Leader can finalize the chosen meeting place and activity, confirming it as the event destination.
+7. **Update Midpoint Automatically**: The Squad Leader can choose to update the midpoint automatically anytime members update their address or transit type in the member settings page, or if the leader updates the activity type in the member settings page.
+
 
 
 
@@ -132,7 +139,6 @@ External API that provides user authentication services.
 1. User inputs the Group Name into the input field.  
 2. User selects meeting date from the “Select Meeting Date” button.  
 3. User selects meeting time from the “Select Meeting Time” button.  
-4. User clicks “Confirm Date-Time” button.  
 5. User inputs Expected People into the input field.  
 6. User selects Activity Type from the dropdown field.  
 7. User clicks “Create Group” button.  
@@ -172,8 +178,8 @@ External API that provides user authentication services.
 
 **Main success scenario**:
 1. User selects a Group from SquadUp home page.  
-2. User views Group name, event date and time, current midpoint, join code, group host (Squad Leader), “See Details” button.  
-3. User clicks “See Details” button.  
+2. User views Group name, event date and time, current midpoint, join code, group host (Squad Leader), “Group details” button.  
+3. User clicks “Group details” button.  
 4. User views full member list, “Leave Group” button, “Member Settings” tab at the bottom bar.  
 5. If user is a Squad Leader, user is additionally able to view delete Group button.  
 
@@ -436,7 +442,7 @@ Nielsen, J. (1993, January 1). Response Time Limits: Article by Jakob Nielsen. N
 ![Create Group Use Case Diagram](images/usecase-create-group.png)
 1. [**[Join Group]**](#uc1)\
 ![Join Group Use Case Diagram](images/usecase-join-group.png)
-1. [**[View Group]**](#uc1)\
+1. [**[View Specific Group]**](#uc1)\
 ![View Group Use Case Diagram](images/usecase-view-group.png)
 1. [**[Find Midpoint]**](#uc1)\
 ![Midpoint Use Case Diagram](images/usecase-midpoint.png)
@@ -450,4 +456,4 @@ Nielsen, J. (1993, January 1). Response Time Limits: Article by Jakob Nielsen. N
     - **Validation**: The location optimization algorithm uses parallel API calls with `Promise.all()` to fetch travel times concurrently from Google Maps Distance Matrix API during each iteration, reducing total network latency from sequential to concurrent execution. Early convergence detection (epsilon threshold check) and a maximum of 20 iterations are enforced. Previously calculated midpoints are cached in the database for instant return if the group configuration hasn't changed. The initial geographic midpoint calculation is performed in-memory without external API calls, providing a fast starting point for iterative refinement.
 
 2. [**Group View Load Time**](#nfr2)  
-    - **Validation**: The Group View fetches all group details including attendees, event time, and status in one atomic operation via a single indexed database query on the `joinCode` field (`findByJoinCode()`), avoiding multiple round trips. MongoDB's indexed `findOne()` operation provides O(log n) lookup performance, and the API endpoint returns the complete group document with all nested member information pre-populated, eliminating the need for additional join queries or data fetches.
+    - **Validation**: The Group View uses a single indexed database query on the `joinCode` field (MongoDB index on line 37 of `group.model.ts`) to fetch all group details including attendees, event time, and status in one atomic operation via `findByJoinCode()`, avoiding multiple round trips and ensuring sub-second database response times. The query leverages MongoDB's indexed `findOne()` operation which provides O(log n) lookup performance, and the API endpoint returns the complete group document with all nested member information pre-populated, eliminating the need for additional join queries or data fetching.

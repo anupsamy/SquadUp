@@ -84,11 +84,11 @@ npx jest --coverage
 
 ### 2.4. Jest Coverage Report Screenshots for Tests With Mocking
 
-![Coverage Report With Mocking](images/test-mock.png)
+![Coverage Report With Mocking](images/test-mock1.png)
 
 ### 2.5. Jest Coverage Report Screenshots for Both Tests With and Without Mocking
 
-![Coverage Report With All Tests](images/test-all.png)
+![Coverage Report With All Tests](images/test-all1.png)
 
 ## 2.6 Uncovered Testing Justification
 

@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import type { AuthResult } from '../types/auth.types';
 import type { GoogleUserInfo, IUser } from '../types/user.types';
 import logger from '../utils/logger.util';
-import { userModel } from '../user.model';
+import { userModel } from '../models/user.model';
 
 export class AuthService {
   private googleClient: OAuth2Client;

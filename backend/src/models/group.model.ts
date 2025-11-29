@@ -11,12 +11,12 @@ import {
   activityZodSchema,
   GroupUser,
   Activity,
-} from './types/group.types';
+} from '../types/group.types';
 import { addressSchema, userModel, UserModel } from './user.model';
-import { GoogleUserInfo } from './types/user.types';
-import logger from './utils/logger.util';
-import { LocationService } from './services/location.service';
-import { GeoLocation } from './types/location.types';
+import { GoogleUserInfo } from '../types/user.types';
+import logger from '../utils/logger.util';
+import { LocationService } from '../services/location.service';
+import { GeoLocation } from '../types/location.types';
 
 const groupSchema = new Schema<IGroup>(
   {

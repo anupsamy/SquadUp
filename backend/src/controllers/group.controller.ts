@@ -3,8 +3,8 @@ import { NextFunction, Request, Response } from 'express';
 import { GetProfileResponse, UpdateProfileRequest } from '../types/user.types';
 import logger from '../utils/logger.util';
 import { MediaService } from '../services/media.service';
-import { groupModel } from '../group.model';
-import { userModel } from '../user.model';
+import { groupModel } from '../models/group.model';
+import { userModel } from '../models/user.model';
 import {
   GetGroupResponse,
   UpdateGroupRequest,
@@ -27,6 +27,7 @@ import {
   sendGroupLeaveFCM,
   sendActivitySelectedFCM,
 } from '../services/fcm.service';
+import { getWebSocketService } from '../services/websocket.service';
 
 export class GroupController {
   async createGroup(
@@ -194,7 +195,7 @@ export class GroupController {
       }
 
       // Send WebSocket notifications for new members
-      /*const wsService = getWebSocketService();
+      const wsService = getWebSocketService();
       if (wsService) {
         const currentMemberIds = (currentGroup.groupMemberIds || []).map(member => member.id);
         const newMemberIds = (groupMemberIds || []).map(member => member.id);
@@ -215,7 +216,7 @@ export class GroupController {
           // FCM topic notification (clients subscribe to topic == joinCode)
           void sendGroupJoinFCM(joinCode, member.name, updatedGroup.groupName, member.id);
         });
-      }*/
+      }
 
       res.status(200).json({
         message: 'Group info updated successfully',
@@ -622,37 +623,37 @@ export class GroupController {
       const updatedTravelTime = await groupModel.updateMemberTravelTime(updatedGroup, locationService, true);
 
       // Send notifications to group members
-      //const wsService = getWebSocketService();
-      // if (wsService && updatedGroup) {
-      //   const leaderId = updatedGroup.groupLeaderId.id || '';
-      //   const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
-      //   const rawActivityName = activity.name;
-      //   const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
+      const wsService = getWebSocketService();
+      if (wsService && updatedGroup) {
+        const leaderId = updatedGroup.groupLeaderId.id || '';
+        const leaderName = updatedGroup.groupLeaderId.name || 'Group leader';
+        const rawActivityName = activity.name;
+        const activityName: string = typeof rawActivityName === 'string' ? rawActivityName : 'an activity';
 
-      //   // Send WebSocket notification
-      //   wsService.notifyGroupUpdate(
-      //     joinCode,
-      //     `${leaderName} selected "${activityName}" for the group`,
-      //     {
-      //       type: 'activity_selected',
-      //       activity,
-      //       leaderId,
-      //       leaderName
-      //     }
-      //   );
+        // Send WebSocket notification
+        wsService.notifyGroupUpdate(
+          joinCode,
+          `${leaderName} selected "${activityName}" for the group`,
+          {
+            type: 'activity_selected',
+            activity,
+            leaderId,
+            leaderName
+          }
+        );
 
-      //   // Send FCM notification (will be suppressed in foreground on client side)
-      //   const activityDataStr = JSON.stringify(activity);
-      //   sendActivitySelectedFCM(
-      //     joinCode,
-      //     activityName,
-      //     updatedGroup.groupName,
-      //     leaderId,
-      //     activityDataStr
-      //   ).catch((error: unknown) => {
-      //     logger.error('Failed to send activity selected FCM notification:', error);
-      //   });
-      // }
+        // Send FCM notification (will be suppressed in foreground on client side)
+        const activityDataStr = JSON.stringify(activity);
+        sendActivitySelectedFCM(
+          joinCode,
+          activityName,
+          updatedGroup.groupName,
+          leaderId,
+          activityDataStr
+        ).catch((error: unknown) => {
+          logger.error('Failed to send activity selected FCM notification:', error);
+        });
+      }
 
       // Send notifications to group members
       /*const wsService = getWebSocketService();
@@ -772,7 +773,7 @@ export class GroupController {
       const result = await groupModel.leaveGroup(joinCode, userId);
 
       // Send WebSocket notification for user leaving
-      /*const wsService = getWebSocketService();
+      const wsService = getWebSocketService();
       if (wsService && leavingUser) {
         wsService.notifyGroupLeave(
           joinCode,
@@ -805,7 +806,8 @@ export class GroupController {
             `${result.newLeader.name} is now the new group leader`,
             { newLeader: result.newLeader }
           );
-        }*/
+        }
+      }
 
       res.status(200).json({
         message: 'Left group successfully',

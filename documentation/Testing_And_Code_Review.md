@@ -133,8 +133,15 @@ These tests measure the API response time for fetching group information to ensu
   - **Verification:** Group view endpoints meet the 2-second response time requirement for fetching group details regardless of member count (2, 5, or 10 members). The `getAllGroups` endpoint also completes within 2 seconds when fetching multiple groups, and the midpoint calculation endpoint stays within the 5-second threshold, confirming that database queries and data serialization do not cause performance bottlenecks.
   - **Log Output**
 
-    ![Group View Time Logs](images/group-view-nfr.png)
+    <img width="740" height="291" alt="image" src="https://github.com/user-attachments/assets/fd1865d9-d17e-44d7-9109-51b5bec110de" />
+<img width="821" height="631" alt="image" src="https://github.com/user-attachments/assets/9fba4bdc-1e53-490d-9db3-a200fae77509" />
+
 ---
+
+Test Verification and Logs:
+<img width="1086" height="404" alt="image" src="https://github.com/user-attachments/assets/35419da0-d54a-437d-9523-5e75f9f33b35" />
+
+
 
 # Frontend Test Specification
 
@@ -165,6 +172,19 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 
 **Location:** `GroupViewLoadTimeNFRTest.kt`
 
+<img width="702" height="130" alt="image" src="https://github.com/user-attachments/assets/67a8712f-a46a-4ae0-bf9d-19bf1a24be37" />
+
+Logs:
+`Connected to process 3039 on device 'Pixel_7 [emulator-5554]'.
+Starting 1 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 2m 40s
+73 actionable tasks: 33 executed, 40 up-to-date
+`
+
 ### Feature: Group Management
 
 #### Use Case: Create Group
@@ -184,6 +204,25 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | User clicks "Create Group" button. | Check that the button with testTag "createGroupButton" is displayed and enabled. Click the "Create Group" button. |
 | 1a. Input fields are invalid | Click "Create Group" button without filling required fields. Check that a dialog prompts user to confirm date and time. |
 | 1a1. User re-enters correct information | Verify error message is displayed. Re-enter valid information. |
+
+**Test Logs**:
+<img width="692" height="277" alt="image" src="https://github.com/user-attachments/assets/76b18e45-307b-40fd-a465-325478999f89" />
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 7 tests on Pixel_7(AVD) - 13
+Connected to process 32426 on device 'Pixel_7 [emulator-5554]'.
+
+Pixel_7(AVD) - 13 Tests 0/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 4/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 5/7 completed. (0 skipped) (0 failed)
+Finished 7 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 2m 55s
+73 actionable tasks: 2 executed, 71 up-to-date
+
+
 
 ---
 
@@ -207,7 +246,21 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 
 **Test Logs:**
 
-![Join Group Logs](images/m4-logs/GM-join-group-logs.png)
+<img width="701" height="277" alt="image" src="https://github.com/user-attachments/assets/1922d367-9640-4a19-a13c-88fcca301b60" />
+> Task :app:connectedStagingDebugAndroidTest
+Starting 7 tests on Pixel_7(AVD) - 13
+Connected to process 32426 on device 'Pixel_7 [emulator-5554]'.
+
+Pixel_7(AVD) - 13 Tests 0/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 4/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 5/7 completed. (0 skipped) (0 failed)
+Finished 7 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 2m 55s
+73 actionable tasks: 2 executed, 71 up-to-date
+
 
 #### Use Case: View All Groups
 **Location:** `GroupManagementE2ETest.kt`
@@ -220,7 +273,21 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 
 **Test Logs:**
 
-![View All Group Logs](images/m4-logs/GM-view-all-groups-logs.png)
+<img width="701" height="282" alt="image" src="https://github.com/user-attachments/assets/aef806cf-dd80-4409-a96c-ae3506ce421c" />
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 7 tests on Pixel_7(AVD) - 13
+Connected to process 32426 on device 'Pixel_7 [emulator-5554]'.
+
+Pixel_7(AVD) - 13 Tests 0/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 4/7 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 5/7 completed. (0 skipped) (0 failed)
+Finished 7 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 2m 55s
+73 actionable tasks: 2 executed, 71 up-to-date
 
 ---
 
@@ -240,7 +307,22 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 
 **Test Logs:**
 
-![View Specific Group Logs](images/m4-logs/GM-view-specific-group-logs.png)
+<img width="699" height="344" alt="image" src="https://github.com/user-attachments/assets/330691ab-ed2d-4a01-bf7d-011a095f908f" />
+
+Connected to process 14180 on device 'Pixel_7 [emulator-5554]'.
+Starting 8 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 2/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 5/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 6/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 7/8 completed. (0 skipped) (0 failed)
+Finished 8 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 4m 39s
+73 actionable tasks: 8 executed, 65 up-to-date
 
 ---
 
@@ -258,7 +340,22 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 
 **Test Logs:**
 
-![Leave Group Logs](images/m4-logs/GM-leave-group-logs.png)
+<img width="703" height="351" alt="image" src="https://github.com/user-attachments/assets/2a2801bf-8631-4b6f-bec5-36c3f4bc190c" />
+
+Connected to process 14180 on device 'Pixel_7 [emulator-5554]'.
+Starting 8 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 2/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 5/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 6/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 7/8 completed. (0 skipped) (0 failed)
+Finished 8 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 4m 39s
+73 actionable tasks: 8 executed, 65 up-to-date
 
 ---
 
@@ -277,7 +374,22 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 
 **Test Logs:**
 
-![Delete Group Logs](images/m4-logs/GM-delete-group-logs.png)
+<img width="703" height="340" alt="image" src="https://github.com/user-attachments/assets/5bd703dc-24b9-4046-b3ed-7c24978dddb5" />
+Connected to process 14180 on device 'Pixel_7 [emulator-5554]'.
+Starting 8 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 2/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 5/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 6/8 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 7/8 completed. (0 skipped) (0 failed)
+Finished 8 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 4m 39s
+73 actionable tasks: 8 executed, 65 up-to-date
+
 
 ## Feature: Group View
 
@@ -290,7 +402,19 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | 3. User navigates between different views. | Click "See Details" button. Verify "Members" screen displayed. Press back button. Check "groupMeetingTime" still displayed. |
 
 **Test Logs:**  
-![View Event Time Logs](images/m4-logs/GV-view-event-time.png)
+<img width="698" height="242" alt="image" src="https://github.com/user-attachments/assets/65d00b2f-769e-4880-a538-634ec13393db" />
+Connected to process 22907 on device 'Pixel_7 [emulator-5554]'.
+Starting 5 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 2/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 4/5 completed. (0 skipped) (0 failed)
+Finished 5 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 2m 30s
+73 actionable tasks: 8 executed, 65 up-to-date
 
 ---
 
@@ -305,7 +429,20 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | 1a2. Prompt user to create new group/activity type. | Verify error message suggests creating a new group. User can navigate back or create a new group. |
 
 **Test Logs:**  
-![View Current Midpoint Logs](images/m4-logs/GV-view-current-midpoint.png)
+<img width="697" height="246" alt="image" src="https://github.com/user-attachments/assets/70742c15-45b7-46f9-8649-538e8d725f55" />
+
+Connected to process 22907 on device 'Pixel_7 [emulator-5554]'.
+Starting 5 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 2/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/5 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 4/5 completed. (0 skipped) (0 failed)
+Finished 5 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 2m 30s
+73 actionable tasks: 8 executed, 65 up-to-date
 
 ---
 
@@ -319,7 +456,29 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | User views member list. | Check at least one member is visible. |
 
 **Test Logs:**  
-![View Attendees Logs](images/m4-logs/GV-view-attendees.png)
+<img width="691" height="138" alt="image" src="https://github.com/user-attachments/assets/31f61d84-9e0d-429a-ad40-2c544c2be1cf" />
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+Connected to process 11714 on device 'Pixel_7 [emulator-5554]'.
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 40s
+73 actionable tasks: 2 executed, 71 up-to-date
+<img width="694" height="104" alt="image" src="https://github.com/user-attachments/assets/231afe25-3b23-407c-a374-3293e3558017" />
+> Task :app:connectedStagingDebugAndroidTest
+Starting 6 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/6 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 1/6 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 2/6 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 3/6 completed. (0 skipped) (0 failed)
+Pixel_7(AVD) - 13 Tests 5/6 completed. (0 skipped) (0 failed)
+Finished 6 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 1m 29s
+73 actionable tasks: 8 executed, 65 up-to-date
 
 ---
 
@@ -333,7 +492,17 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | User sees map with location pins and selected activity card. | Check activity box is present and loaded. Check activity is displayed and not empty. |
 
 **Test Logs:**  
-![View Selected Activity Logs](images/m4-logs/GV-view-selected-activity.png)
+<img width="698" height="136" alt="image" src="https://github.com/user-attachments/assets/7946d128-a3fe-42dd-afff-a09e7bfa3349" />
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+Connected to process 11714 on device 'Pixel_7 [emulator-5554]'.
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 40s
+73 actionable tasks: 2 executed, 71 up-to-date
+
 
 ---
 
@@ -347,7 +516,19 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | User sees map with recommended activities list. | Check node with tag "ActivityPicker" or activities list is present and loaded. |
 
 **Test Logs:**  
-![View Recommended Locations Logs](images/m4-logs/GV-view-rec-locs.png)
+<img width="703" height="111" alt="image" src="https://github.com/user-attachments/assets/ea517262-58b2-4d06-acd7-4ee516b85e46" />
+
+> Task :app:createStagingDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+Connected to process 8661 on device 'Pixel_7 [emulator-5554]'.
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 33s
+73 actionable tasks: 2 executed, 71 up-to-date
 
 
 ## Feature: Update Group
@@ -370,7 +551,18 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | The app confirms action success | Check that a dialog is opened with the message “Settings saved successfully!”. |
 
 **Test Logs:**  
-![Update Expected People Logs](images/m4-logs/UG-expected-people.png)
+<img width="699" height="143" alt="image" src="https://github.com/user-attachments/assets/29090ab5-513b-4e3f-9276-5ce34a6f970a" />
+> Task :app:createStagingDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+Connected to process 6521 on device 'Pixel_7 [emulator-5554]'.
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 1m 55s
+73 actionable tasks: 8 executed, 65 up-to-date
 
 ---
 
@@ -391,7 +583,19 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | App confirms action success | Check that a dialog is opened with the message “Settings saved successfully!”. |
 
 **Test Logs:**  
-![Update Expected People Logs](images/m4-logs/UG-event-time.png)
+<img width="703" height="137" alt="image" src="https://github.com/user-attachments/assets/4fc7dfae-b319-4ba3-a192-04ccb165c9f7" />
+> Task :app:createStagingDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+Connected to process 6521 on device 'Pixel_7 [emulator-5554]'.
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 1m 55s
+73 actionable tasks: 8 executed, 65 up-to-date
+
 
 ---
 
@@ -411,7 +615,18 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 
 ### Test Logs
 
-![Update Midpoint Automatically Logs](images/m4-logs/UG-midpoint-automatic.png)
+<img width="705" height="143" alt="image" src="https://github.com/user-attachments/assets/e46001a1-a6d1-4ee7-8cba-e694eefdcd60" />
+> Task :app:createStagingDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+Connected to process 6521 on device 'Pixel_7 [emulator-5554]'.
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 1m 55s
+73 actionable tasks: 8 executed, 65 up-to-date
 
 
 ### Use Case: Update Member Address
@@ -431,7 +646,34 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | App confirms action success | Check that a dialog is opened with “Settings saved successfully!”. |
 
 **Test Logs:**  
-![Update Expected People Logs](images/m4-logs/UG-member-address.png)
+1. Squad Leader
+<img width="706" height="138" alt="image" src="https://github.com/user-attachments/assets/f2a2d4ef-1d0b-418a-807a-32ab81e80608" />
+
+> Task :app:createStagingDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+Connected to process 6521 on device 'Pixel_7 [emulator-5554]'.
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 1m 55s
+73 actionable tasks: 8 executed, 65 up-to-date
+
+2. Squad Member
+ <img width="701" height="152" alt="image" src="https://github.com/user-attachments/assets/3d9e854b-1e13-4bd8-8d0c-9daf43b6093c" />
+> Task :app:createStagingDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+Connected to process 7481 on device 'Pixel_7 [emulator-5554]'.
+
+> Task :app:connectedStagingDebugAndroidTest
+Starting 1 tests on Pixel_7(AVD) - 13
+
+Pixel_7(AVD) - 13 Tests 0/1 completed. (0 skipped) (0 failed)
+Finished 1 tests on Pixel_7(AVD) - 13
+
+BUILD SUCCESSFUL in 1m 10s
+73 actionable tasks: 2 executed, 71 up-to-date
 
 ---
 
@@ -451,7 +693,9 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | App confirms action success | Check dialog shows “Settings saved successfully!”. |
 
 **Test Logs:**  
-![Update Expected People Logs](images/m4-logs/UG-transit.png)
+<img width="715" height="429" alt="image" src="https://github.com/user-attachments/assets/9be23196-4c2e-4c1e-a0cf-ae7d0720cc11" />
+<img width="715" height="449" alt="image" src="https://github.com/user-attachments/assets/fd71e04f-57f9-4802-8a15-f1fd09bd0c91" />
+
 
 ---
 
@@ -469,7 +713,9 @@ When we say *User*, it refers to a Registered User, which includes both Squad Le
 | Screen updates with map and pins | Check map appears with location pins. |
 
 **Test Logs:**  
-![Update Expected People Logs](images/m4-logs/UG-midpoint.png)
+<img width="722" height="401" alt="image" src="https://github.com/user-attachments/assets/0cb93027-5daa-4039-8c8b-27ff5dddde2f" />
+
+<img width="720" height="384" alt="image" src="https://github.com/user-attachments/assets/97caf075-42ae-4306-a282-b8ee44364607" />
 
 ---
 

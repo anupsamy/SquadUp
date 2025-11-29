@@ -55,9 +55,16 @@ class GroupViewLoadTimeNFRTest {
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule.onAllNodesWithTag("groupButton")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
         // Navigate to a group
-        composeTestRule.onAllNodesWithText("Leader:", substring = true)
+        composeTestRule.onAllNodesWithTag("groupButton")
             .onFirst()
+            .assertIsDisplayed()
             .performClick()
 
         // Record start time for load measurement

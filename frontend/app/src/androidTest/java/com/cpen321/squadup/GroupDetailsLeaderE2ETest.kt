@@ -106,7 +106,7 @@ class GroupDetailsLeaderE2ETest {
         }
 
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
+        Thread.sleep(100)
 
         // Verify success
         composeTestRule.waitUntil(timeoutMillis = 10000) {
